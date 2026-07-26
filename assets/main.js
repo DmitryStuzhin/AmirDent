@@ -144,7 +144,15 @@
       say('');
       fetch(LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({name:name,phone:phone,service:service,company:form.company?form.company.value:'',page:location.href})})
-        .then(function(r){if(!r.ok)throw new Error(r.status);
+        // «Заявка принята» только если lead.php подтвердил отправку своим {"ok":true}.
+        // Сервер без PHP отдаёт lead.php как текстовый файл с кодом 200, и по одному
+        // коду ответа заявку можно было счесть отправленной, хотя её никто не получил.
+        .then(function(r){return r.text().then(function(body){
+          var data=null;
+          try{data=JSON.parse(body);}catch(e){}
+          if(!r.ok||!data||data.ok!==true)throw new Error('lead_failed '+r.status);
+        });})
+        .then(function(){
           say('Заявка принята — администратор перезвонит в течение 15 минут.');
           if(btn)btn.textContent='Заявка отправлена ✓';
           form.reset();
