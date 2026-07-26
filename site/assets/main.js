@@ -27,15 +27,6 @@
   var co=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){animate(e.target);co.unobserve(e.target);}});},{threshold:.5});
   document.querySelectorAll('[data-count]').forEach(function(el){co.observe(el);});
 
-  // before/after
-  document.querySelectorAll('[data-ba]').forEach(function(ba){
-    function setPos(x){var r=ba.getBoundingClientRect();var p=((x-r.left)/r.width)*100;p=Math.max(3,Math.min(97,p));ba.style.setProperty('--pos',p+'%');}
-    var d=false;
-    ba.addEventListener('pointerdown',function(e){d=true;setPos(e.clientX);try{ba.setPointerCapture(e.pointerId);}catch(x){}});
-    ba.addEventListener('pointermove',function(e){if(d)setPos(e.clientX);});
-    window.addEventListener('pointerup',function(){d=false;});
-  });
-
   // hero chevron parallax
   var chev=document.querySelector('.chevrons');
   if(chev){window.addEventListener('scroll',function(){chev.style.transform='translateY('+(window.scrollY*0.06)+'px)';},{passive:true});}
@@ -45,33 +36,111 @@
   var pfilters=document.querySelectorAll('.pf');
   var pempty=document.getElementById('priceEmpty');
   var curCat='all';
+
+  // Направления каталога. Порядок задаёт порядок групп в списке услуг.
+  var CATS=[
+    ['ortho','Ортодонтия и брекеты'],
+    ['therapy','Лечение и терапия'],
+    ['hygiene','Гигиена и профилактика'],
+    ['paro','Пародонтология'],
+    ['surgery','Хирургия'],
+    ['implant','Имплантация'],
+    ['prosth','Протезирование'],
+    ['kids','Детская стоматология']
+  ];
+  function catName(cat){
+    for(var i=0;i<CATS.length;i++) if(CATS[i][0]===cat) return CATS[i][1];
+    return 'Другие услуги';
+  }
+  function plural(n){
+    var d=n%10, dd=n%100;
+    if(d===1&&dd!==11) return 'услуга';
+    if(d>=2&&d<=4&&(dd<12||dd>14)) return 'услуги';
+    return 'услуг';
+  }
+
+  // Услуги в разметке идут вперемешку, а админка при сохранении возвращает их
+  // плоским списком. Поэтому группы строим из DOM при каждой загрузке, а не
+  // в разметке: иначе после первой публикации из админки они бы исчезли.
+  // только каталог на главной: на странице направления свой список без групп
+  var priceList=document.querySelector('#services .price-list');
+  var priceObserver=null;
+  function buildGroups(){
+    if(!priceList) return;
+    // Наблюдатель отключается на время перестройки: его колбэк вызывается
+    // асинхронно, поэтому простого флага мало — он успевает сброситься, и
+    // наблюдатель реагирует на наши же изменения, зацикливая страницу.
+    if(priceObserver) priceObserver.disconnect();
+    priceList.querySelectorAll('.pgroup-h').forEach(function(h){ h.remove(); });
+    var rows=Array.prototype.slice.call(priceList.querySelectorAll('.prow'));
+    var used=[], frag=document.createDocumentFragment();
+    CATS.forEach(function(c){
+      var group=rows.filter(function(r){ return (r.dataset.cat||'')===c[0]; });
+      if(!group.length) return;
+      var h=document.createElement('div');
+      h.className='pgroup-h';
+      h.setAttribute('data-cat-h', c[0]);
+      h.innerHTML='<h3>'+c[1]+'</h3><span class="pgroup-n">'+group.length+' '+plural(group.length)+'</span>';
+      frag.appendChild(h);
+      group.forEach(function(r){ frag.appendChild(r); used.push(r); });
+    });
+    // строки с неизвестной категорией не теряем — они уходят в конец списка
+    rows.forEach(function(r){ if(used.indexOf(r)<0) frag.appendChild(r); });
+    priceList.appendChild(frag);
+    if(priceObserver){
+      priceObserver.takeRecords();
+      priceObserver.observe(priceList, {childList:true});
+    }
+  }
+
+  // Админка перерисовывает список услуг целиком — тогда группы собираем заново
+  if(priceList && window.MutationObserver){
+    priceObserver=new MutationObserver(function(){
+      buildGroups();
+      applyPrice();
+    });
+    priceObserver.observe(priceList, {childList:true});
+  }
+  buildGroups();
+
   function applyPrice(){
+    if(!priceList) return;
     var q=(psearch&&psearch.value||'').trim().toLowerCase();
-    var prows=document.querySelectorAll('.price-list .prow');
-    var shown=0;
+    var prows=priceList?priceList.querySelectorAll('.prow'):[];
+    var shown=0, perCat={};
     prows.forEach(function(r){
-      var okCat=curCat==='all'||r.dataset.cat===curCat;
+      var cat=r.dataset.cat||'';
+      var okCat=curCat==='all'||cat===curCat;
       var okQ=!q||(r.dataset.name||'').indexOf(q)>-1;
       var vis=okCat&&okQ;
       r.style.display=vis?'':'none';
-      if(vis)shown++;
+      if(vis){ shown++; perCat[cat]=(perCat[cat]||0)+1; }
+    });
+    document.querySelectorAll('.pgroup-h').forEach(function(h){
+      var n=perCat[h.getAttribute('data-cat-h')]||0;
+      h.style.display=n?'':'none';
+      var badge=h.querySelector('.pgroup-n');
+      if(badge) badge.textContent=n+' '+plural(n);
     });
     if(pempty)pempty.hidden=shown>0;
   }
   if(psearch)psearch.addEventListener('input',applyPrice);
+  function selectCat(cat){
+    pfilters.forEach(function(b){ b.classList.toggle('active', b.dataset.cat===cat); });
+    curCat=cat;
+    applyPrice();
+  }
   pfilters.forEach(function(btn){btn.addEventListener('click',function(){
-    pfilters.forEach(function(b){b.classList.remove('active');});
-    btn.classList.add('active');curCat=btn.dataset.cat;applyPrice();
+    selectCat(btn.dataset.cat);
   });});
+  applyPrice();
 
+  // Пункты меню «Услуги» ведут на страницы направлений. Здесь только
+  // сопутствующее: закрыть мобильное меню и выставить фильтр в каталоге,
+  // чтобы возврат на главную показывал выбранное направление.
   document.querySelectorAll('[data-nav-cat]').forEach(function(link){
     link.addEventListener('click',function(){
-      var cat=link.getAttribute('data-nav-cat');
-      var btn=document.querySelector('.pf[data-cat="'+cat+'"]');
-      if(btn){
-        pfilters.forEach(function(b){b.classList.remove('active');});
-        btn.classList.add('active');curCat=cat;applyPrice();
-      }
+      selectCat(link.getAttribute('data-nav-cat'));
       if(nav)nav.classList.remove('open');
       if(burger)burger.classList.remove('active');
     });
