@@ -7,3 +7,7 @@ api/config.php
 api/config.local.json
 api/leads-failed.log
 api/leads-local.log
+
+# Uploaded CMS photos
+site/assets/uploads/*
+!site/assets/uploads/.gitkeep

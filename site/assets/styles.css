@@ -67,7 +67,7 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 .brand-mark{width:52px;height:52px;flex:none;background:url('https://static.tildacdn.com/tild6330-6136-4335-a362-653732653237/996d2dad-bf34-43dc-9.png') no-repeat left center;background-size:auto 100%}
 .logo b{color:var(--gold-deep)}
 .nav{display:flex;align-items:center;gap:4px}
-.nav>a,.nav-drop>a{font-family:var(--head);font-weight:600;font-size:15px;padding:10px 15px;border-radius:100px;transition:.25s;position:relative;display:inline-block}
+.nav>a,.nav-drop>a{font-family:var(--head);font-weight:600;font-size:15px;padding:10px 15px;border-radius:100px;transition:.25s;position:relative;display:inline-block;white-space:nowrap}
 .nav>a::after,.nav-drop>a::after{content:"";position:absolute;left:15px;right:15px;bottom:6px;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .28s var(--ease)}
 .nav>a:hover::after,.nav>a.active::after,.nav-drop:hover>a::after{transform:scaleX(1)}
 .nav-drop{position:relative}

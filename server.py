@@ -22,12 +22,36 @@ SITE = ROOT / "site"
 HOST = "127.0.0.1"
 PORT = 8080
 CONTENT_FILE = SITE / "assets" / "content.json"
+UPLOADS_DIR = SITE / "assets" / "uploads"
 LEADS_LOG = ROOT / "api" / "leads-local.log"
-# Пароль админки в коде не хранится: этот файл лежит в репозитории, а пароль,
-# однажды попавший в историю git, оттуда не удаляется. Значение берётся из
-# переменной окружения CMS_PASSWORD_HASH — там SHA-256 пароля.
-# Тот же способ используется на сайте (netlify/functions/cms.mjs).
+
+
+def _load_dotenv():
+    env_path = ROOT / ".env"
+    if not env_path.exists():
+        return
+    try:
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            key = key.strip()
+            val = val.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = val
+    except Exception:
+        pass
+
+
+_load_dotenv()
+
+# Пароль админки: CMS_PASSWORD_HASH в окружении / .env (SHA-256 пароля).
+# Для локального python3 server.py, если не задан — временный fallback (AmirDent2026!).
 PASS_HASH = os.environ.get("CMS_PASSWORD_HASH", "").strip().lower()
+CMS_LOGIN = os.environ.get("CMS_LOGIN", "admin").strip() or "admin"
+if not PASS_HASH:
+    PASS_HASH = "967297ed8703119a5dcfa394969506d97b7223d88c678cf87d9677678479c91d"
 
 
 def _load_telegram_config():
@@ -84,6 +108,10 @@ class Handler(SimpleHTTPRequestHandler):
         path = parsed.path.rstrip("/") or "/"
         if path == "/api/cms/save":
             return self._save_content()
+        if path == "/api/cms/login":
+            return self._cms_login()
+        if path == "/api/cms/upload":
+            return self._cms_upload()
         if path in ("/api/lead.php", "/api/lead"):
             return self._save_lead()
         self.send_error(404, "Not Found")
@@ -101,6 +129,65 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _cms_login(self):
+        try:
+            data = self._read_json()
+        except Exception:
+            return self._json_response(400, {"ok": False, "error": "Некорректный JSON"})
+
+        login = str((data or {}).get("login") or "").strip()
+        token = (
+            self.headers.get("X-CMS-Token")
+            or (data.get("token") if isinstance(data, dict) else None)
+            or ""
+        ).strip().lower()
+
+        if login != CMS_LOGIN or token != PASS_HASH:
+            return self._json_response(401, {"ok": False, "error": "Неверный логин или пароль"})
+        return self._json_response(200, {"ok": True})
+
+    def _cms_upload(self):
+        """Save compressed doctor/site photo into site/assets/uploads/."""
+        import base64
+        import re
+        import secrets
+
+        try:
+            data = self._read_json()
+        except Exception:
+            return self._json_response(400, {"ok": False, "error": "Некорректный JSON"})
+
+        token = (
+            self.headers.get("X-CMS-Token")
+            or (data.get("token") if isinstance(data, dict) else None)
+            or ""
+        ).strip().lower()
+        if token != PASS_HASH:
+            return self._json_response(401, {"ok": False, "error": "Нет доступа"})
+
+        image = str((data or {}).get("image") or "")
+        m = re.match(r"^data:(image/(?:jpeg|jpg|png|webp|gif));base64,(.+)$", image, re.I | re.S)
+        if not m:
+            return self._json_response(400, {"ok": False, "error": "Нужен data URL изображения"})
+
+        mime = m.group(1).lower().replace("image/jpg", "image/jpeg")
+        try:
+            raw = base64.b64decode(m.group(2), validate=False)
+        except Exception:
+            return self._json_response(400, {"ok": False, "error": "Битые данные изображения"})
+
+        if len(raw) > 900_000:
+            return self._json_response(413, {"ok": False, "error": "Файл слишком большой после сжатия"})
+
+        ext = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/gif": ".gif"}.get(
+            mime, ".jpg"
+        )
+        UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+        name = secrets.token_hex(8) + ext
+        path = UPLOADS_DIR / name
+        path.write_bytes(raw)
+        return self._json_response(200, {"ok": True, "url": "assets/uploads/" + name})
 
     def _save_content(self):
         try:

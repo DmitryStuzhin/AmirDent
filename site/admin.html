@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>Админка — АмирДент</title>
+<title>Вход в админку — АмирДент</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css?v=navdrop">
+<link rel="stylesheet" href="assets/styles.css?v=navdocs1">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
   body.admin-login{min-height:100vh;display:grid;place-items:center;background:var(--ink);padding:24px}
@@ -24,99 +24,48 @@
   .login-card .btn{width:100%;margin-top:8px}
   .login-card .back{display:block;text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
   .login-card .back:hover{color:var(--gold-deep)}
-
-  body.admin-dash{background:#f3eee6;min-height:100vh;margin:0;font-family:var(--body);color:var(--text)}
-  .dash-top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 20px;background:#1b1813;color:#fff}
-  .dash-top .brand{font-family:var(--head);font-weight:800;font-size:18px}
-  .dash-top .brand b{color:#d3ba86}
-  .dash-top .actions{display:flex;gap:8px;flex-wrap:wrap}
-  .dash-top .btn,.dash-panel .btn{font-family:var(--head);font-weight:700;font-size:13px;padding:10px 14px;border-radius:100px;border:0;cursor:pointer}
-  .dash-top .btn{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.25)}
-  .dash-top .btn.primary{background:linear-gradient(135deg,#dcc493,#9c7f4b);color:#241d10;border-color:transparent}
-  .dash-wrap{max-width:1100px;margin:0 auto;padding:24px 18px 60px}
-  .dash-status{color:var(--muted);font-size:14px;margin-bottom:18px}
-  .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  @media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
-  .dash-panel{background:#fff;border:1px solid #e6ddd0;border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(27,24,19,.06)}
-  .dash-panel h2{font-family:var(--head);font-size:22px;margin:0 0 6px}
-  .dash-panel .sub{color:var(--muted);font-size:13.5px;margin-bottom:16px}
-  .dash-panel .field{margin-bottom:12px}
-  .dash-panel label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
-  .dash-panel input,.dash-panel select{width:100%;padding:12px 14px;border:1.5px solid #e6ddd0;border-radius:12px;font:inherit;background:#f7f2ea}
-  .dash-panel input:focus,.dash-panel select:focus{outline:none;border-color:#b39a6b;background:#fff}
-  .list-box{max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:8px;margin:14px 0 18px;padding-right:4px}
-  .row-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#f7f2ea;border-radius:12px;border:1px solid #ebe3d6}
-  .row-item .meta{min-width:0;flex:1}
-  .row-item b{display:block;font-size:14px}
-  .row-item small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
-  .btn.danger{background:#7c3c1f;color:#fff}
-  .btn.gold{background:linear-gradient(135deg,#dcc493,#9c7f4b);color:#241d10;width:100%;margin-top:4px}
-  .empty{color:var(--muted);font-size:14px;padding:8px 0}
-  .dash-toast{position:fixed;right:18px;bottom:18px;z-index:50;background:#1b1813;color:#fff;padding:12px 16px;border-radius:12px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none;max-width:min(90vw,360px)}
-  .dash-toast.show{opacity:1;transform:none}
-  .dash-toast.err{background:#7c3c1f}
 </style>
 </head>
 <body class="admin-login">
-  <div id="loginView">
-    <form class="login-card" id="adminLogin" autocomplete="on">
-      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Амир<b>Дент</b></span></div>
-      <h1>Вход в админку</h1>
-      <p class="hint">Здесь можно добавлять и удалять врачей и услуги. После входа откроется панель управления.</p>
-      <div class="err" id="loginErr">Неверный логин или пароль</div>
-      <div class="field"><label>Логин</label><input type="text" name="login" required autocomplete="username" placeholder="admin"></div>
-      <div class="field"><label>Пароль</label><input type="password" name="password" required autocomplete="current-password"></div>
-      <button type="submit" class="btn btn-gold">Войти</button>
-      <a class="back" href="index.html">← На сайт</a>
-    </form>
-  </div>
-
-  <div id="dashView" hidden>
-    <header class="dash-top">
-      <div class="brand">Админка Амир<b>Дент</b></div>
-      <div class="actions">
-        <button type="button" class="btn" id="btnSite">Открыть сайт</button>
-        <button type="button" class="btn primary" id="btnSave">Сохранить</button>
-        <button type="button" class="btn" id="btnLogout">Выйти</button>
-      </div>
-    </header>
-    <div class="dash-wrap">
-      <p class="dash-status" id="dashStatus">Загрузка…</p>
-      <div class="dash-grid">
-        <section class="dash-panel">
-          <h2>Врачи</h2>
-          <p class="sub">Добавьте врача формой ниже или удалите из списка. Сохранение — сразу.</p>
-          <div class="list-box" id="docList"></div>
-          <form id="addDoctor">
-            <div class="field"><label>ФИО</label><input id="docName" type="text" placeholder="Иванов Иван" required></div>
-            <div class="field"><label>Специализация</label><input id="docRole" type="text" placeholder="Ортодонтия"></div>
-            <div class="field"><label>Опыт / должность</label><input id="docExp" type="text" placeholder="Врач-ортодонт · 5 лет"></div>
-            <div class="field"><label>URL фото</label><input id="docSrc" type="text" placeholder="https://..."></div>
-            <div class="field"><label>Или файл</label><input id="docFile" type="file" accept="image/*"></div>
-            <button type="submit" class="btn gold">+ Добавить врача</button>
-          </form>
-        </section>
-
-        <section class="dash-panel">
-          <h2>Услуги</h2>
-          <p class="sub">Добавьте услугу формой ниже или удалите из списка. Сохранение — сразу.</p>
-          <div class="field"><label>Поиск</label><input id="svcSearch" type="search" placeholder="Название услуги…"></div>
-          <div class="list-box" id="svcList"></div>
-          <form id="addService">
-            <div class="field"><label>Название</label><input id="svcName" type="text" placeholder="Название услуги" required></div>
-            <div class="field"><label>Категория (подпись)</label><input id="svcTag" type="text" placeholder="Терапия"></div>
-            <div class="field"><label>Цена</label><input id="svcPrice" type="text" placeholder="5 000 ₽"></div>
-            <div class="field"><label>Фильтр</label><select id="svcCat"></select></div>
-            <button type="submit" class="btn gold">+ Добавить услугу</button>
-          </form>
-        </section>
-      </div>
-    </div>
-  </div>
-
-  <div class="dash-toast" id="dashToast"></div>
-
-  <script src="assets/cms-auth.js?v=3"></script>
-  <script src="assets/admin-app.js?v=1"></script>
+  <form class="login-card" id="adminLogin" autocomplete="on">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Амир<b>Дент</b></span></div>
+    <h1>Вход для администратора</h1>
+    <p class="hint">После входа откроется обычный сайт. Кликайте текст, фото и блоки — чтобы править. Внизу появится панель «Сохранить».</p>
+    <div class="err" id="loginErr">Неверный логин или пароль</div>
+    <div class="field"><label>Логин</label><input type="text" name="login" required autocomplete="username" placeholder="admin"></div>
+    <div class="field"><label>Пароль</label><input type="password" name="password" required autocomplete="current-password"></div>
+    <button type="submit" class="btn btn-gold">Войти и править сайт</button>
+    <a class="back" href="index.html">← На главную</a>
+  </form>
+  <script src="assets/cms-auth.js?v=5"></script>
+  <script>
+    (function(){
+      try{
+        var raw=sessionStorage.getItem('amirdent_admin_session');
+        if(raw){
+          var s=JSON.parse(raw);
+          if(!s.token) sessionStorage.removeItem('amirdent_admin_session');
+        }
+      }catch(e){}
+      if(window.AmirCMS && AmirCMS.isAuthed()){
+        location.replace('index.html');
+        return;
+      }
+      var form=document.getElementById('adminLogin');
+      var err=document.getElementById('loginErr');
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        err.classList.remove('show');
+        try{
+          var ok=await AmirCMS.login(form.login.value.trim(), form.password.value);
+          if(!ok){ err.classList.add('show'); return; }
+          location.replace('index.html');
+        }catch(ex){
+          err.textContent=ex.message||'Ошибка входа';
+          err.classList.add('show');
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

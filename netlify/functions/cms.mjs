@@ -1,4 +1,4 @@
-// Админ-панель: вход, сохранение и выдача контента сайта.
+// Админ-панель: вход, сохранение, загрузка фото и выдача контента.
 //
 // Пароль проверяется здесь, на сервере. В файлах сайта его нет и быть не должно:
 // всё, что лежит в папке site, скачивается посетителем по прямой ссылке.
@@ -6,16 +6,14 @@
 // Переменные окружения:
 //   CMS_LOGIN          — логин администратора (по умолчанию admin)
 //   CMS_PASSWORD_HASH  — SHA-256 пароля в шестнадцатеричном виде
-//
-// Клиент присылает не сам пароль, а его SHA-256 — тот же протокол, что и раньше,
-// поэтому админка коллеги работает без переделок.
 
 import { getStore } from '@netlify/blobs';
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual, randomBytes } from 'node:crypto';
 
 const STORE = 'cms';
 const KEY = 'content';
 const MAX_BYTES = 2 * 1024 * 1024;
+const MAX_IMAGE = 900_000;
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -33,7 +31,6 @@ function sameSecret(a, b) {
   return timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
-// Логин присылается открытым текстом, пароль — уже хешированным
 function checkCredentials({ login, token }) {
   const expectedLogin = (process.env.CMS_LOGIN || 'admin').trim();
   const expectedHash = (process.env.CMS_PASSWORD_HASH || '').trim().toLowerCase();
@@ -46,14 +43,34 @@ function checkCredentials({ login, token }) {
 }
 
 export default async (request) => {
-  const path = new URL(request.url).pathname;
+  const url = new URL(request.url);
+  const path = url.pathname;
 
-  // Контент нужен каждому посетителю — отдаём без пароля
   if (path.endsWith('/content') || path.endsWith('/content.json')) {
     if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
     const store = getStore(STORE);
     const saved = await store.get(KEY, { type: 'json', consistency: 'strong' });
     return json(saved || {});
+  }
+
+  // GET /api/cms/media?id=...
+  if (path.endsWith('/media')) {
+    if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405);
+    const id = (url.searchParams.get('id') || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!id) return json({ error: 'bad_id' }, 400);
+    const store = getStore(STORE);
+    const key = `media/${id}`;
+    const buf = await store.get(key, { type: 'arrayBuffer', consistency: 'strong' });
+    if (!buf) return json({ error: 'not_found' }, 404);
+    const meta = await store.getMetadata(key);
+    const type = (meta && meta.metadata && meta.metadata.contentType) || 'image/jpeg';
+    return new Response(buf, {
+      status: 200,
+      headers: {
+        'Content-Type': type,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    });
   }
 
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
@@ -76,8 +93,31 @@ export default async (request) => {
     return json({ ok: true });
   }
 
+  if (path.endsWith('/upload')) {
+    const auth = checkCredentials({ token });
+    if (!auth.ok) return json({ error: auth.error }, auth.status);
+
+    const image = String(payload.image || '');
+    const m = image.match(/^data:(image\/(?:jpeg|jpg|png|webp|gif));base64,(.+)$/i);
+    if (!m) return json({ error: 'bad_image' }, 400);
+
+    let raw;
+    try {
+      raw = Buffer.from(m[2], 'base64');
+    } catch {
+      return json({ error: 'bad_image' }, 400);
+    }
+    if (raw.length > MAX_IMAGE) return json({ error: 'too_large' }, 413);
+
+    const mime = m[1].toLowerCase().replace('image/jpg', 'image/jpeg');
+    const id = createHash('sha256').update(raw).digest('hex').slice(0, 16);
+    const store = getStore(STORE);
+    await store.set(`media/${id}`, raw, { metadata: { contentType: mime } });
+    console.log(`cms: фото сохранено ${id} (${raw.length} байт)`);
+    return json({ ok: true, url: `/api/cms/media?id=${id}` });
+  }
+
   if (path.endsWith('/save')) {
-    // Логин при сохранении не присылается — проверяем только пароль
     const auth = checkCredentials({ token });
     if (!auth.ok) return json({ error: auth.error }, auth.status);
 
@@ -97,5 +137,5 @@ export default async (request) => {
 };
 
 export const config = {
-  path: ['/api/cms/login', '/api/cms/save', '/api/cms/content'],
+  path: ['/api/cms/login', '/api/cms/save', '/api/cms/content', '/api/cms/upload', '/api/cms/media'],
 };

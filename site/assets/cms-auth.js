@@ -23,18 +23,18 @@
     async login(login, password){
       var ph=await sha256(password);
       var res=null;
+      var json=null;
       try{
         res=await fetch('/api/cms/login',{
           method:'POST',
           headers:{'Content-Type':'application/json','X-CMS-Token':ph},
           body:JSON.stringify({ login:login, token:ph })
         });
+        try{ json=await res.json(); }catch(e){}
       }catch(e){
         throw new Error('Нет связи с сервером');
       }
-      // Локальный сервер разработки может не знать этого адреса — тогда пароль
-      // всё равно будет проверен при сохранении.
-      if(res.status!==404 && !res.ok) return false;
+      if(!res.ok || !json || !json.ok) return false;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({
         login:login,
         at:Date.now(),
