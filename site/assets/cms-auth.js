@@ -1,10 +1,12 @@
-/* AmirDent CMS auth — client-side session for static admin */
+/* AmirDent CMS auth — сессия админки; пароль проверяет сервер */
 (function(global){
   var SESSION_KEY='amirdent_admin_session';
   var CONTENT_KEY='amirdent_cms_content';
-  // SHA-256("admin") / SHA-256("AmirDent2026!")
-  var LOGIN_HASH='8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
-  var PASS_HASH='967297ed8703119a5dcfa394969506d97b7223d88c678cf87d9677678479c91d';
+
+  // Логин и пароль здесь намеренно не хранятся: этот файл загружает каждый
+  // посетитель сайта, поэтому любые значения в нём равносильны публикации.
+  // Проверка идёт на сервере (netlify/functions/cms.mjs), браузер отправляет
+  // только SHA-256 введённого пароля.
 
   function toHex(buf){
     return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
@@ -18,11 +20,21 @@
   var AmirCMS={
     CONTENT_KEY:CONTENT_KEY,
     SESSION_KEY:SESSION_KEY,
-    PASS_HASH:PASS_HASH,
     async login(login, password){
-      var lh=await sha256(login);
       var ph=await sha256(password);
-      if(lh!==LOGIN_HASH || ph!==PASS_HASH) return false;
+      var res=null;
+      try{
+        res=await fetch('/api/cms/login',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-CMS-Token':ph},
+          body:JSON.stringify({ login:login, token:ph })
+        });
+      }catch(e){
+        throw new Error('Нет связи с сервером');
+      }
+      // Локальный сервер разработки может не знать этого адреса — тогда пароль
+      // всё равно будет проверен при сохранении.
+      if(res.status!==404 && !res.ok) return false;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({
         login:login,
         at:Date.now(),

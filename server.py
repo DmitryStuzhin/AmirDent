@@ -23,8 +23,11 @@ HOST = "127.0.0.1"
 PORT = 8080
 CONTENT_FILE = SITE / "assets" / "content.json"
 LEADS_LOG = ROOT / "api" / "leads-local.log"
-# SHA-256("AmirDent2026!")
-PASS_HASH = "967297ed8703119a5dcfa394969506d97b7223d88c678cf87d9677678479c91d"
+# Пароль админки в коде не хранится: этот файл лежит в репозитории, а пароль,
+# однажды попавший в историю git, оттуда не удаляется. Значение берётся из
+# переменной окружения CMS_PASSWORD_HASH — там SHA-256 пароля.
+# Тот же способ используется на сайте (netlify/functions/cms.mjs).
+PASS_HASH = os.environ.get("CMS_PASSWORD_HASH", "").strip().lower()
 
 
 def _load_telegram_config():
@@ -110,6 +113,12 @@ class Handler(SimpleHTTPRequestHandler):
             or (data.get("token") if isinstance(data, dict) else None)
             or ""
         ).strip().lower()
+
+        if not PASS_HASH:
+            return self._json_response(
+                500,
+                {"ok": False, "error": "Не задана переменная CMS_PASSWORD_HASH"},
+            )
 
         if token != PASS_HASH:
             return self._json_response(401, {"ok": False, "error": "Нет доступа"})

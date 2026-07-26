@@ -23,3 +23,13 @@
   to = "/api/lead"
   status = 200
   force = true
+
+# Контент админки хранится не в файле, а в хранилище Netlify: файл в папке site
+# сервер перезаписать не может. Прежний адрес сохранён, чтобы код админки и
+# страницы читал контент как раньше; force = true нужен, иначе статический файл
+# site/assets/content.json перекрыл бы функцию.
+[[redirects]]
+  from = "/assets/content.json"
+  to = "/api/cms/content"
+  status = 200
+  force = true
