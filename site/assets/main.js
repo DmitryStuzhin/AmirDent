@@ -135,17 +135,6 @@
   });});
   applyPrice();
 
-  // Пункты меню «Услуги» ведут на страницы направлений. Здесь только
-  // сопутствующее: закрыть мобильное меню и выставить фильтр в каталоге,
-  // чтобы возврат на главную показывал выбранное направление.
-  document.querySelectorAll('[data-nav-cat]').forEach(function(link){
-    link.addEventListener('click',function(){
-      selectCat(link.getAttribute('data-nav-cat'));
-      if(nav)nav.classList.remove('open');
-      if(burger)burger.classList.remove('active');
-    });
-  });
-
   // video reels lightbox
   var lb=document.getElementById('lb'), lbInner=document.getElementById('lbInner');
   function embed(url){

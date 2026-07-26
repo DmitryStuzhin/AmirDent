@@ -1,26 +1,29 @@
-/* Страница направления: /uslugi/<направление> или service.html?dir=<код> */
+/* Страница услуги: /uslugi/<адрес> или service.html?s=<адрес>.
+   Описание, врачи и группа берутся из assets/services-data.js, цены — из
+   прайс-листа, чтобы не держать их в двух местах. */
 (function(){
-  // Единственное место, где заданы адреса направлений. Названия, описания и врачи
-  // не дублируются: они берутся с главной страницы, из карточек направлений.
-  var SLUGS={
-    'ortodontiya':'ortho',
-    'terapiya':'therapy',
-    'gigiena':'hygiene',
-    'parodontologiya':'paro',
-    'hirurgiya':'surgery',
-    'implantaciya':'implant',
-    'protezirovanie':'prosth',
-    'detskaya':'kids'
-  };
-  function slugOf(cat){
-    for(var slug in SLUGS) if(SLUGS[slug]===cat) return slug;
-    return '';
+  var data=window.AMIR_SERVICES;
+  function el(id){ return document.getElementById(id); }
+  var note=el('dirNote');
+
+  function fail(msg){
+    if(note){ note.hidden=false; note.textContent=msg; }
   }
-  function currentCat(){
-    var byQuery=new URLSearchParams(location.search).get('dir');
-    if(byQuery) return byQuery;
-    var last=location.pathname.replace(/\/+$/,'').split('/').pop().replace(/\.html$/,'');
-    return SLUGS[last]||'';
+  if(!data){ fail('Не удалось загрузить список услуг.'); return; }
+
+  function slugFromUrl(){
+    var q=new URLSearchParams(location.search).get('s');
+    if(q) return q;
+    return location.pathname.replace(/\/+$/,'').split('/').pop().replace(/\.html$/,'');
+  }
+  function findService(slug){
+    for(var g=0;g<data.groups.length;g++){
+      var items=data.groups[g].items;
+      for(var i=0;i<items.length;i++){
+        if(items[i].slug===slug) return { item:items[i], group:data.groups[g] };
+      }
+    }
+    return null;
   }
   function plural(n){
     var d=n%10, dd=n%100;
@@ -28,108 +31,135 @@
     if(d>=2&&d<=4&&(dd<12||dd>14)) return 'услуги';
     return 'услуг';
   }
-  function el(id){ return document.getElementById(id); }
 
-  var cat=currentCat();
-  var note=el('dirNote');
+  var slug=slugFromUrl();
+  var found=findService(slug);
+  if(!found){
+    fail('Такой услуги нет. Откройте прайс-лист, чтобы выбрать нужную.');
+    return;
+  }
+  var item=found.item, group=found.group;
 
-  function fail(msg){
-    if(note) note.textContent=msg;
+  // ---- текст и врачи ----
+  document.title=item.title+' — цена и запись · АмирДент';
+  var meta=document.querySelector('meta[name="description"]');
+  if(meta) meta.setAttribute('content', item.desc);
+
+  el('dirTitle').textContent=item.title;
+  el('dirDesc').textContent=item.desc;
+  el('dirCrumb').textContent=item.title;
+  el('dirGroup').innerHTML='<span class="dot"></span>'+group.title;
+
+  var docs=(item.doctors||[]).map(function(id){ return data.doctors[id]; }).filter(Boolean);
+  if(docs.length){
+    var main=docs[0];
+    el('dirDocImg').src=main.photo;
+    el('dirDocImg').alt=main.name;
+    el('dirDocRole').textContent=main.role;
+    el('dirDocName').textContent=main.name;
+    el('dirDocExp').textContent=main.exp||'';
+    el('dirDoc').hidden=false;
+  } else {
+    // Врача по услуге пока нет — вместо пустого места контакты и запись
+    el('dirInfo').hidden=false;
+    var hero=document.querySelector('.dp-hero');
+    if(hero) hero.classList.add('dp-hero-info');
+  }
+  if(docs.length>1){
+    var team=el('dirTeam');
+    docs.forEach(function(d){
+      var card=document.createElement('article');
+      card.className='dp-team-card';
+      card.innerHTML='<div class="dp-team-photo"><img src="'+d.photo+'" alt="'+d.name+'"></div>'+
+        '<div class="dp-team-role">'+d.role+'</div>'+
+        '<h3>'+d.name+'</h3>'+
+        '<p>'+(d.exp||'')+'</p>';
+      team.appendChild(card);
+    });
+    el('dirTeamWrap').hidden=false;
   }
 
-  if(!cat){
-    fail('Направление не указано. Откройте каталог услуг на главной странице.');
+  // ---- другие услуги направления ----
+  var other=el('dirOther');
+  group.items.forEach(function(other_item){
+    if(other_item.slug===item.slug) return;
+    var a=document.createElement('a');
+    a.className='dp-other-item';
+    a.href='/uslugi/'+other_item.slug;
+    a.textContent=other_item.title;
+    other.appendChild(a);
+  });
+
+  // ---- цены ----
+  if(!item.match){
+    // Косметология в прайс-лист пока не заведена — цену называет администратор
+    el('dirPrices').hidden=true;
     return;
   }
 
-  // Каталог и описания живут на главной. Забираем их оттуда, чтобы цены и тексты
-  // правились в одном месте, а не копировались на восемь страниц.
-  fetch('/index.html', {cache:'no-cache'})
+  function matches(row){
+    var name=(row.getAttribute('data-name')||row.textContent||'').toLowerCase();
+    if(item.match.cat && (row.getAttribute('data-cat')||'')!==item.match.cat) return false;
+    if(!item.match.words) return true;
+    for(var i=0;i<item.match.words.length;i++){
+      if(name.indexOf(item.match.words[i])>-1) return true;
+    }
+    return false;
+  }
+
+  function fillRows(rows){
+    var list=el('dirList');
+    if(!list) return false;
+    var picked=Array.prototype.filter.call(rows, matches);
+    if(!picked.length) return false;
+    list.innerHTML='';
+    picked.forEach(function(r){
+      var row=r.cloneNode(true);
+      row.style.display='';
+      list.appendChild(row);
+    });
+    var count=el('dirCount');
+    if(count) count.textContent=picked.length+' '+plural(picked.length);
+    if(note) note.hidden=true;
+    return true;
+  }
+
+  fetch('/prices.html',{cache:'no-cache'})
     .then(function(r){
-      if(!r.ok) throw new Error('index '+r.status);
+      if(!r.ok) throw new Error('prices '+r.status);
       return r.text();
     })
     .then(function(html){
       var doc=new DOMParser().parseFromString(html,'text/html');
-      var card=doc.querySelector('.dir[data-dir="'+cat+'"]');
-      if(!card) throw new Error('нет такого направления');
-      render(card, doc);
-      // Правки из админки хранятся отдельно — если они есть, цены берём из них
+      var ok=fillRows(doc.querySelectorAll('.price-list .prow'));
+      if(!ok) fail('Цены по этой услуге назовёт администратор — оставьте заявку или позвоните.');
+      // Правки из админки лежат отдельно: если они есть, показываем их
       return fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
         .then(function(r){ return r.ok?r.json():null; })
         .then(function(saved){
           if(!saved||typeof saved.priceHtml!=='string') return;
           var box=document.createElement('div');
           box.innerHTML=saved.priceHtml;
-          var rows=box.querySelectorAll('.prow[data-cat="'+cat+'"]');
-          if(rows.length) fillRows(rows);
+          fillRows(box.querySelectorAll('.prow'));
         })
         .catch(function(){});
     })
     .catch(function(){
-      fail('Не удалось загрузить услуги направления. Откройте каталог на главной странице.');
+      fail('Не удалось загрузить цены. Позвоните нам или оставьте заявку — подскажем стоимость.');
     });
 
-  function fillRows(rows){
-    var list=el('dirList');
-    if(!list) return;
-    list.innerHTML='';
-    Array.prototype.forEach.call(rows,function(r){
-      var row=r.cloneNode(true);
-      row.style.display='';
-      list.appendChild(row);
-    });
-    var count=el('dirCount');
-    if(count) count.textContent=rows.length+' '+plural(rows.length);
-    if(note) note.hidden=true;
-  }
-
-  function render(card, doc){
-    var name=card.querySelector('.dir-name').textContent.trim();
-    var desc=card.querySelector('.dir-desc').textContent.trim();
-
-    document.title=name+' — цены и запись · АмирДент';
-    var meta=document.querySelector('meta[name="description"]');
-    if(meta) meta.setAttribute('content', desc);
-
-    el('dirTitle').textContent=name;
-    el('dirDesc').textContent=desc;
-    el('dirCrumb').textContent=name;
-
-    var docName=card.getAttribute('data-doc-name');
-    if(docName){
-      var box=el('dirDoc');
-      el('dirDocName').textContent=docName;
-      el('dirDocRole').textContent=card.getAttribute('data-doc-role')||'';
-      var img=box.querySelector('img');
-      img.src=card.getAttribute('data-doc-photo')||'';
-      img.alt=docName;
-      box.hidden=false;
+  // заявка с этой страницы уходит с названием услуги
+  var form=document.getElementById('booking');
+  if(form&&form.service){
+    var opts=Array.prototype.slice.call(form.service.options), set=false;
+    for(var i=0;i<opts.length;i++){
+      if(opts[i].text===group.title){ form.service.value=opts[i].text; set=true; break; }
     }
-
-    fillRows(doc.querySelectorAll('.price-list .prow[data-cat="'+cat+'"]'));
-
-    // Заявка с этой страницы должна уходить с нужным направлением
-    var form=document.getElementById('booking');
-    if(form&&form.service){
-      var opts=Array.prototype.slice.call(form.service.options);
-      for(var i=0;i<opts.length;i++){
-        if(opts[i].text===name){ form.service.value=opts[i].text; break; }
-      }
-    }
-
-    // Остальные направления — ссылками, чтобы не возвращаться на главную
-    var other=el('dirOther');
-    if(other){
-      Array.prototype.forEach.call(doc.querySelectorAll('.dir'),function(c){
-        var otherCat=c.getAttribute('data-dir');
-        if(otherCat===cat) return;
-        var a=document.createElement('a');
-        a.className='dp-other-item';
-        a.href='/uslugi/'+slugOf(otherCat);
-        a.textContent=c.querySelector('.dir-name').textContent.trim();
-        other.appendChild(a);
-      });
+    if(!set){
+      var extra=document.createElement('option');
+      extra.text=item.title;
+      form.service.add(extra);
+      form.service.value=item.title;
     }
   }
 })();
