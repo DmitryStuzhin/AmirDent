@@ -79,11 +79,36 @@
   if(lb){ lb.addEventListener('click',function(e){ if(e.target===lb||e.target.classList.contains('lb-close')) closeLb(); });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLb(); }); }
 
-  // booking -> Telegram (через Worker)
+  // booking -> Telegram (через api/lead.php)
   var form=document.getElementById('booking');
   if(form){
     var btn=form.querySelector('button[type=submit]');
     var note=document.getElementById('bookingNote');
+    var phoneField=form.phone;
+
+    // 10 цифр номера без кода страны: «8 926…», «+7 926…» и «926…» дают одно и то же
+    function phoneDigits(v){
+      var d=(v||'').replace(/\D/g,'');
+      if(d.charAt(0)==='7'||d.charAt(0)==='8')d=d.slice(1);
+      return d.slice(0,10);
+    }
+    function phoneFormat(v){
+      var d=phoneDigits(v),out='+7';
+      if(d.length)out+=' ('+d.slice(0,3);
+      if(d.length>3)out+=') '+d.slice(3,6);
+      if(d.length>6)out+='-'+d.slice(6,8);
+      if(d.length>8)out+='-'+d.slice(8,10);
+      return out;
+    }
+    if(phoneField){
+      phoneField.value='+7 ';
+      phoneField.addEventListener('input',function(){
+        phoneField.value=phoneDigits(phoneField.value)?phoneFormat(phoneField.value):'+7 ';
+      });
+      phoneField.addEventListener('focus',function(){
+        if(!phoneDigits(phoneField.value))phoneField.value='+7 ';
+      });
+    }
     function whatsappLink(name,phone,service){
       var t='Здравствуйте! Хочу записаться в АмирДент.%0AИмя: '+encodeURIComponent(name)+'%0AТелефон: '+encodeURIComponent(phone);
       if(service)t+='%0AУслуга: '+encodeURIComponent(service);
@@ -101,8 +126,18 @@
       note.classList.add('err');
     }
     form.addEventListener('submit',function(ev){ev.preventDefault();
-      var name=(form.name.value||'').trim(),phone=(form.phone.value||'').trim(),service=form.service?form.service.value:'';
-      if(!name||!phone)return;
+      var name=(form.name.value||'').trim(),service=form.service?form.service.value:'';
+      var digits=phoneDigits(form.phone.value),phone=phoneFormat(form.phone.value);
+      if(name.length<2){
+        say('Укажите, как к вам обращаться.',true);
+        form.name.focus();
+        return;
+      }
+      if(digits.length<10){
+        say('Введите номер полностью: +7 и 10 цифр.',true);
+        if(phoneField)phoneField.focus();
+        return;
+      }
       // если адрес не задан — прежнее поведение: переход в WhatsApp
       if(!LEAD_ENDPOINT){window.open(whatsappLink(name,phone,service),'_blank');form.reset();return;}
       if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
