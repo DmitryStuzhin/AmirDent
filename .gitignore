@@ -1,4 +1,6 @@
 .DS_Store
 node_modules/
 api/config.php
+api/config.local.json
 api/leads-failed.log
+api/leads-local.log
