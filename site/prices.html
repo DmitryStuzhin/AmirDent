@@ -68,6 +68,11 @@
       <p>Все услуги по направлениям. Первичный осмотр и план лечения — 0 ₽.</p>
     </div>
 <div class="price-tools reveal">
+      <div class="price-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="priceSearch" type="search" autocomplete="off" placeholder="Поиск услуги — например, «брекеты» или «имплант»">
+        <button class="price-search-clear" type="button" aria-label="Очистить поиск" hidden>&times;</button>
+      </div>
       <div class="price-filters">
         <button class="pf active" data-cat="all">Все</button>
         <button class="pf" data-cat="ortho">Ортодонтия</button>
@@ -80,7 +85,11 @@
         <button class="pf" data-cat="kids">Детская</button>
       </div>
     </div>
-    <div class="price-list">
+    <div class="price-suggest" id="priceSuggest" hidden>
+        <span class="price-suggest-label">Похожие услуги:</span>
+        <span class="price-suggest-items"></span>
+      </div>
+      <div class="price-list">
 <div class="prow" data-cat="ortho" data-name="трейнер для брекетов"><span class="pn">Трейнер для брекетов</span><span class="ptag">Ортодонтия</span><span class="pp">10 000 ₽</span></div>
 <div class="prow" data-cat="ortho" data-name="трейнеры i 2. курс лечения 12 месяцев."><span class="pn">Трейнеры i 2. Курс лечения 12 месяцев.</span><span class="ptag">Ортодонтия</span><span class="pp">17 500 ₽</span></div>
 <div class="prow" data-cat="ortho" data-name="трейнеры i 3. курс лечения 12 месяцев."><span class="pn">Трейнеры i 3. Курс лечения 12 месяцев.</span><span class="ptag">Ортодонтия</span><span class="pp">15 000 ₽</span></div>

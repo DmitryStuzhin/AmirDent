@@ -237,6 +237,17 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 .dirs-more{margin-top:34px;text-align:center}
 .dirs-note{margin-top:14px;font-size:14px;color:var(--muted)}
 
+.price-suggest{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:18px;font-size:14px}
+.price-suggest[hidden]{display:none}
+.price-suggest-label{color:var(--muted)}
+.price-suggest-items{display:flex;flex-wrap:wrap;gap:8px}
+.price-suggest-item{display:inline-flex;padding:8px 15px;border-radius:100px;background:var(--paper);border:1.5px solid var(--gold);color:var(--gold-deep);text-decoration:none;font-weight:600;transition:.2s var(--ease)}
+.price-suggest-item:hover{background:var(--gold);color:#fff}
+.price-search-clear{position:absolute;top:50%;right:14px;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:50%;background:var(--cream);color:var(--muted);font-size:20px;line-height:1;cursor:pointer}
+.price-search-clear:hover{background:var(--gold);color:#fff}
+.price-search-clear[hidden]{display:none}
+.price-search input::-webkit-search-cancel-button{display:none}
+
 /* ---------- Группы услуг в прайсе ---------- */
 /* Направление написано в заголовке группы — метка в каждой строке лишняя */
 .price-list .prow .ptag{display:none}
