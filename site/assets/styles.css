@@ -198,13 +198,28 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 
 /* ---------- Steps (flowing line) ---------- */
 .steps{position:relative}
-.steps-line{position:absolute;left:0;right:0;top:52px;height:2px;background:repeating-linear-gradient(90deg,var(--gold) 0,var(--gold) 10px,transparent 10px,transparent 20px);opacity:.5;z-index:0}
+.steps-line{display:none}
 .steps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;position:relative;z-index:1;counter-reset:s}
-.step{background:var(--paper);border-radius:var(--r);padding:28px 22px;box-shadow:var(--shadow-sm);transition:transform .4s var(--ease),box-shadow .4s}
-.step:hover{transform:translateY(-8px);box-shadow:var(--shadow-md)}
-.step .num{counter-increment:s;font-family:var(--head);font-weight:800;font-size:42px;color:transparent;-webkit-text-stroke:1.5px var(--gold);line-height:1;margin-bottom:16px}
-.step .num::before{content:"0" counter(s)}
-.step:hover .num{color:var(--gold);-webkit-text-stroke:0}
+.step{position:relative;background:var(--paper);border-radius:var(--r);padding:28px 22px;box-shadow:var(--shadow-sm);transition:transform .4s var(--ease),box-shadow .4s,opacity .5s var(--ease)}
+.step:hover{box-shadow:var(--shadow-md)}
+/* Отрезок до следующего этапа: серый след и золотая заливка поверх него */
+.step::before,.step::after{content:"";position:absolute;top:55px;left:78px;right:-18px;height:2px;border-radius:2px}
+.step::before{background:var(--line)}
+.step::after{background:linear-gradient(90deg,var(--gold),var(--gold-deep));transform:scaleX(0);transform-origin:left;transition:transform .55s var(--ease)}
+.step:last-child::before,.step:last-child::after{display:none}
+.step .num{counter-increment:s;display:grid;place-items:center;width:54px;height:54px;border-radius:50%;background:var(--cream);border:2px solid var(--line);
+  font-family:var(--head);font-weight:800;font-size:21px;color:var(--muted);line-height:1;margin-bottom:18px;
+  transition:background .45s var(--ease),border-color .45s var(--ease),color .45s var(--ease),transform .45s var(--ease)}
+.step .num::before{content:counter(s)}
+/* Поэтапное появление: пройденные этапы яркие, следующие приглушены */
+.steps-grid.steps-run .step{opacity:.45;transform:translateY(10px)}
+.steps-grid.steps-run .step.is-on{opacity:1;transform:none}
+.steps-grid.steps-run .step.is-on:hover{transform:translateY(-8px)}
+.steps-grid.steps-run .step.is-on::after{transform:scaleX(1)}
+.steps-grid.steps-run .step.is-on .num{background:linear-gradient(135deg,var(--gold-bright),var(--gold));border-color:transparent;color:#fff;transform:scale(1.06)}
+.steps-grid.steps-done .step{opacity:1;transform:none}
+.steps-grid.steps-done .step .num{background:linear-gradient(135deg,var(--gold-bright),var(--gold));border-color:transparent;color:#fff}
+.steps-grid.steps-done .step::after{transform:scaleX(1)}
 .step h3{font-size:18px;margin-bottom:8px}
 .step p{font-size:14px;color:var(--muted)}
 
@@ -513,7 +528,8 @@ html:not(.js) .reveal{opacity:1;transform:none}
 /* ---------- Responsive ---------- */
 @media(max-width:1024px){
   .why-grid,.rev-grid{grid-template-columns:repeat(2,1fr)}
-  .steps-grid{grid-template-columns:repeat(2,1fr)}.steps-line{display:none}
+  .steps-grid{grid-template-columns:repeat(2,1fr)}
+  .step::before,.step::after{display:none}
   .doc-grid{grid-template-columns:repeat(2,1fr)}
   .stats-grid{grid-template-columns:repeat(2,1fr);row-gap:34px}.stat:nth-child(odd)+.stat::before,.stat+.stat::before{display:none}
   .ftr-grid{grid-template-columns:1fr 1fr}
