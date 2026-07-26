@@ -1,4 +1,7 @@
 (function(){
+  // адрес Worker'а, который пересылает заявки в Telegram (см. worker/README.md)
+  var LEAD_ENDPOINT='';
+
   // sticky header shrink
   var hdr=document.querySelector('.hdr');
   window.addEventListener('scroll',function(){
@@ -76,15 +79,45 @@
   if(lb){ lb.addEventListener('click',function(e){ if(e.target===lb||e.target.classList.contains('lb-close')) closeLb(); });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLb(); }); }
 
-  // booking -> WhatsApp
+  // booking -> Telegram (через Worker)
   var form=document.getElementById('booking');
-  if(form){form.addEventListener('submit',function(ev){ev.preventDefault();
-    var name=(form.name.value||'').trim(),phone=(form.phone.value||'').trim(),service=form.service?form.service.value:'';
-    if(!name||!phone)return;
-    var t='Здравствуйте! Хочу записаться в АмирДент.%0AИмя: '+encodeURIComponent(name)+'%0AТелефон: '+encodeURIComponent(phone);
-    if(service)t+='%0AУслуга: '+encodeURIComponent(service);
-    window.open('https://wa.me/79262031828?text='+t,'_blank');
-    var b=form.querySelector('button[type=submit]');if(b){b.textContent='Заявка отправлена ✓';setTimeout(function(){b.textContent='Записаться на приём';},3000);}
-    form.reset();
-  });}
+  if(form){
+    var btn=form.querySelector('button[type=submit]');
+    var note=document.getElementById('bookingNote');
+    function whatsappLink(name,phone,service){
+      var t='Здравствуйте! Хочу записаться в АмирДент.%0AИмя: '+encodeURIComponent(name)+'%0AТелефон: '+encodeURIComponent(phone);
+      if(service)t+='%0AУслуга: '+encodeURIComponent(service);
+      return 'https://wa.me/79262031828?text='+t;
+    }
+    function say(msg,bad){if(note){note.textContent=msg;note.classList.toggle('err',!!bad);}}
+    function sayFailed(name,phone,service){
+      if(!note)return;
+      note.textContent='Не удалось отправить заявку. ';
+      var a=document.createElement('a');
+      a.href=whatsappLink(name,phone,service);a.target='_blank';a.rel='noopener';
+      a.textContent='Напишите нам в WhatsApp';
+      note.appendChild(a);
+      note.appendChild(document.createTextNode(' или позвоните +7 (926) 203-18-28.'));
+      note.classList.add('err');
+    }
+    form.addEventListener('submit',function(ev){ev.preventDefault();
+      var name=(form.name.value||'').trim(),phone=(form.phone.value||'').trim(),service=form.service?form.service.value:'';
+      if(!name||!phone)return;
+      // пока Worker не задеплоен — прежнее поведение: переход в WhatsApp
+      if(!LEAD_ENDPOINT){window.open(whatsappLink(name,phone,service),'_blank');form.reset();return;}
+      if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
+      say('');
+      fetch(LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:name,phone:phone,service:service,company:form.company?form.company.value:'',page:location.href})})
+        .then(function(r){if(!r.ok)throw new Error(r.status);
+          say('Заявка принята — администратор перезвонит в течение 15 минут.');
+          if(btn)btn.textContent='Заявка отправлена ✓';
+          form.reset();
+        })
+        .catch(function(){ sayFailed(name,phone,service); })
+        .finally(function(){
+          if(btn){btn.disabled=false;setTimeout(function(){btn.textContent='Записаться на приём';},4000);}
+        });
+    });
+  }
 })();

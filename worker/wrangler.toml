@@ -1,0 +1,10 @@
+name = "amirdent-lead"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://amirdent.ru,https://www.amirdent.ru"
+
+# BOT_TOKEN и CHAT_ID задаются секретами, а не здесь:
+#   wrangler secret put BOT_TOKEN
+#   wrangler secret put CHAT_ID
