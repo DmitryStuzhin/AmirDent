@@ -6,7 +6,9 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 
-function reply(int $status, array $body): never {
+// Без типа never в объявлении: он появился только в PHP 8.1, а на хостинге
+// нередко стоит версия постарее — тогда файл не разбирается вообще.
+function reply(int $status, array $body) {
     http_response_code($status);
     echo json_encode($body, JSON_UNESCAPED_UNICODE);
     exit;

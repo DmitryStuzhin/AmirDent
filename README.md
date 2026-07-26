@@ -14,7 +14,7 @@ cd AmirDent
 
 Открыть <http://localhost:8123>. Остановить — `Ctrl+C`.
 
-Нужен PHP 8.0 и новее (`brew install php` на Mac) — он обслуживает отправку
+Нужен PHP 7.4 и новее (`brew install php` на Mac) — он обслуживает отправку
 заявок. Другой порт: `PORT=9000 ./serve.sh`. На Windows вместо `./serve.sh`:
 `php -S localhost:8123 -t .`
 
