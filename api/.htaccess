@@ -1,0 +1,10 @@
+# Настройки и лог не должны открываться по прямой ссылке в браузере.
+<FilesMatch "^(config\.php|config\.example\.php)$|\.log$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

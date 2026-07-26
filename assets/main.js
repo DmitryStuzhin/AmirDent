@@ -1,6 +1,6 @@
 (function(){
-  // адрес Worker'а, который пересылает заявки в Telegram (см. worker/README.md)
-  var LEAD_ENDPOINT='';
+  // адрес скрипта, который пересылает заявки в Telegram (см. api/README.md)
+  var LEAD_ENDPOINT='/api/lead.php';
 
   // sticky header shrink
   var hdr=document.querySelector('.hdr');
@@ -103,7 +103,7 @@
     form.addEventListener('submit',function(ev){ev.preventDefault();
       var name=(form.name.value||'').trim(),phone=(form.phone.value||'').trim(),service=form.service?form.service.value:'';
       if(!name||!phone)return;
-      // пока Worker не задеплоен — прежнее поведение: переход в WhatsApp
+      // если адрес не задан — прежнее поведение: переход в WhatsApp
       if(!LEAD_ENDPOINT){window.open(whatsappLink(name,phone,service),'_blank');form.reset();return;}
       if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
       say('');
