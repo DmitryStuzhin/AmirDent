@@ -124,7 +124,56 @@
     });
     if(pempty)pempty.hidden=shown>0;
   }
-  if(psearch)psearch.addEventListener('input',applyPrice);
+  // Названия в прайсе и на страницах услуг отличаются («Система Invisalign» против
+  // «Элайнеры»), поэтому по запросу подсказываем подходящие страницы услуг.
+  var suggestBox=document.getElementById('priceSuggest');
+  function suggest(q){
+    if(!suggestBox) return;
+    var items=suggestBox.querySelector('.price-suggest-items');
+    items.innerHTML='';
+    var data=window.AMIR_SERVICES;
+    if(!data||q.length<3){ suggestBox.hidden=true; return; }
+    var found=[];
+    data.groups.forEach(function(g){
+      g.items.forEach(function(it){
+        var hay=(it.title+' '+g.title+' '+(it.desc||'')).toLowerCase();
+        if(hay.indexOf(q)>-1) found.push(it);
+      });
+    });
+    found.slice(0,6).forEach(function(it){
+      var a=document.createElement('a');
+      a.href='/uslugi/'+it.slug;
+      a.className='price-suggest-item';
+      a.textContent=it.title;
+      items.appendChild(a);
+    });
+    suggestBox.hidden=!found.length;
+  }
+
+  var pclear=document.querySelector('.price-search-clear');
+  if(psearch){
+    psearch.addEventListener('input',function(){
+      var q=psearch.value.trim();
+      // Ищем по всему прайсу: иначе запрос «брекеты» при выбранной «Гигиене»
+      // не находил бы ничего, хотя услуга в списке есть.
+      if(q && curCat!=='all'){
+        pfilters.forEach(function(b){ b.classList.toggle('active', b.dataset.cat==='all'); });
+        curCat='all';
+      }
+      if(pclear) pclear.hidden=!q;
+      suggest(q.toLowerCase());
+      applyPrice();
+    });
+  }
+  if(pclear){
+    pclear.addEventListener('click',function(){
+      psearch.value='';
+      pclear.hidden=true;
+      suggest('');
+      psearch.focus();
+      applyPrice();
+    });
+  }
   function selectCat(cat){
     pfilters.forEach(function(b){ b.classList.toggle('active', b.dataset.cat===cat); });
     curCat=cat;
@@ -134,17 +183,6 @@
     selectCat(btn.dataset.cat);
   });});
   applyPrice();
-
-  // Пункты меню «Услуги» ведут на страницы направлений. Здесь только
-  // сопутствующее: закрыть мобильное меню и выставить фильтр в каталоге,
-  // чтобы возврат на главную показывал выбранное направление.
-  document.querySelectorAll('[data-nav-cat]').forEach(function(link){
-    link.addEventListener('click',function(){
-      selectCat(link.getAttribute('data-nav-cat'));
-      if(nav)nav.classList.remove('open');
-      if(burger)burger.classList.remove('active');
-    });
-  });
 
   // video reels lightbox
   var lb=document.getElementById('lb'), lbInner=document.getElementById('lbInner');

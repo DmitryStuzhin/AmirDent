@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Услуги направления — АмирДент</title>
+<title>Услуга — АмирДент</title>
 <meta name="description" content="АмирДент — современная стоматология и ортодонтия в Москве (м. Яхромская). Брекеты, элайнеры, имплантация, лечение и отбеливание. Опытные врачи, честные цены. Бесплатная консультация.">
 <meta property="og:title" content="АмирДент — стоматология и ортодонтия в Москве">
 <meta property="og:description" content="Брекеты, элайнеры, имплантация, лечение и отбеливание. Бесплатная консультация.">
@@ -55,46 +55,98 @@
 </header>
 
 
-<!-- НАПРАВЛЕНИЕ -->
-<main class="pad" id="dirPage">
+<main id="dirPage">
+<section class="pad-sm">
   <div class="container">
     <nav class="crumbs" aria-label="Хлебные крошки">
       <a href="/">Главная</a>
       <span aria-hidden="true">/</span>
-      <a href="/#services">Услуги и цены</a>
+      <a href="/#services">Услуги</a>
       <span aria-hidden="true">/</span>
-      <span class="crumbs-now" id="dirCrumb">Направление</span>
+      <span class="crumbs-now" id="dirCrumb">Услуга</span>
     </nav>
 
-    <div class="dp-head">
-      <div>
-        <h1 id="dirTitle">Направление</h1>
+    <div class="dp-hero">
+      <div class="dp-main">
+        <span class="eyebrow" id="dirGroup"><span class="dot"></span>Направление</span>
+        <h1 id="dirTitle">Услуга</h1>
         <p class="dp-desc" id="dirDesc"></p>
         <div class="dp-actions">
-          <a href="#zapis" class="btn btn-gold">Записаться на приём</a>
+          <a href="#zapis" class="btn btn-gold btn-lg">Записаться на приём</a>
           <a href="tel:+79262031828" class="dp-phone">+7 (926) 203-18-28</a>
         </div>
+        <ul class="dp-perks">
+          <li>Первичный осмотр и план лечения — 0 ₽</li>
+          <li>Честная смета до начала лечения</li>
+          <li>Рядом с метро Яхромская</li>
+        </ul>
+        <div class="dp-facts" id="dirFacts"></div>
       </div>
+
+      <aside class="dp-info" id="dirInfo" hidden>
+        <h3>Запишитесь на консультацию</h3>
+        <p>Врач осмотрит, ответит на вопросы и назовёт стоимость до начала процедуры.</p>
+        <div class="dp-info-row"><b>Телефон</b><a href="tel:+79262031828">+7 (926) 203-18-28</a></div>
+        <div class="dp-info-row"><b>Часы работы</b><span>Ежедневно 09:00–21:00</span></div>
+        <div class="dp-info-row"><b>Адрес</b><span>Дмитровское ш., 96, корп. 5 · м. Яхромская</span></div>
+        <a class="btn btn-gold" href="#zapis">Оставить заявку</a>
+        <a class="dp-info-wa" href="https://wa.me/79262031828" target="_blank" rel="noopener">Написать в WhatsApp</a>
+      </aside>
+
       <aside class="dp-doc" id="dirDoc" hidden>
-        <div class="dp-doc-photo"><img src="" alt=""></div>
-        <div class="dp-doc-role" id="dirDocRole"></div>
-        <div class="dp-doc-name" id="dirDocName"></div>
-        <a href="/#doctors" class="dp-doc-link">Все врачи клиники</a>
+        <div class="dp-doc-photo"><img src="" alt="" id="dirDocImg"></div>
+        <div class="dp-doc-text">
+          <div class="dp-doc-role" id="dirDocRole"></div>
+          <div class="dp-doc-name" id="dirDocName"></div>
+          <p class="dp-doc-exp" id="dirDocExp"></p>
+          <a href="#zapis" class="dp-doc-btn">Записаться к врачу</a>
+        </div>
       </aside>
     </div>
+  </div>
+</section>
 
+<section class="pad-sm" id="dirTeamWrap" hidden>
+  <div class="container">
+    <h2 class="dp-h2">Врачи по этой услуге</h2>
+    <div class="dp-team" id="dirTeam"></div>
+  </div>
+</section>
+
+<section class="pad-sm cream2" id="dirPrices">
+  <div class="container">
     <div class="dp-list-head">
-      <h2>Услуги и цены</h2>
+      <h2 class="dp-h2">Услуги и цены</h2>
       <span class="dp-count" id="dirCount"></span>
     </div>
-    <div class="price-list" id="dirList"></div>
-    <p class="dp-note" id="dirNote">Загружаем услуги направления…</p>
+    <div class="dp-list-wrap">
+      <div class="price-list dp-list" id="dirList"></div>
+      <div class="dp-list-fade" id="dirFade" hidden></div>
+    </div>
+    <button class="dp-more" id="dirMore" type="button" hidden></button>
+    <p class="dp-note" id="dirNote">Загружаем цены…</p>
+    <p class="dp-all"><a href="/prices.html">Смотреть полный прайс-лист клиники</a></p>
+  </div>
+</section>
 
-    <div class="dp-other">
-      <h2>Другие направления</h2>
-      <div class="dp-other-list" id="dirOther"></div>
+<section class="pad-sm">
+  <div class="container">
+    <h2 class="dp-h2">Как проходит приём</h2>
+    <div class="dp-steps" id="dirSteps">
+      <div class="dp-step"><span class="dp-step-num">1</span><h3>Консультация</h3><p>Осмотр, снимок при необходимости и ответы на вопросы. Бесплатно.</p></div>
+      <div class="dp-step"><span class="dp-step-num">2</span><h3>План и смета</h3><p>Показываем варианты, сроки и стоимость до начала лечения.</p></div>
+      <div class="dp-step"><span class="dp-step-num">3</span><h3>Лечение</h3><p>Работаем по протоколу, с анестезией, в комфортном темпе.</p></div>
+      <div class="dp-step"><span class="dp-step-num">4</span><h3>Контроль</h3><p>Плановые визиты и наблюдение, пока результат не закрепится.</p></div>
     </div>
   </div>
+</section>
+
+<section class="pad-sm cream2">
+  <div class="container">
+    <h2 class="dp-h2">Другие услуги направления</h2>
+    <div class="dp-other-list" id="dirOther"></div>
+  </div>
+</section>
 </main>
 
 <!-- CTA / FORM -->
@@ -133,7 +185,7 @@
   <div class="container">
     <div class="ftr-grid">
       <div>
-        <div class="ftr-logo"><span class="brand-mark" aria-hidden="true"></span>Амир<b>Дент</b></div>
+        <div class="ftr-logo"><span class="brand-mark" aria-hidden="true"></span><span>Амир<b>Дент</b></span></div>
         <p class="ftr-about">Современная стоматология и ортодонтия на Яхромской. Заботимся о здоровье вашей улыбки с вниманием к каждой детали.</p>
       </div>
       <div><h4>Навигация</h4><a href="/#services">Услуги</a><a href="/#doctors">Врачи</a><a href="/#about">О нас</a><a href="/#reviews">Отзывы</a><a href="#zapis">Записаться</a></div>
@@ -146,7 +198,10 @@
 
 <a class="wa-float" href="https://wa.me/79262031828" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.5-.3.3c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.7-.9c.2-.3.4-.2.7-.1l2 .9c.3.2.5.2.5.4.1.1.1.7-.1 1.4Z"/></svg></a>
 
+<script src="/assets/services-data.js"></script>
+<script src="/assets/menu.js"></script>
 <script src="/assets/main.js"></script>
 <script src="/assets/service.js"></script>
+<script src="/assets/steps.js"></script>
 </body>
 </html>
