@@ -39,6 +39,16 @@ export default async (request) => {
     );
     return json({ error: 'not_configured' }, 500);
   }
+  // Токен от @BotFather выглядит так: 1234567890:AA... Отдельная проверка нужна,
+  // чтобы случайно записанное в переменную значение не выглядело как «Telegram
+  // недоступен»: на неверный токен Telegram отвечает тем же 404, что и на сбой.
+  if (!/^\d{6,}:[\w-]{30,}$/.test(botToken.trim())) {
+    console.error(
+      'lead: BOT_TOKEN не похож на токен от @BotFather ' +
+        `(длина ${botToken.length}) — проверьте значение переменной в настройках Netlify`
+    );
+    return json({ error: 'bad_token' }, 500);
+  }
 
   let payload;
   try {
