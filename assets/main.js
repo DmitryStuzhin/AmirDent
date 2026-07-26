@@ -1,6 +1,6 @@
 (function(){
-  // адрес скрипта, который пересылает заявки в Telegram (см. api/README.md)
-  var LEAD_ENDPOINT='/api/lead.php';
+  // адрес, по которому принимаются заявки (см. netlify/functions/lead.mjs)
+  var LEAD_ENDPOINT='/api/lead';
 
   // sticky header shrink
   var hdr=document.querySelector('.hdr');

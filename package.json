@@ -1,0 +1,12 @@
+{
+  "name": "amirdent",
+  "private": true,
+  "description": "Сайт клиники АмирДент: страницы и функция приёма заявок в Telegram",
+  "scripts": {
+    "dev": "netlify dev --port 8123 --offline",
+    "deploy": "netlify deploy --prod"
+  },
+  "devDependencies": {
+    "netlify-cli": "^27.0.0"
+  }
+}

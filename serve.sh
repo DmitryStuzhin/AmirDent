@@ -7,20 +7,17 @@ cd "$(dirname "$0")"
 
 PORT="${PORT:-8123}"
 
-if ! command -v php >/dev/null 2>&1; then
-  echo "Не найден PHP — он нужен, чтобы работала отправка заявок в Telegram."
-  echo "Установить: brew install php"
-  exit 1
-fi
-
-if [ ! -f api/config.php ]; then
-  echo "Нет файла api/config.php — заявки в Telegram уходить не будут."
-  echo "Создайте его по образцу:  cp api/config.example.php api/config.php"
-  echo "и впишите токен бота и chat_id (подробности в api/README.md)."
+# netlify dev поднимает и страницы, и функцию приёма заявок — то же, что на сайте
+if [ -x node_modules/.bin/netlify ] || command -v npx >/dev/null 2>&1; then
+  echo "Сайт: http://localhost:$PORT   (страницы + приём заявок)"
+  echo "Остановить: Ctrl+C"
   echo ""
+  exec npx netlify dev --port "$PORT" --offline
 fi
 
-echo "Сайт: http://localhost:$PORT"
-echo "Остановить: Ctrl+C"
+echo "Не найден Node.js — без него не запустить функцию приёма заявок."
+echo "Установить: https://nodejs.org (нужна версия 20.12.2 или новее)"
 echo ""
-exec php -S "localhost:$PORT" -t .
+echo "Посмотреть только вёрстку, без отправки заявок, можно так:"
+echo "  python3 -m http.server $PORT"
+exit 1

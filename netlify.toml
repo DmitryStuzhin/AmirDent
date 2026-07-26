@@ -1,0 +1,24 @@
+# Сайт — обычные файлы из корня, приём заявок — функция netlify/functions/lead.mjs.
+#
+# Функция сама объявляет адрес /api/lead, но правила ниже задают его ещё и здесь:
+# так адрес работает независимо от версии среды выполнения Netlify. status = 200
+# означает подмену адреса без перенаправления браузера, поэтому тело POST-запроса
+# доходит до функции целиком.
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/lead"
+  to = "/.netlify/functions/lead"
+  status = 200
+  force = true
+
+# Прежний адрес: у посетителей, открывших сайт до обновления, в кэше остался
+# старый assets/main.js, который отправляет заявки сюда.
+[[redirects]]
+  from = "/api/lead.php"
+  to = "/.netlify/functions/lead"
+  status = 200
+  force = true
