@@ -67,10 +67,32 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 .brand-mark{width:52px;height:52px;flex:none;background:url('https://static.tildacdn.com/tild6330-6136-4335-a362-653732653237/996d2dad-bf34-43dc-9.png') no-repeat left center;background-size:auto 100%}
 .logo b{color:var(--gold-deep)}
 .nav{display:flex;align-items:center;gap:4px}
-.nav a{font-family:var(--head);font-weight:600;font-size:15px;padding:10px 15px;border-radius:100px;transition:.25s;position:relative}
-.nav a::after{content:"";position:absolute;left:15px;right:15px;bottom:6px;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .28s var(--ease)}
-.nav a:hover::after,.nav a.active::after{transform:scaleX(1)}
+.nav>a,.nav-drop>a{font-family:var(--head);font-weight:600;font-size:15px;padding:10px 15px;border-radius:100px;transition:.25s;position:relative;display:inline-block}
+.nav>a::after,.nav-drop>a::after{content:"";position:absolute;left:15px;right:15px;bottom:6px;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .28s var(--ease)}
+.nav>a:hover::after,.nav>a.active::after,.nav-drop:hover>a::after{transform:scaleX(1)}
+.nav-drop{position:relative}
+.nav-menu{
+  position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%) translateY(6px);
+  min-width:220px;padding:10px;border-radius:16px;
+  background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow-md);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .2s var(--ease),transform .2s var(--ease),visibility .2s;
+  z-index:120;
+}
+.nav-menu::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}
+.nav-drop:hover .nav-menu,.nav-drop:focus-within .nav-menu{
+  opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0);
+}
+.nav-menu a{
+  display:block;padding:11px 14px;border-radius:11px;
+  font-family:var(--body);font-weight:600;font-size:14px;color:var(--text);
+  white-space:nowrap;transition:background .2s,color .2s;
+}
+.nav-menu a:hover{background:var(--cream);color:var(--ink)}
+.nav-menu a::after{display:none}
 .hdr-cta{display:flex;align-items:center;gap:14px}
+.hdr-cta .btn{padding:12px 22px;font-size:13.5px;box-shadow:0 8px 20px rgba(143,118,71,.32)}
+.hdr-cta .btn:hover{box-shadow:0 12px 26px rgba(143,118,71,.45)}
 .wa-ic{width:44px;height:44px;border-radius:50%;background:#25D366;display:grid;place-items:center;color:#fff;flex:none;transition:transform .3s}
 .wa-ic:hover{transform:scale(1.08)}
 .wa-ic svg{width:24px;height:24px}
@@ -277,8 +299,33 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 .form .s{color:var(--muted);font-size:14px;margin-bottom:22px}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
-.field input,.field select{width:100%;padding:15px 18px;border:1.5px solid var(--line);border-radius:13px;font-family:var(--body);font-size:15px;background:var(--cream);transition:.25s}
-.field input:focus,.field select:focus{outline:none;border-color:var(--gold);background:#fff}
+.field input{width:100%;padding:15px 18px;border:1.5px solid var(--line);border-radius:13px;font-family:var(--body);font-size:15px;background:var(--cream);transition:.25s}
+.field input:focus{outline:none;border-color:var(--gold);background:#fff}
+.form .select-wrap{position:relative}
+.form .select-wrap::after{
+  content:"";position:absolute;right:16px;top:50%;width:10px;height:10px;
+  border-right:2px solid var(--gold-deep);border-bottom:2px solid var(--gold-deep);
+  transform:translateY(-65%) rotate(45deg);pointer-events:none;z-index:2;
+}
+.form select.form-select{
+  -webkit-appearance:none!important;-moz-appearance:none!important;appearance:none!important;
+  width:100%;padding:15px 46px 15px 18px;
+  border:1.5px solid var(--line);border-radius:13px;
+  font-family:var(--body);font-size:15px;font-weight:500;line-height:1.4;
+  color:var(--text);background:var(--cream)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  cursor:pointer;outline:none;
+  transition:border-color .25s,background .25s,box-shadow .25s,color .25s;
+}
+.form select.form-select:hover{border-color:rgba(179,154,107,.6)}
+.form select.form-select:focus{
+  border-color:var(--gold);background:#fff!important;
+  box-shadow:0 0 0 4px rgba(179,154,107,.15);
+}
+.form select.form-select:invalid,
+.form select.form-select.placeholder{color:var(--muted)}
+.form select.form-select:has(option[value=""]:checked){color:var(--muted)}
+.form select.form-select option{color:var(--text);background:#fff}
 .form .btn{width:100%;margin-top:4px}
 .form .agree{font-size:12px;color:var(--muted);margin-top:14px;text-align:center}
 .form .agree a{color:var(--gold-deep);text-decoration:underline}
@@ -286,8 +333,9 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 .form .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .form-note{font-size:13.5px;line-height:1.5;margin-top:14px;text-align:center;color:var(--gold-deep)}
 .form-note:empty{display:none}
-.form-note.err{color:#b4402f}
+.form-note.err{color:#b4402f;font-weight:600}
 .form-note a{color:inherit;text-decoration:underline;font-weight:600}
+.field input.is-invalid,.field select.is-invalid{border-color:#b4402f;box-shadow:0 0 0 4px rgba(180,64,47,.12)}
 
 /* ---------- Footer ---------- */
 .ftr{background:var(--ink);color:#fff;padding:72px 0 30px}
@@ -330,7 +378,14 @@ html:not(.js) .reveal{opacity:1;transform:none}
   .logo{font-size:21px}
   .logo .brand-mark{width:44px;height:44px}
   .nav.open{display:flex;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:var(--cream);padding:16px;gap:2px;box-shadow:var(--shadow-md);border-bottom:1px solid var(--line)}
-  .nav.open a{width:100%;padding:14px}
+  .nav.open>a,.nav.open .nav-drop>a{width:100%;padding:14px}
+  .nav.open .nav-drop{width:100%}
+  .nav.open .nav-menu{
+    position:static;transform:none;opacity:1;visibility:visible;pointer-events:auto;
+    box-shadow:none;border:none;background:transparent;padding:0 0 8px 10px;min-width:0;
+  }
+  .nav.open .nav-menu a{padding:10px 14px;font-size:14px;color:var(--muted)}
+  .nav.open .nav-menu a:hover{color:var(--ink);background:rgba(27,24,19,.04)}
   .hero-grid,.chief,.cta-grid{grid-template-columns:1fr}
   .hero-copy{padding:44px 0 10px}
   .hero-media{min-height:460px;margin-top:6px}

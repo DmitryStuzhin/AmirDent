@@ -43,11 +43,11 @@
   // price list search + filter
   var psearch=document.getElementById('priceSearch');
   var pfilters=document.querySelectorAll('.pf');
-  var prows=document.querySelectorAll('.price-list .prow');
   var pempty=document.getElementById('priceEmpty');
   var curCat='all';
   function applyPrice(){
     var q=(psearch&&psearch.value||'').trim().toLowerCase();
+    var prows=document.querySelectorAll('.price-list .prow');
     var shown=0;
     prows.forEach(function(r){
       var okCat=curCat==='all'||r.dataset.cat===curCat;
@@ -63,6 +63,19 @@
     pfilters.forEach(function(b){b.classList.remove('active');});
     btn.classList.add('active');curCat=btn.dataset.cat;applyPrice();
   });});
+
+  document.querySelectorAll('[data-nav-cat]').forEach(function(link){
+    link.addEventListener('click',function(){
+      var cat=link.getAttribute('data-nav-cat');
+      var btn=document.querySelector('.pf[data-cat="'+cat+'"]');
+      if(btn){
+        pfilters.forEach(function(b){b.classList.remove('active');});
+        btn.classList.add('active');curCat=cat;applyPrice();
+      }
+      if(nav)nav.classList.remove('open');
+      if(burger)burger.classList.remove('active');
+    });
+  });
 
   // video reels lightbox
   var lb=document.getElementById('lb'), lbInner=document.getElementById('lbInner');
@@ -86,7 +99,6 @@
     var note=document.getElementById('bookingNote');
     var phoneField=form.phone;
 
-    // 10 цифр номера без кода страны: «8 926…», «+7 926…» и «926…» дают одно и то же
     function phoneDigits(v){
       var d=(v||'').replace(/\D/g,'');
       if(d.charAt(0)==='7'||d.charAt(0)==='8')d=d.slice(1);
@@ -114,7 +126,15 @@
       if(service)t+='%0AУслуга: '+encodeURIComponent(service);
       return 'https://wa.me/79262031828?text='+t;
     }
-    function say(msg,bad){if(note){note.textContent=msg;note.classList.toggle('err',!!bad);}}
+    function say(msg,bad){
+      if(!note)return;
+      note.textContent=msg||'';
+      note.classList.toggle('err',!!bad);
+    }
+    function markInvalid(el, on){
+      if(!el)return;
+      el.classList.toggle('is-invalid',!!on);
+    }
     function sayFailed(name,phone,service){
       if(!note)return;
       note.textContent='Не удалось отправить заявку. ';
@@ -128,20 +148,23 @@
     form.addEventListener('submit',function(ev){ev.preventDefault();
       var name=(form.name.value||'').trim(),service=form.service?form.service.value:'';
       var digits=phoneDigits(form.phone.value),phone=phoneFormat(form.phone.value);
+      markInvalid(form.name,false);
+      markInvalid(phoneField,false);
       if(name.length<2){
-        say('Укажите, как к вам обращаться.',true);
+        say('Укажите имя — как к вам обращаться.',true);
+        markInvalid(form.name,true);
         form.name.focus();
         return;
       }
       if(digits.length<10){
-        say('Введите номер полностью: +7 и 10 цифр.',true);
+        say('Введите телефон полностью: +7 и 10 цифр, например +7 (926) 203-18-28.',true);
+        markInvalid(phoneField,true);
         if(phoneField)phoneField.focus();
         return;
       }
-      // если адрес не задан — прежнее поведение: переход в WhatsApp
-      if(!LEAD_ENDPOINT){window.open(whatsappLink(name,phone,service),'_blank');form.reset();return;}
+      if(!LEAD_ENDPOINT){window.open(whatsappLink(name,phone,service),'_blank');form.reset();if(phoneField)phoneField.value='+7 ';return;}
       if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
-      say('');
+      say('Отправляем заявку…',false);
       fetch(LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({name:name,phone:phone,service:service,company:form.company?form.company.value:'',page:location.href})})
         // «Заявка принята» только если lead.php подтвердил отправку своим {"ok":true}.
@@ -153,9 +176,10 @@
           if(!r.ok||!data||data.ok!==true)throw new Error('lead_failed '+r.status);
         });})
         .then(function(){
-          say('Заявка принята — администратор перезвонит в течение 15 минут.');
+          say('Заявка принята — администратор перезвонит в течение 15 минут.',false);
           if(btn)btn.textContent='Заявка отправлена ✓';
           form.reset();
+          if(phoneField)phoneField.value='+7 ';
         })
         .catch(function(){ sayFailed(name,phone,service); })
         .finally(function(){

@@ -3,3 +3,7 @@ node_modules/
 .netlify
 deno.lock
 .env
+api/config.php
+api/config.local.json
+api/leads-failed.log
+api/leads-local.log
