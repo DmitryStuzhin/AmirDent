@@ -90,10 +90,38 @@
     other.appendChild(a);
   });
 
+  // ---- факты рядом с описанием: заполняют место и полезны сами по себе ----
+  function money(n){ return n.toLocaleString('ru-RU')+' ₽'; }
+  function renderFacts(rows){
+    var box=el('dirFacts');
+    if(!box) return;
+    var facts=[];
+    if(rows&&rows.length){
+      var prices=Array.prototype.map.call(rows,function(r){
+        var t=(r.querySelector('.pp')||{}).textContent||'';
+        return parseInt(t.replace(/[^0-9]/g,''),10);
+      }).filter(function(n){ return n>0; });
+      if(prices.length) facts.push({ v:'от '+money(Math.min.apply(null,prices)), k:'стоимость' });
+      facts.push({ v:rows.length, k:'услуг в направлении' });
+    }
+    if(docs.length>1) facts.push({ v:docs.length, k:'врача по услуге' });
+    else facts.push({ v:'09:00–21:00', k:'приём ежедневно' });
+    facts.push({ v:'0 ₽', k:'первичный осмотр' });
+
+    box.innerHTML='';
+    facts.slice(0,4).forEach(function(f){
+      var cell=document.createElement('div');
+      cell.className='dp-fact';
+      cell.innerHTML='<b>'+f.v+'</b><span>'+f.k+'</span>';
+      box.appendChild(cell);
+    });
+  }
+
   // ---- цены ----
   if(!item.match){
     // Косметология в прайс-лист пока не заведена — цену называет администратор
     el('dirPrices').hidden=true;
+    renderFacts(null);
     return;
   }
 
@@ -121,7 +149,34 @@
     var count=el('dirCount');
     if(count) count.textContent=picked.length+' '+plural(picked.length);
     if(note) note.hidden=true;
+    renderFacts(picked);
+    setupCollapse(picked.length);
     return true;
+  }
+
+  // Список из сорока строк листать бессмысленно: показываем четыре, остальное по кнопке
+  var VISIBLE=4;
+  function setupCollapse(total){
+    var list=el('dirList'), btn=el('dirMore'), fade=el('dirFade');
+    if(!list||!btn) return;
+    if(total<=VISIBLE){
+      list.classList.remove('is-clamped');
+      btn.hidden=true;
+      if(fade) fade.hidden=true;
+      return;
+    }
+    var open=false;
+    function apply(){
+      list.classList.toggle('is-clamped', !open);
+      if(fade) fade.hidden=open;
+      btn.textContent=open
+        ? 'Свернуть список'
+        : 'Показать все '+total+' '+plural(total);
+      btn.setAttribute('aria-expanded', open?'true':'false');
+    }
+    btn.hidden=false;
+    btn.onclick=function(){ open=!open; apply(); };
+    apply();
   }
 
   fetch('/prices.html',{cache:'no-cache'})

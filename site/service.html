@@ -80,6 +80,7 @@
           <li>Честная смета до начала лечения</li>
           <li>Рядом с метро Яхромская</li>
         </ul>
+        <div class="dp-facts" id="dirFacts"></div>
       </div>
 
       <aside class="dp-info" id="dirInfo" hidden>
@@ -118,7 +119,11 @@
       <h2 class="dp-h2">Услуги и цены</h2>
       <span class="dp-count" id="dirCount"></span>
     </div>
-    <div class="price-list" id="dirList"></div>
+    <div class="dp-list-wrap">
+      <div class="price-list dp-list" id="dirList"></div>
+      <div class="dp-list-fade" id="dirFade" hidden></div>
+    </div>
+    <button class="dp-more" id="dirMore" type="button" hidden></button>
     <p class="dp-note" id="dirNote">Загружаем цены…</p>
     <p class="dp-all"><a href="/prices.html">Смотреть полный прайс-лист клиники</a></p>
   </div>
@@ -127,11 +132,11 @@
 <section class="pad-sm">
   <div class="container">
     <h2 class="dp-h2">Как проходит приём</h2>
-    <div class="dp-steps">
-      <div class="dp-step"><b>1</b><h3>Консультация</h3><p>Осмотр, снимок при необходимости и ответы на вопросы. Бесплатно.</p></div>
-      <div class="dp-step"><b>2</b><h3>План и смета</h3><p>Показываем варианты, сроки и стоимость до начала лечения.</p></div>
-      <div class="dp-step"><b>3</b><h3>Лечение</h3><p>Работаем по протоколу, с анестезией, в комфортном темпе.</p></div>
-      <div class="dp-step"><b>4</b><h3>Контроль</h3><p>Плановые визиты и наблюдение, пока результат не закрепится.</p></div>
+    <div class="dp-steps" id="dirSteps">
+      <div class="dp-step"><span class="dp-step-num">1</span><h3>Консультация</h3><p>Осмотр, снимок при необходимости и ответы на вопросы. Бесплатно.</p></div>
+      <div class="dp-step"><span class="dp-step-num">2</span><h3>План и смета</h3><p>Показываем варианты, сроки и стоимость до начала лечения.</p></div>
+      <div class="dp-step"><span class="dp-step-num">3</span><h3>Лечение</h3><p>Работаем по протоколу, с анестезией, в комфортном темпе.</p></div>
+      <div class="dp-step"><span class="dp-step-num">4</span><h3>Контроль</h3><p>Плановые визиты и наблюдение, пока результат не закрепится.</p></div>
     </div>
   </div>
 </section>
@@ -197,5 +202,6 @@
 <script src="/assets/menu.js"></script>
 <script src="/assets/main.js"></script>
 <script src="/assets/service.js"></script>
+<script src="/assets/steps.js"></script>
 </body>
 </html>
