@@ -1,11 +1,10 @@
 // Принимает заявку с формы записи и отправляет её ботом в Telegram.
 // Запускается на стороне Netlify, поэтому токен не попадает в код страницы.
 //
-// Токен берётся из переменных окружения Netlify (BOT_TOKEN, CHAT_ID), а если они
-// не заданы — из settings.mjs рядом. Так сайт работает сразу после развёртывания,
-// а перенести токен в настройки Netlify можно позже, ничего не меняя в коде.
-
-import settings from './settings.mjs';
+// Токен и получатель берутся только из переменных окружения BOT_TOKEN и CHAT_ID
+// (Netlify: Site configuration → Environment variables; локально — файл .env).
+// В файлах репозитория токена нет намеренно: всё, что лежит в публикуемой папке,
+// скачивается по прямой ссылке, а история git хранит содержимое навсегда.
 
 const LIMITS = { name: 80, phone: 32, service: 60, page: 200 };
 
@@ -31,10 +30,13 @@ const moscowTime = () =>
 export default async (request) => {
   if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
 
-  const botToken = process.env.BOT_TOKEN || settings.bot_token;
-  const chatId = process.env.CHAT_ID || settings.chat_id;
+  const botToken = process.env.BOT_TOKEN;
+  const chatId = process.env.CHAT_ID;
   if (!botToken || !chatId) {
-    console.error('lead: не заданы BOT_TOKEN и CHAT_ID');
+    console.error(
+      'lead: не заданы переменные окружения BOT_TOKEN и CHAT_ID — ' +
+        'задайте их в Netlify (Site configuration → Environment variables)'
+    );
     return json({ error: 'not_configured' }, 500);
   }
 
