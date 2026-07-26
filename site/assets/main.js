@@ -62,7 +62,8 @@
   // Услуги в разметке идут вперемешку, а админка при сохранении возвращает их
   // плоским списком. Поэтому группы строим из DOM при каждой загрузке, а не
   // в разметке: иначе после первой публикации из админки они бы исчезли.
-  var priceList=document.querySelector('.price-list');
+  // только каталог на главной: на странице направления свой список без групп
+  var priceList=document.querySelector('#services .price-list');
   var priceObserver=null;
   function buildGroups(){
     if(!priceList) return;
@@ -103,8 +104,9 @@
   buildGroups();
 
   function applyPrice(){
+    if(!priceList) return;
     var q=(psearch&&psearch.value||'').trim().toLowerCase();
-    var prows=document.querySelectorAll('.price-list .prow');
+    var prows=priceList?priceList.querySelectorAll('.prow'):[];
     var shown=0, perCat={};
     prows.forEach(function(r){
       var cat=r.dataset.cat||'';
@@ -133,86 +135,14 @@
   });});
   applyPrice();
 
-  // карточка направления: описание, врач, услуги с ценами и запись
-  var svc=document.getElementById('svc');
-  var lastFocus=null;
-  function bookingSelectValue(name){
-    var form=document.getElementById('booking');
-    if(!form||!form.service) return null;
-    var opts=Array.prototype.slice.call(form.service.options);
-    for(var i=0;i<opts.length;i++) if(opts[i].text===name) return opts[i].text;
-    return 'Другое';
-  }
-  function openSvc(card){
-    if(!svc||!card) return;
-    var cat=card.getAttribute('data-dir');
-    var rows=Array.prototype.slice.call(document.querySelectorAll('.price-list .prow'))
-      .filter(function(r){ return (r.dataset.cat||'')===cat; });
-
-    svc.querySelector('#svcTitle').textContent=card.querySelector('.dir-name').textContent;
-    svc.querySelector('.svc-desc').textContent=card.querySelector('.dir-desc').textContent;
-    svc.querySelector('.svc-doc-name').textContent=card.getAttribute('data-doc-name')||'';
-    svc.querySelector('.svc-doc-role').textContent=card.getAttribute('data-doc-role')||'';
-    var img=svc.querySelector('.svc-doc-photo img');
-    img.src=card.getAttribute('data-doc-photo')||'';
-    img.alt=card.getAttribute('data-doc-name')||'';
-    svc.querySelector('.svc-count').textContent='· '+rows.length+' '+plural(rows.length);
-
-    var list=svc.querySelector('.svc-list');
-    list.innerHTML='';
-    rows.forEach(function(r){
-      var n=r.querySelector('.pn'), p=r.querySelector('.pp');
-      var item=document.createElement('div');
-      item.className='svc-item';
-      item.innerHTML='<span>'+(n?n.textContent:'')+'</span><b>'+(p?p.textContent:'')+'</b>';
-      list.appendChild(item);
-    });
-
-    svc.querySelector('.svc-book').onclick=function(){
-      var form=document.getElementById('booking');
-      closeSvc();
-      if(form){
-        var val=bookingSelectValue(card.querySelector('.dir-name').textContent);
-        if(form.service&&val) form.service.value=val;
-        location.hash='#zapis';
-        setTimeout(function(){ if(form.name) form.name.focus(); }, 400);
-      }
-    };
-
-    lastFocus=document.activeElement;
-    svc.hidden=false;
-    document.body.style.overflow='hidden';
-    svc.querySelector('.svc-close').focus();
-  }
-  function closeSvc(){
-    if(!svc||svc.hidden) return;
-    svc.hidden=true;
-    document.body.style.overflow='';
-    if(lastFocus&&lastFocus.focus) lastFocus.focus();
-  }
-  document.querySelectorAll('.dir').forEach(function(card){
-    card.addEventListener('click',function(){ openSvc(card); });
-  });
-  if(svc){
-    svc.addEventListener('click',function(e){
-      if(e.target===svc||e.target.classList.contains('svc-close')) closeSvc();
-    });
-    document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeSvc(); });
-  }
-
-  // выпадающее меню «Услуги»: сразу открываем карточку направления
+  // Пункты меню «Услуги» ведут на страницы направлений. Здесь только
+  // сопутствующее: закрыть мобильное меню и выставить фильтр в каталоге,
+  // чтобы возврат на главную показывал выбранное направление.
   document.querySelectorAll('[data-nav-cat]').forEach(function(link){
-    link.addEventListener('click',function(e){
-      var cat=link.getAttribute('data-nav-cat');
-      selectCat(cat);
+    link.addEventListener('click',function(){
+      selectCat(link.getAttribute('data-nav-cat'));
       if(nav)nav.classList.remove('open');
       if(burger)burger.classList.remove('active');
-      var card=document.querySelector('.dir[data-dir="'+cat+'"]');
-      if(card){
-        e.preventDefault();
-        location.hash='#services';
-        openSvc(card);
-      }
     });
   });
 
