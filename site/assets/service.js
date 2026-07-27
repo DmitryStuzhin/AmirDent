@@ -32,6 +32,154 @@
     return 'услуг';
   }
 
+  /* ---- папка врачей -------------------------------------------------
+     Врачей по услуге обычно несколько, поэтому справа они лежат стопкой:
+     из-под верхней карточки выглядывают края остальных, как у папки с
+     бумагами, и раз в несколько секунд верхняя уходит вверх, открывая
+     следующую. Листание замирает при наведении, при фокусе с клавиатуры,
+     на скрытой вкладке и при prefers-reduced-motion; точки под стопкой
+     дают перейти к нужному врачу вручную. */
+  var DOC_DELAY=5200, DOC_LIFT=520, DOC_PEEK=28, DOC_DEPTH=3;
+
+  function docPlural(n){
+    var d=n%10, dd=n%100;
+    if(d===1&&dd!==11) return 'врач';
+    if(d>=2&&d<=4&&(dd<12||dd>14)) return 'врача';
+    return 'врачей';
+  }
+
+  function buildDocStack(docs, ids){
+    var stack=el('dirDocStack'), nav=el('dirDocNav'), count=el('dirDocCount');
+    if(!stack) return;
+    if(count) count.textContent=docs.length+' '+docPlural(docs.length);
+
+    var cards=docs.map(function(d,i){
+      var card=document.createElement('article');
+      card.className='dp-doc-card';
+      if(ids&&ids[i]){
+        card.setAttribute('data-doc', ids[i]);
+        card.setAttribute('role','button');
+        card.setAttribute('aria-haspopup','dialog');
+      }
+      card.innerHTML='<div class="dp-doc-photo"></div>'+
+        '<div class="dp-doc-text">'+
+          '<div class="dp-doc-role"></div>'+
+          '<div class="dp-doc-name"></div>'+
+          '<p class="dp-doc-exp"></p>'+
+          '<a href="#zapis" class="dp-doc-btn">Записаться к врачу</a>'+
+        '</div>';
+      var img=document.createElement('img');
+      img.src=d.photo; img.alt=d.name; img.loading='lazy'; img.decoding='async';
+      card.querySelector('.dp-doc-photo').appendChild(img);
+      card.querySelector('.dp-doc-role').textContent=d.role;
+      card.querySelector('.dp-doc-name').textContent=d.name;
+      card.querySelector('.dp-doc-exp').textContent=d.exp||'';
+      stack.appendChild(card);
+      return card;
+    });
+
+    // Карточки лежат абсолютно друг на друге, поэтому высоту стопке задаём
+    // по самой высокой из них плюс запас на выглядывающие края.
+    // Текст у врачей разной длины, а у стопки края должны идти ровно, поэтому
+    // все карточки приводим к высоте самой высокой.
+    var sizeRaf=null;
+    function sizeStack(){
+      var h=0;
+      cards.forEach(function(c){ c.style.height=''; });
+      cards.forEach(function(c){ if(c.offsetHeight>h) h=c.offsetHeight; });
+      if(!h) return;
+      cards.forEach(function(c){ c.style.height=h+'px'; });
+      stack.style.height=(h+(cards.length>1?DOC_PEEK:0))+'px';
+    }
+    function sizeSoon(){
+      if(sizeRaf) cancelAnimationFrame(sizeRaf);
+      sizeRaf=requestAnimationFrame(sizeStack);
+    }
+    window.addEventListener('resize', sizeSoon);
+    if(document.fonts&&document.fonts.ready&&document.fonts.ready.then){
+      document.fonts.ready.then(sizeStack);
+    }
+
+    if(cards.length<2){
+      cards[0].dataset.pos='0';
+      stack.classList.add('is-single');
+      sizeStack();
+      return;
+    }
+
+    var index=0, timer=null, lift=null, paused=false;
+    var reduce=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+
+    var dots=docs.map(function(d,i){
+      var b=document.createElement('button');
+      b.type='button';
+      b.className='dp-docs-dot';
+      b.setAttribute('aria-label','Показать врача: '+d.name);
+      b.addEventListener('click', function(){ paused=true; stop(); show(i); });
+      nav.appendChild(b);
+      return b;
+    });
+    nav.hidden=false;
+
+    function apply(){
+      cards.forEach(function(card,i){
+        var pos=(i-index+cards.length)%cards.length;
+        card.dataset.pos = pos>DOC_DEPTH ? 'back' : String(pos);
+        card.setAttribute('aria-hidden', pos===0?'false':'true');
+        card.tabIndex = pos===0 ? 0 : -1;
+        // нижние карточки не должны ловить фокус с клавиатуры
+        if('inert' in card) card.inert = pos!==0;
+        else card.querySelectorAll('a,button').forEach(function(f){
+          if(pos===0) f.removeAttribute('tabindex'); else f.setAttribute('tabindex','-1');
+        });
+      });
+      dots.forEach(function(b,i){
+        var on=(i===index);
+        b.classList.toggle('is-on', on);
+        if(on) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current');
+      });
+    }
+
+    function show(next){
+      if(next===index||lift) return;
+      var leaving=cards[index];
+      leaving.classList.add('is-leaving');
+      index=next;
+      lift=setTimeout(function(){
+        lift=null;
+        leaving.classList.remove('is-leaving');
+        // вернуть ушедшую карточку вниз стопки без обратного полёта через все слои
+        leaving.style.transition='none';
+        apply();
+        void leaving.offsetWidth;
+        leaving.style.transition='';
+      }, DOC_LIFT);
+    }
+
+    function next(){ show((index+1)%cards.length); }
+    function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+    function play(){
+      stop();
+      if(paused||document.hidden||(reduce&&reduce.matches)) return;
+      timer=setInterval(next, DOC_DELAY);
+    }
+
+    [stack,nav].forEach(function(box){
+      box.addEventListener('mouseenter', stop);
+      box.addEventListener('mouseleave', play);
+      box.addEventListener('focusin', stop);
+      box.addEventListener('focusout', play);
+    });
+    document.addEventListener('visibilitychange', function(){
+      if(document.hidden) stop(); else play();
+    });
+    if(reduce&&reduce.addEventListener) reduce.addEventListener('change', play);
+
+    apply();
+    sizeStack();
+    play();
+  }
+
   var slug=slugFromUrl();
   var found=findService(slug);
   if(!found){
@@ -50,14 +198,11 @@
   el('dirCrumb').textContent=item.title;
   el('dirGroup').innerHTML='<span class="dot"></span>'+group.title;
 
-  var docs=(item.doctors||[]).map(function(id){ return data.doctors[id]; }).filter(Boolean);
+  // id нужны, чтобы карточка открывала всплывающее окно врача
+  var docIds=(item.doctors||[]).filter(function(id){ return data.doctors[id]; });
+  var docs=docIds.map(function(id){ return data.doctors[id]; });
   if(docs.length){
-    var main=docs[0];
-    el('dirDocImg').src=main.photo;
-    el('dirDocImg').alt=main.name;
-    el('dirDocRole').textContent=main.role;
-    el('dirDocName').textContent=main.name;
-    el('dirDocExp').textContent=main.exp||'';
+    buildDocStack(docs, docIds);
     el('dirDoc').hidden=false;
   } else {
     // Врача по услуге пока нет — вместо пустого места контакты и запись
@@ -67,9 +212,15 @@
   }
   if(docs.length>1){
     var team=el('dirTeam');
-    docs.forEach(function(d){
+    docs.forEach(function(d,i){
       var card=document.createElement('article');
       card.className='dp-team-card';
+      if(docIds[i]){
+        card.setAttribute('data-doc', docIds[i]);
+        card.setAttribute('role','button');
+        card.setAttribute('aria-haspopup','dialog');
+        card.tabIndex=0;
+      }
       card.innerHTML='<div class="dp-team-photo"><img src="'+d.photo+'" alt="'+d.name+'"></div>'+
         '<div class="dp-team-role">'+d.role+'</div>'+
         '<h3>'+d.name+'</h3>'+

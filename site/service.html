@@ -94,14 +94,13 @@
         <a class="dp-info-wa" href="https://wa.me/79262031828" target="_blank" rel="noopener">Написать в WhatsApp</a>
       </aside>
 
-      <aside class="dp-doc" id="dirDoc" hidden>
-        <div class="dp-doc-photo"><img src="" alt="" id="dirDocImg" loading="lazy" decoding="async"></div>
-        <div class="dp-doc-text">
-          <div class="dp-doc-role" id="dirDocRole"></div>
-          <div class="dp-doc-name" id="dirDocName"></div>
-          <p class="dp-doc-exp" id="dirDocExp"></p>
-          <a href="#zapis" class="dp-doc-btn">Записаться к врачу</a>
+      <aside class="dp-docs" id="dirDoc" hidden aria-label="Врачи по этой услуге">
+        <div class="dp-docs-head">
+          <span class="dp-docs-label">Ведут приём</span>
+          <span class="dp-docs-count" id="dirDocCount"></span>
         </div>
+        <div class="dp-docs-stack" id="dirDocStack"></div>
+        <div class="dp-docs-nav" id="dirDocNav" hidden></div>
       </aside>
     </div>
   </div>
@@ -200,6 +199,7 @@
 <a class="wa-float" href="https://wa.me/79262031828" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.5-.3.3c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.7-.9c.2-.3.4-.2.7-.1l2 .9c.3.2.5.2.5.4.1.1.1.7-.1 1.4Z"/></svg></a>
 
 <script src="/assets/services-data.js"></script>
+<script src="/assets/doctor-modal.js"></script>
 <script src="/assets/menu.js"></script>
 <script src="/assets/main.js"></script>
 <script src="/assets/service.js"></script>
