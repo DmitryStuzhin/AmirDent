@@ -13,9 +13,52 @@
   if(burger&&nav){burger.addEventListener('click',function(){nav.classList.toggle('open');burger.classList.toggle('active');});
     nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){nav.classList.remove('open');});});}
 
-  // scroll reveal
-  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
-  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+  // Появление блоков при прокрутке.
+  // Раньше это делал только IntersectionObserver, и если браузер не присылал его
+  // события (так бывает с некоторыми расширениями и в корпоративных сборках),
+  // весь сайт ниже первого экрана оставался невидимым. Теперь видимость считается
+  // по положению блока, а наблюдатель — лишь ускоритель. Плюс страховка: через
+  // 2,5 секунды показываем всё, что осталось скрытым.
+  var revealItems=Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  // Прячем только сейчас, когда анимацией управляет скрипт
+  revealItems.forEach(function(el){ el.classList.add('armed'); });
+  function revealShow(el){ el.classList.add('in'); }
+  function revealPass(){
+    if(!revealItems.length) return;
+    var limit=window.innerHeight*0.92;
+    revealItems=revealItems.filter(function(el){
+      if(el.classList.contains('in')) return false;
+      var r=el.getBoundingClientRect();
+      if(r.top<limit&&r.bottom>-80){ revealShow(el); return false; }
+      return true;
+    });
+  }
+  function revealAll(){
+    // Класс armed снимаем, а не просто добавляем in: если переходы CSS почему-то
+    // не проигрываются, значение прозрачности должно примениться сразу.
+    revealItems.forEach(function(el){ el.classList.remove('armed'); });
+    revealItems=[];
+    document.querySelectorAll('.reveal.armed:not(.in)').forEach(function(el){
+      el.classList.remove('armed');
+    });
+  }
+  var revealQueued=false;
+  function revealOnScroll(){
+    if(revealQueued) return;
+    revealQueued=true;
+    requestAnimationFrame(function(){ revealQueued=false; revealPass(); });
+  }
+  revealPass();
+  window.addEventListener('scroll',revealOnScroll,{passive:true});
+  window.addEventListener('resize',revealOnScroll);
+  window.addEventListener('load',revealPass);
+  setTimeout(revealAll,2500);
+  if(window.IntersectionObserver){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ revealShow(e.target); io.unobserve(e.target); } });
+    },{threshold:.12});
+    revealItems.forEach(function(el){ io.observe(el); });
+  }
 
   // count up
   function animate(el){
@@ -124,7 +167,56 @@
     });
     if(pempty)pempty.hidden=shown>0;
   }
-  if(psearch)psearch.addEventListener('input',applyPrice);
+  // Названия в прайсе и на страницах услуг отличаются («Система Invisalign» против
+  // «Элайнеры»), поэтому по запросу подсказываем подходящие страницы услуг.
+  var suggestBox=document.getElementById('priceSuggest');
+  function suggest(q){
+    if(!suggestBox) return;
+    var items=suggestBox.querySelector('.price-suggest-items');
+    items.innerHTML='';
+    var data=window.AMIR_SERVICES;
+    if(!data||q.length<3){ suggestBox.hidden=true; return; }
+    var found=[];
+    data.groups.forEach(function(g){
+      g.items.forEach(function(it){
+        var hay=(it.title+' '+g.title+' '+(it.desc||'')).toLowerCase();
+        if(hay.indexOf(q)>-1) found.push(it);
+      });
+    });
+    found.slice(0,6).forEach(function(it){
+      var a=document.createElement('a');
+      a.href='/uslugi/'+it.slug;
+      a.className='price-suggest-item';
+      a.textContent=it.title;
+      items.appendChild(a);
+    });
+    suggestBox.hidden=!found.length;
+  }
+
+  var pclear=document.querySelector('.price-search-clear');
+  if(psearch){
+    psearch.addEventListener('input',function(){
+      var q=psearch.value.trim();
+      // Ищем по всему прайсу: иначе запрос «брекеты» при выбранной «Гигиене»
+      // не находил бы ничего, хотя услуга в списке есть.
+      if(q && curCat!=='all'){
+        pfilters.forEach(function(b){ b.classList.toggle('active', b.dataset.cat==='all'); });
+        curCat='all';
+      }
+      if(pclear) pclear.hidden=!q;
+      suggest(q.toLowerCase());
+      applyPrice();
+    });
+  }
+  if(pclear){
+    pclear.addEventListener('click',function(){
+      psearch.value='';
+      pclear.hidden=true;
+      suggest('');
+      psearch.focus();
+      applyPrice();
+    });
+  }
   function selectCat(cat){
     pfilters.forEach(function(b){ b.classList.toggle('active', b.dataset.cat===cat); });
     curCat=cat;
@@ -134,17 +226,6 @@
     selectCat(btn.dataset.cat);
   });});
   applyPrice();
-
-  // Пункты меню «Услуги» ведут на страницы направлений. Здесь только
-  // сопутствующее: закрыть мобильное меню и выставить фильтр в каталоге,
-  // чтобы возврат на главную показывал выбранное направление.
-  document.querySelectorAll('[data-nav-cat]').forEach(function(link){
-    link.addEventListener('click',function(){
-      selectCat(link.getAttribute('data-nav-cat'));
-      if(nav)nav.classList.remove('open');
-      if(burger)burger.classList.remove('active');
-    });
-  });
 
   // video reels lightbox
   var lb=document.getElementById('lb'), lbInner=document.getElementById('lbInner');

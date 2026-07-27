@@ -34,7 +34,18 @@
       }catch(e){
         throw new Error('Нет связи с сервером');
       }
-      if(!res.ok || !json || !json.ok) return false;
+      // Локальный сервер разработки может не знать этого адреса — тогда пароль
+      // всё равно будет проверен при сохранении.
+      if(res.status===401||res.status===403) return false;
+      if(res.status!==404 && !res.ok){
+        // Сбой сервера — это не «неверный пароль», и путать их нельзя:
+        // именно из-за этого верный пароль выглядел как неправильный.
+        throw new Error('Сервер не смог проверить пароль (код '+res.status+'). '+
+          'Если сайт открыт локально, функциям нужен Node.js 20.12.2 или новее — '+
+          'войдите на рабочем сайте.');
+      }
+      // Успешный ответ API должен явно подтвердить вход (кроме 404-fallback)
+      if(res.status!==404 && (!json || json.ok!==true)) return false;
       sessionStorage.setItem(SESSION_KEY, JSON.stringify({
         login:login,
         at:Date.now(),
