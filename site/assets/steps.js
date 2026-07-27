@@ -33,23 +33,36 @@
           if(i===items.length-1) box.classList.add('steps-done');
         }, 160+i*260);
       });
+      // Если анимация почему-то не доиграла, доводим блок до конечного вида,
+      // чтобы приглушённые этапы не остались приглушёнными навсегда.
+      setTimeout(function(){
+        box.classList.add('steps-done');
+        items.forEach(function(item){ item.classList.add('is-on'); });
+      }, 160+items.length*260+1200);
     }
 
-    var io=new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if(!e.isIntersecting) return;
-        io.unobserve(e.target);
-        run();
-      });
-    },{threshold:.3});
-    io.observe(box);
-
-    // Страховка: в отдельных браузерах и встроенных окнах наблюдатель не присылает
-    // событие. Если блок уже виден, а анимация не началась — запускаем сами.
-    setTimeout(function(){
-      if(started) return;
+    // Наблюдатель за прокруткой — лишь ускоритель: в некоторых браузерах он не
+    // присылает события, поэтому основной способ — положение блока при прокрутке.
+    function check(){
       var r=box.getBoundingClientRect();
-      if(r.top<window.innerHeight&&r.bottom>0) run();
-    }, 900);
+      if(r.top<window.innerHeight*0.85&&r.bottom>0){
+        run();
+        window.removeEventListener('scroll',check);
+      }
+    }
+    check();
+    window.addEventListener('scroll',check,{passive:true});
+    window.addEventListener('load',check);
+
+    if(window.IntersectionObserver){
+      var io=new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(!e.isIntersecting) return;
+          io.unobserve(e.target);
+          run();
+        });
+      },{threshold:.3});
+      io.observe(box);
+    }
   });
 })();
