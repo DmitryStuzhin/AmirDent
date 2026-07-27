@@ -119,14 +119,18 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 .chevrons{position:absolute;right:-4%;top:8%;width:78%;height:auto;z-index:0;opacity:.55;color:var(--gold)}
 .chevrons path{stroke:currentColor;fill:none;stroke-width:1.4;vector-effect:non-scaling-stroke}
 .hero-glow{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%);width:110%;height:80%;z-index:0;border-radius:50% 50% 0 0;background:radial-gradient(52% 56% at 50% 60%,rgba(179,154,107,.34),transparent 72%);filter:blur(6px)}
-.hero-doc{position:relative;z-index:1;max-height:640px;width:auto;filter:drop-shadow(0 24px 46px rgba(0,0,0,.5));animation:heroIn 1s var(--ease) both}
+/* Фото главного врача: снимок с фоном кабинета, поэтому оформляем карточкой.
+   Прежнее фото было вырезано по контуру и висело без рамки — с этим так нельзя. */
+.hero-doc{position:relative;z-index:1;width:min(100%,430px);height:auto;aspect-ratio:721/901;object-fit:cover;object-position:center 18%;
+  border-radius:28px;border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 64px rgba(0,0,0,.5);
+  animation:heroIn 1s var(--ease) both}
 @keyframes heroIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 /* floating chips */
 .chip{position:absolute;z-index:3;background:linear-gradient(135deg,#e9dcc0,#cbb589);color:#241d10;font-family:var(--head);font-weight:700;font-size:13.5px;padding:12px 20px;border-radius:100px;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:9px;animation:floatY 4s ease-in-out infinite}
 .chip svg{width:17px;height:17px}
-.chip.c1{left:-10px;top:30%;animation-delay:0s}
-.chip.c2{left:6%;top:64%;animation-delay:.7s}
-.chip.c3{right:2%;top:20%;animation-delay:1.3s}
+.chip.c1{left:0;top:26%;animation-delay:0s}
+.chip.c2{left:2%;top:70%;animation-delay:.7s}
+.chip.c3{right:0;top:14%;animation-delay:1.3s}
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 
 /* trust bar under hero */
