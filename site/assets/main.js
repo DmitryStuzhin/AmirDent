@@ -13,9 +13,52 @@
   if(burger&&nav){burger.addEventListener('click',function(){nav.classList.toggle('open');burger.classList.toggle('active');});
     nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){nav.classList.remove('open');});});}
 
-  // scroll reveal
-  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
-  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+  // Появление блоков при прокрутке.
+  // Раньше это делал только IntersectionObserver, и если браузер не присылал его
+  // события (так бывает с некоторыми расширениями и в корпоративных сборках),
+  // весь сайт ниже первого экрана оставался невидимым. Теперь видимость считается
+  // по положению блока, а наблюдатель — лишь ускоритель. Плюс страховка: через
+  // 2,5 секунды показываем всё, что осталось скрытым.
+  var revealItems=Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  // Прячем только сейчас, когда анимацией управляет скрипт
+  revealItems.forEach(function(el){ el.classList.add('armed'); });
+  function revealShow(el){ el.classList.add('in'); }
+  function revealPass(){
+    if(!revealItems.length) return;
+    var limit=window.innerHeight*0.92;
+    revealItems=revealItems.filter(function(el){
+      if(el.classList.contains('in')) return false;
+      var r=el.getBoundingClientRect();
+      if(r.top<limit&&r.bottom>-80){ revealShow(el); return false; }
+      return true;
+    });
+  }
+  function revealAll(){
+    // Класс armed снимаем, а не просто добавляем in: если переходы CSS почему-то
+    // не проигрываются, значение прозрачности должно примениться сразу.
+    revealItems.forEach(function(el){ el.classList.remove('armed'); });
+    revealItems=[];
+    document.querySelectorAll('.reveal.armed:not(.in)').forEach(function(el){
+      el.classList.remove('armed');
+    });
+  }
+  var revealQueued=false;
+  function revealOnScroll(){
+    if(revealQueued) return;
+    revealQueued=true;
+    requestAnimationFrame(function(){ revealQueued=false; revealPass(); });
+  }
+  revealPass();
+  window.addEventListener('scroll',revealOnScroll,{passive:true});
+  window.addEventListener('resize',revealOnScroll);
+  window.addEventListener('load',revealPass);
+  setTimeout(revealAll,2500);
+  if(window.IntersectionObserver){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ revealShow(e.target); io.unobserve(e.target); } });
+    },{threshold:.12});
+    revealItems.forEach(function(el){ io.observe(el); });
+  }
 
   // count up
   function animate(el){

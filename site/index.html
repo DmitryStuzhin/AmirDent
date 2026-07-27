@@ -10,7 +10,8 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="assets/styles.css?v=form2">
 <link rel="stylesheet" href="assets/cms.css?v=2">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -92,11 +93,11 @@
       <p>Передовые технологии, опытная команда и забота о каждом пациенте — под одной крышей.</p>
     </div>
     <div class="why-grid">
-      <div class="pcard reveal"><img src="https://static.tildacdn.com/tild3635-6161-4630-b930-393861363366/ec3a29bb-eb28-4446-8.png" alt="Оборудование"><span class="lbl">Технологии</span><div class="cap"><div class="big">3D</div><p>Цифровая диагностика, лазер и современные брекет-системы для точного результата.</p></div></div>
-      <div class="pcard reveal"><img src="https://static.tildacdn.com/tild3435-3835-4535-a232-393237666637/IMG_7462.jpg" alt="Врачи"><span class="lbl">Квалификация</span><div class="cap"><div class="big">12+</div><p>Дипломированные врачи высшей категории с большим опытом.</p></div></div>
+      <div class="pcard reveal"><img src="https://static.tildacdn.com/tild3635-6161-4630-b930-393861363366/ec3a29bb-eb28-4446-8.png" alt="Оборудование" loading="lazy" decoding="async"><span class="lbl">Технологии</span><div class="cap"><div class="big">3D</div><p>Цифровая диагностика, лазер и современные брекет-системы для точного результата.</p></div></div>
+      <div class="pcard reveal"><img src="https://static.tildacdn.com/tild3435-3835-4535-a232-393237666637/IMG_7462.jpg" alt="Врачи" loading="lazy" decoding="async"><span class="lbl">Квалификация</span><div class="cap"><div class="big">12+</div><p>Дипломированные врачи высшей категории с большим опытом.</p></div></div>
       <div class="pcard solid reveal"><div class="lbl2">Партнёры</div><p style="color:rgba(255,255,255,.7);font-size:14px;margin-bottom:6px">Работаем на материалах мировых брендов</p><div class="plogos"><span>Straumann</span><span>Dentsply&nbsp;Sirona</span><span>Star&nbsp;Smile</span><span>Swiss&nbsp;Implant</span><span>IAL-System</span></div></div>
-      <div class="pcard reveal"><img src="https://static.tildacdn.com/tild3065-3061-4164-b532-383831393863/_3.png" alt="Лечение"><span class="lbl">Комфорт</span><div class="cap"><div class="big" style="font-size:26px">Без боли</div><p>Бережные протоколы и комфортная анестезия на каждом приёме.</p></div></div>
-      <div class="pcard reveal"><img src="https://static.tildacdn.com/tild6663-6236-4032-b739-653333663564/_2.png" alt="Направления"><span class="lbl">Многопрофильность</span><div class="cap"><div class="big">2300+</div><p>Процедур по всем направлениям — от ортодонтии до имплантации.</p></div></div>
+      <div class="pcard reveal"><img src="https://static.tildacdn.com/tild3065-3061-4164-b532-383831393863/_3.png" alt="Лечение" loading="lazy" decoding="async"><span class="lbl">Комфорт</span><div class="cap"><div class="big" style="font-size:26px">Без боли</div><p>Бережные протоколы и комфортная анестезия на каждом приёме.</p></div></div>
+      <div class="pcard reveal"><img src="https://static.tildacdn.com/tild6663-6236-4032-b739-653333663564/_2.png" alt="Направления" loading="lazy" decoding="async"><span class="lbl">Многопрофильность</span><div class="cap"><div class="big">2300+</div><p>Процедур по всем направлениям — от ортодонтии до имплантации.</p></div></div>
       <div class="pcard solid reveal"><div class="lbl2">Гарантия</div><p style="color:rgba(255,255,255,.72);font-size:15px">Даём гарантию на работы и материалы. Прозрачная смета до начала лечения и наблюдение после.</p><div style="margin-top:18px"><a href="#zapis" class="btn btn-gold">Бесплатная консультация</a></div></div>
     </div>
   </div>
@@ -124,7 +125,26 @@
       <div class="ul"></div>
       <p>Выберите направление — на его странице собраны услуги, цены и врач, который их ведёт.</p>
     </div>
-    <div class="sgroups reveal" id="servicesGroups"></div>
+    <div class="sgroups reveal" id="servicesGroups">
+      <div class="sgroup"><h4>Ортодонтия</h4>
+        <a class="sgroup-item" href="/uslugi/brekety">Брекеты</a>
+        <a class="sgroup-item" href="/uslugi/ispravlenie-prikusa">Исправление прикуса</a>
+        <a class="sgroup-item" href="/uslugi/elaynery">Элайнеры</a>
+        <a class="sgroup-item" href="/uslugi/detskaya-ortodontiya">Детская ортодонтия</a>
+      </div>
+      <div class="sgroup"><h4>Стоматология</h4>
+        <a class="sgroup-item" href="/uslugi/lechenie-kariesa">Лечение кариеса</a>
+        <a class="sgroup-item" href="/uslugi/chistka-zubov">Чистка зубов</a>
+        <a class="sgroup-item" href="/uslugi/implantaciya">Имплантация</a>
+        <a class="sgroup-item" href="/uslugi/protezirovanie">Протезирование</a>
+      </div>
+      <div class="sgroup"><h4>Косметология</h4>
+        <a class="sgroup-item" href="/uslugi/biorevitalizaciya">Биоревитализация</a>
+        <a class="sgroup-item" href="/uslugi/konturnaya-plastika">Контурная пластика</a>
+        <a class="sgroup-item" href="/uslugi/piling">Пилинг</a>
+        <a class="sgroup-item" href="/uslugi/lazernaya-epilyaciya">Лазерная эпиляция</a>
+      </div>
+    </div>
     <div class="dirs-more reveal">
       <a class="btn btn-gold btn-lg" href="/prices.html">Полный прайс-лист — 369 услуг</a>
       <p class="dirs-note">Цены на приём, лечение и протезирование в одном списке. Первичный осмотр и план лечения — 0 ₽.</p>
@@ -182,7 +202,7 @@
 <section class="pad" id="doctors">
   <div class="container">
     <div class="chief reveal">
-      <div class="chief-media"><img src="https://static.tildacdn.com/tild6238-3739-4737-b836-326430383731/1111_opti.png" alt="Кхатиб Массуд Зидан"></div>
+      <div class="chief-media"><img src="https://static.tildacdn.com/tild6238-3739-4737-b836-326430383731/1111_opti.png" alt="Кхатиб Массуд Зидан" loading="lazy" decoding="async"></div>
       <div class="chief-body">
         <div class="role">Главный врач клиники</div>
         <h3>Кхатиб Массуд Зидан</h3>
@@ -197,10 +217,10 @@
     </div>
     <div class="sec-title reveal" style="margin-bottom:36px"><h2 style="font-size:clamp(24px,3vw,36px)">Команда врачей</h2><div class="ul"></div></div>
     <div class="doc-grid">
-      <article class="doc reveal"><div class="doc-photo"><img src="https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg" alt="Краснощёкова Лилия"></div><div class="doc-body"><div class="role">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class="exp">Стоматолог-терапевт · 15 лет</div></div></article>
-      <article class="doc reveal"><div class="doc-photo"><img src="https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg" alt="Кхатиб Амир"></div><div class="doc-body"><div class="role">Ортодонтия</div><h3>Кхатиб Амир</h3><div class="exp">Стоматолог-ортодонт</div></div></article>
-      <article class="doc reveal"><div class="doc-photo"><img src="https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg" alt="Али Ренас"></div><div class="doc-body"><div class="role">Хирургия</div><h3>Али Ренас</h3><div class="exp">Хирург-имплантолог</div></div></article>
-      <article class="doc reveal"><div class="doc-photo"><img src="https://static.tildacdn.com/tild3338-3239-4665-a338-326364343832/IMG_035123130.jpg" alt="Джамилова Фатима"></div><div class="doc-body"><div class="role">Ортодонтия</div><h3>Джамилова Фатима</h3><div class="exp">Врач-ортодонт · 5 лет</div></div></article>
+      <article class="doc reveal"><div class="doc-photo"><img src="https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg" alt="Краснощёкова Лилия" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class="exp">Стоматолог-терапевт · 15 лет</div></div></article>
+      <article class="doc reveal"><div class="doc-photo"><img src="https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg" alt="Кхатиб Амир" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Ортодонтия</div><h3>Кхатиб Амир</h3><div class="exp">Стоматолог-ортодонт</div></div></article>
+      <article class="doc reveal"><div class="doc-photo"><img src="https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg" alt="Али Ренас" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Хирургия</div><h3>Али Ренас</h3><div class="exp">Хирург-имплантолог</div></div></article>
+      <article class="doc reveal"><div class="doc-photo"><img src="https://static.tildacdn.com/tild3338-3239-4665-a338-326364343832/IMG_035123130.jpg" alt="Джамилова Фатима" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Ортодонтия</div><h3>Джамилова Фатима</h3><div class="exp">Врач-ортодонт · 5 лет</div></div></article>
     </div>
   </div>
 </section>

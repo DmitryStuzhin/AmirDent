@@ -521,9 +521,16 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 @keyframes pulse{0%{box-shadow:0 12px 30px rgba(37,211,102,.45),0 0 0 0 rgba(37,211,102,.5)}70%{box-shadow:0 12px 30px rgba(37,211,102,.45),0 0 0 16px rgba(37,211,102,0)}100%{box-shadow:0 12px 30px rgba(37,211,102,.45),0 0 0 0 rgba(37,211,102,0)}}
 
 /* reveal */
-.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.reveal.in{opacity:1;transform:none}
-html:not(.js) .reveal{opacity:1;transform:none}
+/* Блоки видны по умолчанию. Прятать их можно только когда скрипт уже взял
+   анимацию на себя — он ставит класс armed и обязан снять его или добавить in.
+   Если скрипт не сработал или анимация не проигралась, контент остаётся на виду:
+   раньше в таком случае весь сайт ниже первого экрана был пустым. */
+.reveal{transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal.armed{opacity:0;transform:translateY(30px)}
+.reveal.armed.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .reveal.armed{opacity:1;transform:none}
+}
 
 /* ---------- Responsive ---------- */
 @media(max-width:1024px){
