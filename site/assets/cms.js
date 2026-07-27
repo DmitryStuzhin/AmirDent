@@ -48,8 +48,63 @@
     '.chip',
     '#zapis .cta-grid > div > h2',
     '#zapis .cta-grid > div > p:not(.agree)',
-    '.ftr-about'
+    '.ftr-about',
+    // Страница услуги /uslugi/...
+    '#dirTitle',
+    '#dirDesc',
+    '#dirGroup',
+    '.dp-perks li',
+    '#dirDocRole',
+    '#dirDocName',
+    '#dirDocExp',
+    '#dirSteps .dp-step h3',
+    '#dirSteps .dp-step p',
+    '#dirInfo > h3',
+    '#dirInfo > p',
+    '.dp-h2'
   ];
+
+  function applyTextItemsOnly(snap){
+    var textItems=(snap&&snap.textItems)||(content&&content.textItems);
+    if(!textItems && snap && snap.texts){
+      textItems=[];
+      Object.keys(snap.texts).forEach(function(sel){
+        (snap.texts[sel]||[]).forEach(function(item, idx){
+          textItems.push({ sel:sel, idx:idx, html:item.html, hidden:!!item.hidden });
+        });
+      });
+    }
+    if(!Array.isArray(textItems)) return;
+    textItems.forEach(function(item){
+      if(!item || !item.sel) return;
+      var n=null;
+      try{
+        var nodes=document.querySelectorAll(item.sel);
+        n=nodes[item.idx||0]||null;
+      }catch(e){ n=null; }
+      if(!n) return;
+      if(typeof item.html==='string') n.innerHTML=item.html;
+      if(item.hidden) n.style.display='none';
+      else if(n.style.display==='none') n.style.display='';
+    });
+  }
+
+  function isServicePage(){
+    try{
+      if(document.getElementById('dirPage')) return true;
+      if(document.getElementById('dirTitle') && document.getElementById('dirFacts')) return true;
+      var path=location.pathname||'';
+      if(/^\/uslugi(\/|$)/.test(path)) return true;
+      if(/service\.html$/i.test(path)) return true;
+    }catch(e){}
+    return false;
+  }
+
+  function mainPriceList(){
+    // На карточке услуги #dirList — урезанный список; полный прайс не трогаем.
+    if(isServicePage()) return null;
+    return document.querySelector('#services .price-list, .price-page .price-list, .price-list');
+  }
 
   function toast(msg, opts){
     var t=document.getElementById('cmsToast');
@@ -184,7 +239,7 @@
       return Promise.reject(new Error('no token'));
     }
     return AmirCMS.publishContent(content).then(function(res){
-      return fetch('assets/content.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(remote){
+      return fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(remote){
         if(!remote || remote.savedAt!==content.savedAt){
           throw new Error('сервер вернул старые данные');
         }
@@ -220,6 +275,13 @@
     return Array.prototype.slice.call(document.querySelectorAll('body img')).filter(function(img){
       return !isCmsUi(img) && !img.closest('.doc-grid');
     });
+  }
+
+  /** Карточка .pcard перекрывает <img> градиентом — правим фото через карточку или сам img */
+  function resolveImg(el){
+    if(!el) return null;
+    if(el.tagName==='IMG') return el;
+    return el.querySelector('img');
   }
 
   function cleanNode(el){
@@ -278,6 +340,15 @@
     TEXT_SELECTORS.forEach(function(sel){
       document.querySelectorAll(sel).forEach(function(n, idx){ push(n, sel, idx); });
     });
+    // Факты на карточке услуги — с привязкой к slug, чтобы страницы не путали тексты
+    document.querySelectorAll('#dirFacts .dp-fact[data-fact-id]').forEach(function(cell){
+      var id=cell.getAttribute('data-fact-id');
+      var slug=cell.getAttribute('data-service')||'';
+      if(!id) return;
+      var base='#dirFacts .dp-fact[data-fact-id="'+id+'"]'+(slug?'[data-service="'+slug+'"]':'');
+      push(cell.querySelector('b'), base+' > b', 0);
+      push(cell.querySelector('span'), base+' > span', 0);
+    });
     // Страховка: любой текст, который можно править в админке, обязан попасть в снимок
     document.querySelectorAll('.cms-editable[data-cms-type="text"]').forEach(function(n){
       if(seen.has(n)) return;
@@ -323,8 +394,51 @@
     });
   }
 
-  function collectServices(){
-    return Array.prototype.slice.call(document.querySelectorAll('.price-list .prow')).map(function(el){
+  function collectServices(root){
+    var nodes;
+    if(root) nodes=root.querySelectorAll('.prow');
+    else nodes=document.querySelectorAll('.price-list .prow');
+    return Array.prototype.slice.call(nodes).map(function(el){
+      return {
+        name:(el.querySelector('.pn')&&el.querySelector('.pn').textContent.trim())||'',
+        tag:(el.querySelector('.ptag')&&el.querySelector('.ptag').textContent.trim())||'',
+        price:(el.querySelector('.pp')&&el.querySelector('.pp').textContent.trim())||'',
+        cat:el.getAttribute('data-cat')||'therapy'
+      };
+    });
+  }
+
+  function mergeServicesByName(baseList, editedList){
+    var out=(baseList||[]).map(function(s){ return Object.assign({}, s); });
+    (editedList||[]).forEach(function(ed){
+      var key=(ed.name||'').toLowerCase();
+      if(!key) return;
+      var found=false;
+      for(var i=0;i<out.length;i++){
+        if((out[i].name||'').toLowerCase()===key){
+          out[i]=ed;
+          found=true;
+          break;
+        }
+      }
+      if(!found) out.push(ed);
+    });
+    return out;
+  }
+
+  function mergeTextItems(oldItems, newItems){
+    var map={};
+    function key(it){ return String(it.sel)+'#'+String(it.idx||0); }
+    (oldItems||[]).forEach(function(it){ if(it&&it.sel) map[key(it)]=it; });
+    (newItems||[]).forEach(function(it){ if(it&&it.sel) map[key(it)]=it; });
+    return Object.keys(map).map(function(k){ return map[k]; });
+  }
+
+  function servicesFromPriceHtml(html){
+    if(!html) return [];
+    var box=document.createElement('div');
+    box.innerHTML=html;
+    return Array.prototype.slice.call(box.querySelectorAll('.prow')).map(function(el){
       return {
         name:(el.querySelector('.pn')&&el.querySelector('.pn').textContent.trim())||'',
         tag:(el.querySelector('.ptag')&&el.querySelector('.ptag').textContent.trim())||'',
@@ -336,6 +450,25 @@
 
   function buildSnapshot(){
     var snap={ v:4, savedAt:new Date().toISOString() };
+
+    // Карточка услуги: не перезаписываем весь сайт урезанным DOM
+    if(isServicePage()){
+      var base=content&&typeof content==='object'?content:{ v:4 };
+      snap=Object.assign({}, base, snap);
+      snap.textItems=mergeTextItems(base.textItems, queryUniqueTexts());
+      var dirList=document.getElementById('dirList');
+      var edited=dirList?collectServices(dirList):[];
+      var baseServices=Array.isArray(base.services)&&base.services.length
+        ? base.services
+        : servicesFromPriceHtml(base.priceHtml);
+      snap.services=mergeServicesByName(baseServices, edited);
+      snap.priceHtml=servicesToHtml(snap.services);
+      if(Array.isArray(base.doctors)) snap.doctors=base.doctors;
+      if(typeof base.docsHtml==='string') snap.docsHtml=base.docsHtml;
+      if(Array.isArray(base.images)) snap.images=base.images;
+      if(Array.isArray(base.reels)) snap.reels=base.reels;
+      return snap;
+    }
 
     snap.images=contentImgs().map(function(img){
       return { src:img.getAttribute('src')||'', alt:img.getAttribute('alt')||'' };
@@ -371,22 +504,23 @@
 
   function applySnapshot(snap){
     if(!snap || typeof snap!=='object') return;
+    var servicePage=isServicePage();
 
-    // Prefer structured arrays from admin dashboard
-    if(Array.isArray(snap.services)){
-      var list=document.querySelector('.price-list');
-      if(list) list.innerHTML=servicesToHtml(snap.services);
-    } else if(typeof snap.priceHtml==='string'){
-      var list2=document.querySelector('.price-list');
-      if(list2) list2.innerHTML=snap.priceHtml;
-    }
+    // Полный прайс только вне карточки услуги
+    if(!servicePage){
+      var list=mainPriceList();
+      if(list){
+        if(Array.isArray(snap.services)) list.innerHTML=servicesToHtml(snap.services);
+        else if(typeof snap.priceHtml==='string') list.innerHTML=snap.priceHtml;
+      }
 
-    if(Array.isArray(snap.doctors)){
-      var docs=document.querySelector('.doc-grid');
-      if(docs) docs.innerHTML=doctorsToHtml(snap.doctors);
-    } else if(typeof snap.docsHtml==='string'){
-      var docs2=document.querySelector('.doc-grid');
-      if(docs2) docs2.innerHTML=snap.docsHtml;
+      if(Array.isArray(snap.doctors)){
+        var docs=document.querySelector('.doc-grid');
+        if(docs) docs.innerHTML=doctorsToHtml(snap.doctors);
+      } else if(typeof snap.docsHtml==='string'){
+        var docs2=document.querySelector('.doc-grid');
+        if(docs2) docs2.innerHTML=snap.docsHtml;
+      }
     }
 
     // 2) texts (unique items)
@@ -415,28 +549,29 @@
       });
     }
 
-    // 3) images AFTER texts (so img tags inside edited HTML get final src)
-    if(Array.isArray(snap.images)){
-      var imgs=contentImgs();
-      snap.images.forEach(function(item, i){
-        if(!imgs[i] || !item) return;
-        if(item.src!=null && item.src!=='') imgs[i].setAttribute('src', item.src);
-        if(item.alt!=null) imgs[i].setAttribute('alt', item.alt);
-      });
-    }
+    // 3) images / reels — не на карточке услуги (другие наборы img)
+    if(!servicePage){
+      if(Array.isArray(snap.images)){
+        var imgs=contentImgs();
+        snap.images.forEach(function(item, i){
+          if(!imgs[i] || !item) return;
+          if(item.src!=null && item.src!=='') imgs[i].setAttribute('src', item.src);
+          if(item.alt!=null) imgs[i].setAttribute('alt', item.alt);
+        });
+      }
 
-    // 4) reels
-    if(Array.isArray(snap.reels)){
-      var reels=document.querySelectorAll('.reel');
-      snap.reels.forEach(function(item, i){
-        var r=reels[i];
-        if(!r || !item) return;
-        r.setAttribute('data-video', item.video||'');
-        var poster=r.querySelector('.reel-poster');
-        if(poster && item.poster) poster.style.backgroundImage="url('"+item.poster+"')";
-        var cap=r.querySelector('.reel-cap');
-        if(cap && typeof item.captionHtml==='string') cap.innerHTML=item.captionHtml;
-      });
+      if(Array.isArray(snap.reels)){
+        var reels=document.querySelectorAll('.reel');
+        snap.reels.forEach(function(item, i){
+          var r=reels[i];
+          if(!r || !item) return;
+          r.setAttribute('data-video', item.video||'');
+          var poster=r.querySelector('.reel-poster');
+          if(poster && item.poster) poster.style.backgroundImage="url('"+item.poster+"')";
+          var cap=r.querySelector('.reel-cap');
+          if(cap && typeof item.captionHtml==='string') cap.innerHTML=item.captionHtml;
+        });
+      }
     }
 
     // 5) hidden blocks
@@ -467,18 +602,91 @@
     el.setAttribute('data-cms-type', type||'block');
   }
 
+  function paintEditable(el){
+    if(!el || !el.style) return;
+    el.style.setProperty('outline', '2px dashed #b39a6b', 'important');
+    el.style.setProperty('outline-offset', '4px', 'important');
+    el.style.setProperty('cursor', 'pointer', 'important');
+    el.setAttribute('title', 'Нажмите, чтобы изменить');
+  }
+
+  function wireServicePageEditor(){
+    if(!isServicePage()) return;
+    var pairs=[
+      ['#dirTitle', 'text', 'Название'],
+      ['#dirDesc', 'text', 'Описание'],
+      ['#dirGroup', 'text', 'Направление'],
+      ['#dirDocName', 'text', 'ФИО врача'],
+      ['#dirDocRole', 'text', 'Специализация'],
+      ['#dirDocExp', 'text', 'Опыт'],
+      ['#dirDocImg', 'image', 'Фото врача']
+    ];
+    pairs.forEach(function(p){
+      var el=document.querySelector(p[0]);
+      if(!el) return;
+      markEditable(el, p[2], p[1]);
+      paintEditable(el);
+    });
+    document.querySelectorAll('.dp-perks li, #dirSteps .dp-step h3, #dirSteps .dp-step p, #dirFacts .dp-fact b, #dirFacts .dp-fact span, #dirInfo > h3, #dirInfo > p, .dp-h2').forEach(function(el){
+      markEditable(el, 'Текст', 'text');
+      paintEditable(el);
+    });
+    document.querySelectorAll('#dirList .prow').forEach(function(el){
+      markEditable(el, 'Услуга', 'price');
+      paintEditable(el);
+    });
+    var page=document.getElementById('dirPage');
+    if(page && !page.getAttribute('data-cms-wired')){
+      page.setAttribute('data-cms-wired', '1');
+      page.addEventListener('click', function(e){
+        if(!document.body.classList.contains('cms-admin')) return;
+        if(e.target.closest('a.btn, a.dp-doc-btn, a.dp-phone, a.dp-info-wa, #booking, .cms-bar, .cms-modal-bg')) return;
+        var el=e.target.closest('.cms-editable');
+        if(!el) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openModal(el);
+      }, true);
+    }
+  }
+
   function wireTargets(){
-    contentImgs().forEach(function(img){ markEditable(img, 'Фото', 'image'); });
+    // Фото внутри .pcard перекрыты ::after/.cap — кликабельна сама карточка
+    contentImgs().forEach(function(img){
+      if(img.closest('.pcard')) return;
+      if(img.id==='dirDocImg') return; // страница услуги — отдельно
+      markEditable(img, 'Фото', 'image');
+    });
+    document.querySelectorAll('.pcard:not(.solid)').forEach(function(card){
+      if(resolveImg(card)) markEditable(card, 'Фото', 'image');
+    });
     document.querySelectorAll('.reel').forEach(function(r){ markEditable(r, 'Видео', 'video'); });
-    document.querySelectorAll('.prow').forEach(function(r){ markEditable(r, 'Услуга', 'price'); });
+    document.querySelectorAll('.prow').forEach(function(r){
+      if(r.closest('#dirList')) return;
+      markEditable(r, 'Услуга', 'price');
+    });
     document.querySelectorAll('.doc-grid .doc').forEach(function(r){ markEditable(r, 'Врач', 'doctor'); });
 
     TEXT_SELECTORS.forEach(function(sel){
       document.querySelectorAll(sel).forEach(function(el){
         if(el.closest('#booking')) return;
         markEditable(el, 'Текст', 'text');
+        if(el.closest('#dirPage')) paintEditable(el);
       });
     });
+    wireServicePageEditor();
+  }
+
+  function enableAdminUi(){
+    if(document.body.classList.contains('cms-admin')){
+      wireTargets();
+      return;
+    }
+    document.body.classList.add('cms-admin');
+    buildBar();
+    buildModal();
+    wireTargets();
+    document.addEventListener('click', onAdminClick, true);
   }
 
   function addPriceRow(list, data){
@@ -762,8 +970,19 @@
 
     document.getElementById('cmsManageAll').onclick=function(e){
       e.preventDefault(); e.stopPropagation();
+      if(isServicePage()){
+        location.href='/prices.html';
+        return;
+      }
       openDocsServicesPanel('services');
     };
+    if(isServicePage()){
+      var manage=document.getElementById('cmsManageAll');
+      if(manage) manage.textContent='Весь прайс';
+      var meta=document.querySelector('.cms-bar .meta');
+      if(meta) meta.textContent='Золотая рамка = можно нажать';
+      hint.textContent='На карточке услуги: нажмите поле в золотой рамке — откроется форма правки';
+    }
     document.getElementById('cmsSaveNow').onclick=function(){ persist({openPreview:false}).catch(function(){}); };
     document.getElementById('cmsPreview').onclick=function(){
       window.open('index.html?preview=1&view='+Date.now(), '_blank', 'noopener,noreferrer');
@@ -819,12 +1038,15 @@
     if(sub) sub.textContent='Простая правка без кода';
 
     if(type==='image'){
+      var img=resolveImg(el);
+      if(!img){ toast('Фото в этом блоке не найдено'); return; }
       title.textContent='Редактировать фото';
+      del.style.display='none';
       fields.innerHTML=
-        '<div class="field"><label>URL изображения</label><input id="cmsSrc" type="text" value="'+escAttr(el.getAttribute('src')||'')+'"></div>'+
+        '<div class="field"><label>URL изображения</label><input id="cmsSrc" type="text" value="'+escAttr(img.getAttribute('src')||'')+'"></div>'+
         '<div class="field"><label>Загрузить с устройства</label><input id="cmsFile" type="file" accept="image/*"></div>'+
-        '<div class="field"><label>Alt</label><input id="cmsAlt" type="text" value="'+escAttr(el.getAttribute('alt')||'')+'"></div>'+
-        '<img class="preview-img" id="cmsPrev" src="'+escAttr(el.getAttribute('src')||'')+'" alt="">';
+        '<div class="field"><label>Подпись (alt)</label><input id="cmsAlt" type="text" value="'+escAttr(img.getAttribute('alt')||'')+'"></div>'+
+        '<img class="preview-img" id="cmsPrev" src="'+escAttr(img.getAttribute('src')||'')+'" alt="">';
       document.getElementById('cmsSrc').oninput=function(){ document.getElementById('cmsPrev').src=this.value; };
       wireImageFileInput(document.getElementById('cmsFile'), function(url){
         document.getElementById('cmsSrc').value=url;
@@ -986,8 +1208,11 @@
     var type=el.getAttribute('data-cms-type');
 
     if(type==='image'){
-      el.setAttribute('src', document.getElementById('cmsSrc').value.trim());
-      el.setAttribute('alt', document.getElementById('cmsAlt').value.trim());
+      var img=resolveImg(el);
+      if(img){
+        img.setAttribute('src', document.getElementById('cmsSrc').value.trim());
+        img.setAttribute('alt', document.getElementById('cmsAlt').value.trim());
+      }
     } else if(type==='video'){
       el.setAttribute('data-video', document.getElementById('cmsVideo').value.trim());
       var poster=document.getElementById('cmsPoster').value.trim();
@@ -1029,7 +1254,11 @@
       }
     } else if(type==='text'){
       var plain=document.getElementById('cmsText').value;
-      el.textContent=plain;
+      if(el.id==='dirGroup'){
+        el.innerHTML='<span class="dot"></span>'+escHtml(plain.replace(/^\s*·\s*/,'').trim());
+      } else {
+        el.textContent=plain;
+      }
     }
 
     closeModal();
@@ -1065,11 +1294,34 @@
     e.preventDefault();
     e.stopPropagation();
     var type=el.getAttribute('data-cms-type')||'';
-    if(type==='text'){
+    // На /uslugi/ всегда форма — так надёжнее, чем contentEditable
+    if(type==='text' && !isServicePage()){
       startInlineTextEdit(el);
       return;
     }
     openModal(el);
+  }
+
+  // Для отладки и запасного скрипта на service.html
+  window.AmirCMSService = {
+    rewire: function(){ try{ enableAdminUi(); wireTargets(); }catch(e){} },
+    open: function(el){ try{ openModal(el); }catch(e){} },
+    isServicePage: isServicePage
+  };
+
+  function onServicePageReady(){
+    if(onServicePageReady._previewOnly) return;
+    applyTextItemsOnly(content);
+    if(AmirCMS.isAuthed()){
+      enableAdminUi();
+      wireTargets();
+      var hint=document.querySelector('.cms-hint');
+      if(hint){
+        hint.textContent='Кликните заголовок, описание, факты, цены или фото врача';
+        hint.classList.add('show');
+        setTimeout(function(){ hint.classList.remove('show'); }, 4500);
+      }
+    }
   }
 
   async function boot(){
@@ -1078,10 +1330,14 @@
 
     var params=new URLSearchParams(location.search);
     var previewOnly=params.get('preview')==='1';
+    onServicePageReady._previewOnly=previewOnly;
+
+    // Слушаем ДО await: цены на /uslugi/ часто приходят раньше конца boot
+    document.addEventListener('amir:service-ready', onServicePageReady);
 
     var fileContent=null;
     try{
-      var res=await fetch('assets/content.json?ts='+Date.now(),{cache:'no-store'});
+      var res=await fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'});
       if(res.ok) fileContent=await res.json();
     }catch(e){}
 
@@ -1094,14 +1350,13 @@
     // Режим пользователя после сохранения из админки — без панели редактора
     if(previewOnly || !AmirCMS.isAuthed()) return;
 
-    document.body.classList.add('cms-admin');
-    buildBar();
-    buildModal();
-    wireTargets();
-    document.addEventListener('click', onAdminClick, true);
-
-    var navEdit=document.getElementById('navEditSite');
-    if(navEdit) navEdit.style.display='none';
+    enableAdminUi();
+    if(window.__amirServiceReady || isServicePage()){
+      onServicePageReady();
+      // На случай поздней подгрузки прайса — ещё раз пометить через короткий интервал
+      setTimeout(onServicePageReady, 400);
+      setTimeout(onServicePageReady, 1200);
+    }
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);

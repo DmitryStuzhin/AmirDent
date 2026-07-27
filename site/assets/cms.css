@@ -80,7 +80,9 @@ body.cms-admin .cms-editable::after{
 }
 body.cms-admin .cms-editable:hover::after,
 body.cms-admin .cms-editable.cms-hot::after{opacity:1!important}
-/* Keep readable photo overlays while editing — separate from label */
+/* Карточка кликабельна целиком; градиент сайта не перехватывает клик у img */
+body.cms-admin .pcard.cms-editable{cursor:pointer}
+body.cms-admin .pcard.cms-editable > img{pointer-events:none}
 body.cms-admin .pcard.cms-editable::before{
   content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
   background:linear-gradient(180deg,rgba(27,24,19,.05) 0,rgba(27,24,19,.75) 100%);
@@ -102,7 +104,16 @@ body.cms-admin .cms-editable.cms-editing{
 }
 body.cms-admin .cms-editable.cms-editing::after{display:none!important}
 body.cms-admin .cms-editable.cms-hidden-mark{opacity:.35;filter:grayscale(.7)}
-body.cms-admin .wa-float{bottom:96px}
+body.cms-admin #dirPage .cms-editable,
+body.cms-admin #dirFacts .cms-editable{
+  outline:2px dashed rgba(179,154,107,.55)!important;
+  outline-offset:3px;
+}
+body.cms-admin #dirPage .cms-editable:hover,
+body.cms-admin #dirFacts .cms-editable:hover{
+  outline-color:rgba(179,154,107,.95)!important;
+  box-shadow:0 0 0 4px rgba(179,154,107,.18);
+}
 
 .cms-modal-bg{
   position:fixed;inset:0;z-index:10001;background:rgba(27,24,19,.45);backdrop-filter:blur(4px);

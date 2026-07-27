@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="/assets/styles.css?v=form2">
-<link rel="stylesheet" href="/assets/cms.css?v=2">
+<link rel="stylesheet" href="/assets/cms.css?v=9">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/favicon.svg">
 <meta name="theme-color" content="#1b1813">
@@ -202,7 +202,38 @@
 <script src="/assets/services-data.js"></script>
 <script src="/assets/menu.js"></script>
 <script src="/assets/main.js"></script>
-<script src="/assets/service.js"></script>
+<script src="/assets/cms-auth.js?v=7"></script>
+<script src="/assets/service.js?v=3"></script>
 <script src="/assets/steps.js"></script>
+<script src="/assets/cms.js?v=30"></script>
+<script>
+/* Запасная проводка правки на карточке услуги — если основной cms.js из кэша */
+(function(){
+  function paint(){
+    try{
+      if(!window.AmirCMS || !AmirCMS.isAuthed()) return;
+      if(/(?:^|[?&])preview=1(?:&|$)/.test(location.search||'')) return;
+      if(window.AmirCMSService && typeof AmirCMSService.rewire==='function'){
+        AmirCMSService.rewire();
+        return;
+      }
+      document.body.classList.add('cms-admin');
+      var nodes=document.querySelectorAll('#dirTitle,#dirDesc,#dirGroup,#dirDocName,#dirDocRole,#dirDocExp,#dirDocImg,#dirFacts .dp-fact b,#dirFacts .dp-fact span,.dp-perks li,#dirSteps .dp-step h3,#dirSteps .dp-step p,#dirList .prow');
+      Array.prototype.forEach.call(nodes, function(el){
+        el.classList.add('cms-editable');
+        el.setAttribute('data-cms-type', el.matches('img') ? 'image' : (el.classList.contains('prow') ? 'price' : 'text'));
+        el.setAttribute('data-cms-label', 'Изменить');
+        el.style.setProperty('outline', '3px dashed #c6a96f', 'important');
+        el.style.setProperty('cursor', 'pointer', 'important');
+      });
+    }catch(e){}
+  }
+  paint();
+  setTimeout(paint, 400);
+  setTimeout(paint, 1200);
+  setTimeout(paint, 2500);
+  document.addEventListener('amir:service-ready', function(){ setTimeout(paint, 80); });
+})();
+</script>
 </body>
 </html>

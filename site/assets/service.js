@@ -90,7 +90,11 @@
     other.appendChild(a);
   });
 
-  // ---- факты рядом с описанием: заполняют место и полезны сами по себе ----
+  function signalServiceReady(){
+    window.__amirServiceReady=true;
+    try{ document.dispatchEvent(new CustomEvent('amir:service-ready')); }catch(e){}
+  }
+
   function money(n){ return n.toLocaleString('ru-RU')+' ₽'; }
   function renderFacts(rows){
     var box=el('dirFacts');
@@ -101,18 +105,20 @@
         var t=(r.querySelector('.pp')||{}).textContent||'';
         return parseInt(t.replace(/[^0-9]/g,''),10);
       }).filter(function(n){ return n>0; });
-      if(prices.length) facts.push({ v:'от '+money(Math.min.apply(null,prices)), k:'стоимость' });
-      facts.push({ v:rows.length, k:'услуг в направлении' });
+      if(prices.length) facts.push({ id:'price', v:'от '+money(Math.min.apply(null,prices)), k:'стоимость' });
+      facts.push({ id:'count', v:String(rows.length), k:'услуг в направлении' });
     }
-    if(docs.length>1) facts.push({ v:docs.length, k:'врача по услуге' });
-    else facts.push({ v:'09:00–21:00', k:'приём ежедневно' });
-    facts.push({ v:'0 ₽', k:'первичный осмотр' });
+    if(docs.length>1) facts.push({ id:'doctors', v:String(docs.length), k:'врача по услуге' });
+    else facts.push({ id:'hours', v:'09:00–21:00', k:'приём ежедневно' });
+    facts.push({ id:'consult', v:'0 ₽', k:'первичный осмотр' });
 
     box.innerHTML='';
     facts.slice(0,4).forEach(function(f){
       var cell=document.createElement('div');
       cell.className='dp-fact';
-      cell.innerHTML='<b>'+f.v+'</b><span>'+f.k+'</span>';
+      cell.setAttribute('data-fact-id', f.id);
+      cell.setAttribute('data-service', slug);
+      cell.innerHTML='<b>'+String(f.v).replace(/</g,'&lt;')+'</b><span>'+String(f.k).replace(/</g,'&lt;')+'</span>';
       box.appendChild(cell);
     });
   }
@@ -122,6 +128,7 @@
     // Косметология в прайс-лист пока не заведена — цену называет администратор
     el('dirPrices').hidden=true;
     renderFacts(null);
+    signalServiceReady();
     return;
   }
 
@@ -151,6 +158,7 @@
     if(note) note.hidden=true;
     renderFacts(picked);
     setupCollapse(picked.length);
+    try{ signalServiceReady(); }catch(e){}
     return true;
   }
 

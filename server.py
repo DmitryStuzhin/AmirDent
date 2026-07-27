@@ -89,8 +89,15 @@ class Handler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(SITE), **kwargs)
 
     def end_headers(self):
-        if self.path.startswith("/assets/content.json") or self.path.startswith("/api/"):
-            self.send_header("Cache-Control", "no-store")
+        path = urlparse(self.path).path
+        if (
+            path.startswith("/assets/content.json")
+            or path.startswith("/api/")
+            or path.startswith("/assets/cms")
+            or path.endswith("/service.js")
+            or path.endswith("/service.html")
+        ):
+            self.send_header("Cache-Control", "no-store, max-age=0")
         super().end_headers()
 
     def _cors(self):
@@ -102,6 +109,16 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_response(204)
         self._cors()
         self.end_headers()
+
+    def do_GET(self):
+        # Как на Netlify: /uslugi/<направление> отдаёт service.html,
+        # а адрес в браузере остаётся читаемым (не редирект).
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/") or "/"
+        if path == "/uslugi" or path.startswith("/uslugi/"):
+            qs = ("?" + parsed.query) if parsed.query else ""
+            self.path = "/service.html" + qs
+        return super().do_GET()
 
     def do_POST(self):
         parsed = urlparse(self.path)
