@@ -301,8 +301,15 @@
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
         err.classList.remove('show');
-        var ok = await AmirCMS.login(form.login.value.trim(), form.password.value);
-        if (!ok) { err.classList.add('show'); return; }
+        var ok = false;
+        try {
+          ok = await AmirCMS.login(form.login.value.trim(), form.password.value);
+        } catch (ex) {
+          err.textContent = ex && ex.message ? ex.message : 'Не удалось связаться с сервером';
+          err.classList.add('show');
+          return;
+        }
+        if (!ok) { err.textContent = 'Неверный логин или пароль'; err.classList.add('show'); return; }
         location.replace('admin.html');
       });
       return;
