@@ -292,8 +292,31 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 .dp-fact{background:var(--paper);border-radius:var(--r-sm);box-shadow:var(--shadow-sm);padding:18px 20px}
 .dp-fact b{display:block;font-family:var(--head);font-weight:800;font-size:23px;line-height:1.1;color:var(--gold-deep);margin-bottom:5px;overflow-wrap:anywhere}
 .dp-fact span{font-size:13px;color:var(--muted)}
-.dp-doc{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow-md);overflow:hidden}
-.dp-doc[hidden]{display:none}
+/* Папка врачей: карточки лежат стопкой, из-под верхней выглядывают края
+   нижних. Высоту стопке задаёт service.js — карточки вынуты из потока. */
+.dp-docs{position:relative}
+.dp-docs[hidden]{display:none}
+.dp-docs-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:13px;padding:0 4px}
+.dp-docs-label{font-family:var(--head);font-weight:700;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold-deep)}
+.dp-docs-count{font-size:13px;color:var(--muted)}
+.dp-docs-stack{position:relative}
+.dp-doc-card{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow-md);overflow:hidden;transform-origin:50% 100%;transition:transform .6s var(--ease),opacity .6s var(--ease),box-shadow .6s var(--ease)}
+.dp-doc-card .dp-doc-text{flex:1 1 auto}
+.dp-doc-card[data-pos="0"]{transform:none;opacity:1;z-index:4}
+.dp-doc-card[data-pos="1"]{transform:translateY(12px) scale(.964);z-index:3;box-shadow:var(--shadow-sm)}
+.dp-doc-card[data-pos="2"]{transform:translateY(22px) scale(.928);z-index:2;box-shadow:var(--shadow-sm)}
+.dp-doc-card[data-pos="3"]{transform:translateY(30px) scale(.9);opacity:.6;z-index:1;box-shadow:none}
+.dp-doc-card[data-pos="back"]{transform:translateY(30px) scale(.9);opacity:0;z-index:0}
+.dp-doc-card.is-leaving{transform:translateY(-34px) scale(1.015) rotate(-1.4deg);opacity:0;z-index:5}
+.dp-docs-nav{display:flex;justify-content:center;gap:8px;margin-top:16px}
+.dp-docs-nav[hidden]{display:none}
+.dp-docs-dot{width:26px;height:5px;padding:0;border:0;border-radius:100px;background:var(--line);cursor:pointer;transition:.3s var(--ease)}
+.dp-docs-dot:hover{background:var(--gold)}
+.dp-docs-dot.is-on{width:34px;background:var(--gold-deep)}
+.dp-docs-dot:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){
+  .dp-doc-card{transition:none}
+}
 .dp-doc-photo{aspect-ratio:4/5;background:var(--line)}
 .dp-doc-photo img{width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block}
 .dp-doc-text{padding:24px}
@@ -362,7 +385,7 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
   .sgroups{grid-template-columns:repeat(2,1fr)}
   .nav-mega{grid-template-columns:repeat(2,minmax(160px,1fr));gap:20px 24px}
   .dp-hero{grid-template-columns:1fr;gap:30px}
-  .dp-doc{display:grid;grid-template-columns:200px 1fr;align-items:center}
+  .dp-doc-card{display:grid;grid-template-columns:200px 1fr;align-items:center}
   .dp-doc-photo{aspect-ratio:1/1}
   .dp-steps{grid-template-columns:repeat(2,1fr)}
   .dp-step::before,.dp-step::after{display:none}
@@ -373,7 +396,7 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 @media(max-width:560px){
   .sgroups{grid-template-columns:1fr;gap:14px}
   .sgroup{padding:22px}
-  .dp-doc{grid-template-columns:1fr}
+  .dp-doc-card{grid-template-columns:1fr}
   .dp-doc-photo{aspect-ratio:4/3}
   .dp-steps{grid-template-columns:1fr}
   .dp-facts{grid-template-columns:1fr}
@@ -398,6 +421,72 @@ h1,h2,h3,h4{font-family:var(--head);font-weight:800;line-height:1.06;letter-spac
 .chief-facts .f{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 18px}
 .chief-facts .f b{display:block;font-family:var(--head);font-size:22px;color:var(--gold-bright)}
 .chief-facts .f small{font-size:12.5px;color:rgba(255,255,255,.6)}
+/* ---- всплывающая карточка врача ----------------------------------- */
+.dm-lock{overflow:hidden}
+.dm{padding:0;border:0;background:transparent;max-width:none;max-height:none;width:100%;height:100%}
+.dm::backdrop{background:rgba(20,17,12,.68);backdrop-filter:blur(6px)}
+.dm[hidden]{display:none}
+/* запасной вариант там, где нет настоящего <dialog> */
+div.dm{position:fixed;inset:0;z-index:120;background:rgba(20,17,12,.68);display:flex}
+dialog.dm{display:flex;align-items:center;justify-content:center}
+dialog.dm:not([open]){display:none}
+div.dm{align-items:center;justify-content:center}
+.dm-panel{position:relative;display:grid;grid-template-columns:minmax(0,42%) minmax(0,58%);
+  /* minmax(0,1fr) по строке — иначе строка растёт по содержимому, панель её
+     просто обрезает, и низ биографии с кнопками становится недостижим. */
+  grid-template-rows:minmax(0,1fr);
+  width:min(1040px,calc(100vw - 40px));max-height:min(88vh,860px);overflow:hidden;
+  background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);
+  animation:dmIn .42s var(--ease) both}
+@keyframes dmIn{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
+.dm-media{position:relative;background:var(--cream-2);min-height:0}
+.dm-media img{width:100%;height:100%;object-fit:cover;object-position:center 15%;display:block}
+.dm-media::after{content:"";position:absolute;inset:auto 0 0 0;height:38%;
+  background:linear-gradient(to top,rgba(27,24,19,.32),transparent)}
+/* min-height:0 обязателен: без него ячейка грида не сжимается ниже своего
+   содержимого, overflow-y не включается и низ биографии с кнопками обрезается. */
+.dm-body{padding:38px 40px;overflow-y:auto;min-height:0}
+.dm-x{position:absolute;top:16px;right:16px;z-index:2;width:42px;height:42px;display:grid;place-items:center;
+  border:0;border-radius:50%;cursor:pointer;color:var(--text);
+  background:rgba(255,255,255,.86);box-shadow:var(--shadow-sm);transition:.25s var(--ease)}
+.dm-x svg{width:20px;height:20px}
+.dm-x:hover{background:#fff;transform:rotate(90deg)}
+.dm-x:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.dm-role{font-family:var(--head);font-weight:700;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:10px}
+.dm-name{font-family:var(--head);font-weight:800;font-size:clamp(24px,2.6vw,33px);line-height:1.1;margin-bottom:22px}
+.dm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-bottom:26px}
+.dm-stat{background:var(--paper);padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+.dm-stat span{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.dm-stat b{font-family:var(--head);font-size:15px;line-height:1.3}
+.dm-video{margin-bottom:26px}
+.dm-video video{width:100%;border-radius:var(--r-sm);display:block;background:var(--ink)}
+.dm-bio-h{font-family:var(--head);font-weight:800;font-size:17px;margin-bottom:18px}
+.dm-track{list-style:none;margin:0 0 28px;padding:0 0 0 22px;position:relative}
+.dm-track::before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--gold),rgba(179,154,107,.15))}
+.dm-track li{position:relative;padding-bottom:18px}
+.dm-track li:last-child{padding-bottom:0}
+.dm-track li::before{content:"";position:absolute;left:-22px;top:6px;width:10px;height:10px;border-radius:50%;
+  background:var(--paper);border:2px solid var(--gold)}
+.dm-year{display:block;font-family:var(--head);font-weight:700;font-size:12.5px;letter-spacing:.05em;color:var(--gold-deep);margin-bottom:3px}
+.dm-year:empty{display:none}
+.dm-track p{font-size:14.5px;line-height:1.65;color:var(--text)}
+.dm-empty{font-size:15px;line-height:1.65;color:var(--muted);margin-bottom:26px}
+.dm-cta{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.dm-wa{font-size:14px;font-weight:600;color:var(--gold-deep);text-decoration:underline}
+@media(max-width:900px){
+  .dm-panel{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);max-height:92vh}
+  .dm-media{max-height:280px}
+  .dm-body{padding:28px 24px}
+}
+@media(prefers-reduced-motion:reduce){
+  .dm-panel{animation:none}
+  .dm-x:hover{transform:none}
+}
+/* карточки врачей кликабельны */
+.doc[data-doc],.dp-doc-card[data-doc]{cursor:pointer}
+.doc[data-doc]:focus-visible,.dp-doc-card[data-doc]:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
 .doc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
 .doc{background:var(--paper);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);transition:transform .4s var(--ease),box-shadow .4s}
 .doc:hover{transform:translateY(-6px);box-shadow:var(--shadow-md)}
