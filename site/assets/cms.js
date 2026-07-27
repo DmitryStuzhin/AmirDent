@@ -362,7 +362,10 @@
       var src=(d.src||'').trim();
       if(!src || src==='undefined' || src==='null') src=doctorPlaceholder();
       var name=d.name||'Врач';
-      return '<article class="doc">'+
+      // data-doc связывает карточку с врачом в services-data.js: по нему
+      // открывается всплывающая карточка. Без него клик перестаёт работать.
+      var link=d.id?' data-doc="'+escAttr(d.id)+'" tabindex="0" role="button" aria-haspopup="dialog"':'';
+      return '<article class="doc"'+link+'>'+
         '<div class="doc-photo"><img src="'+escAttr(src)+'" alt="'+escAttr(name)+'"></div>'+
         '<div class="doc-body">'+
         '<div class="role">'+(d.role||'').replace(/</g,'&lt;')+'</div>'+
@@ -382,10 +385,24 @@
     }).join('');
   }
 
+  /* Версия списка врачей. Живёт в разметке (.doc-grid[data-docs-v]) и попадает
+     в сохранённый снимок. Если в хранилище лежит снимок с меньшей версией —
+     он сделан до правки вёрстки и врачей в нём меньше, чем на странице,
+     поэтому применять его нельзя. Первое же сохранение из админки запишет
+     актуальный список с новой версией. */
+  function docsVersion(){
+    var grid=document.querySelector('.doc-grid');
+    return grid?parseInt(grid.getAttribute('data-docs-v')||'0',10)||0:0;
+  }
+  function docsSnapshotIsFresh(snap){
+    return (parseInt(snap&&snap.docsV,10)||0) >= docsVersion();
+  }
+
   function collectDoctors(){
     return Array.prototype.slice.call(document.querySelectorAll('.doc-grid .doc')).map(function(el){
       var img=el.querySelector('img');
       return {
+        id:el.getAttribute('data-doc')||'',
         name:(el.querySelector('h3')&&el.querySelector('h3').textContent.trim())||'',
         role:(el.querySelector('.role')&&el.querySelector('.role').textContent.trim())||'',
         exp:(el.querySelector('.exp')&&el.querySelector('.exp').textContent.trim())||'',
@@ -465,6 +482,7 @@
       snap.priceHtml=servicesToHtml(snap.services);
       if(Array.isArray(base.doctors)) snap.doctors=base.doctors;
       if(typeof base.docsHtml==='string') snap.docsHtml=base.docsHtml;
+      if(base.docsV!=null) snap.docsV=base.docsV;
       if(Array.isArray(base.images)) snap.images=base.images;
       if(Array.isArray(base.reels)) snap.reels=base.reels;
       return snap;
@@ -487,6 +505,7 @@
 
     snap.doctors=collectDoctors();
     snap.services=collectServices();
+    snap.docsV=docsVersion();
     snap.docsHtml=doctorsToHtml(snap.doctors);
     snap.priceHtml=servicesToHtml(snap.services);
 
@@ -514,12 +533,16 @@
         else if(typeof snap.priceHtml==='string') list.innerHTML=snap.priceHtml;
       }
 
-      if(Array.isArray(snap.doctors)){
-        var docs=document.querySelector('.doc-grid');
-        if(docs) docs.innerHTML=doctorsToHtml(snap.doctors);
-      } else if(typeof snap.docsHtml==='string'){
-        var docs2=document.querySelector('.doc-grid');
-        if(docs2) docs2.innerHTML=snap.docsHtml;
+      // Снимок старше вёрстки не применяем: в нём нет врачей, добавленных
+      // в разметку позже, и подмена молча стёрла бы их со страницы.
+      if(docsSnapshotIsFresh(snap)){
+        if(Array.isArray(snap.doctors)){
+          var docs=document.querySelector('.doc-grid');
+          if(docs) docs.innerHTML=doctorsToHtml(snap.doctors);
+        } else if(typeof snap.docsHtml==='string'){
+          var docs2=document.querySelector('.doc-grid');
+          if(docs2) docs2.innerHTML=snap.docsHtml;
+        }
       }
     }
 
