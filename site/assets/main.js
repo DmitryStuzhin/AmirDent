@@ -272,19 +272,6 @@
     revealItems.forEach(function(el){ io.observe(el); });
   }
 
-<<<<<<< HEAD
-  // count up
-  function animate(el){
-    var raw=String(el.dataset.count||'').trim();
-    // Точность берём из записи в разметке, а не из значения: у 5.0 дробная
-    // часть нулевая, и по значению получалось целое «5» — рейтинг выглядел
-    // сломанным рядом с «5.0 на Яндексе» в первом экране.
-    var dot=raw.indexOf('.');
-    var digits=dot<0?0:raw.length-dot-1;
-    var target=parseFloat(raw), dur=1500, start=performance.now();
-    function tick(now){var p=Math.min((now-start)/dur,1),e=1-Math.pow(1-p,3),v=target*e;
-      el.textContent=v.toFixed(digits);if(p<1)requestAnimationFrame(tick);}
-=======
   // Счётчики в блоке статистики: с 1 до целевого значения.
   // Триггер — появление в зоне экрана (скролл + IntersectionObserver),
   // чтобы работало на мобильных, где IO с высоким threshold иногда молчит.
@@ -313,7 +300,6 @@
       if(p<1) requestAnimationFrame(tick);
       else el.textContent=countFormat(target, isInt);
     }
->>>>>>> feature/ui-design
     requestAnimationFrame(tick);
   }
   function countPass(){
@@ -330,12 +316,17 @@
     countNodes=countNodes.filter(function(el){ return el.isConnected && !el._countDone; });
     document.querySelectorAll('[data-count]').forEach(function(el){
       if(el._countBound && el.isConnected) return;
-      var target=parseFloat(el.getAttribute('data-count'));
+      var raw=String(el.getAttribute('data-count')||'').trim();
+      var target=parseFloat(raw);
       if(!isFinite(target) || target<=0) return;
       el._countBound=true;
       el._countDone=false;
       el._countTarget=target;
-      el._countInt=Math.abs(target%1)<1e-9;
+      /* Целое или дробное решаем по записи в разметке, а не по значению:
+         у 5.0 дробная часть нулевая, и по значению рейтинг выводился как
+         «5» — рядом с «5.0 на Яндексе» в первом экране это выглядело
+         сломанным. Разряд после точки задаёт автор, а не арифметика. */
+      el._countInt=raw.indexOf('.')<0;
       el.textContent=el._countInt?'1':'1.0';
       countNodes.push(el);
       if(countIO) countIO.observe(el);

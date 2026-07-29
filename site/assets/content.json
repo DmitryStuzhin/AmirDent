@@ -2812,31 +2812,19 @@
     {
       "sel": ".rev-track > .rev:not(.rev-clone) .who b",
       "idx": 0,
-<<<<<<< HEAD
-      "html": "Лечение и гигиена",
-=======
       "html": "Анастасия Ч.",
->>>>>>> feature/ui-design
       "hidden": false
     },
     {
       "sel": ".rev-track > .rev:not(.rev-clone) .who b",
       "idx": 1,
-<<<<<<< HEAD
-      "html": "Брекеты · 2 года лечения",
-=======
       "html": "Ольга Филатова",
->>>>>>> feature/ui-design
       "hidden": false
     },
     {
       "sel": ".rev-track > .rev:not(.rev-clone) .who b",
       "idx": 2,
-<<<<<<< HEAD
-      "html": "Хирургия",
-=======
       "html": "Andrey Andrey",
->>>>>>> feature/ui-design
       "hidden": false
     },
     {
@@ -2884,29 +2872,18 @@
     {
       "sel": ".rev-track > .rev:not(.rev-clone) .who small",
       "idx": 0,
-<<<<<<< HEAD
-      "html": "Врач — Краснощёкова Лилия",
-=======
       "html": "Яндекс Карты",
->>>>>>> feature/ui-design
       "hidden": false
     },
     {
       "sel": ".rev-track > .rev:not(.rev-clone) .who small",
       "idx": 1,
-<<<<<<< HEAD
-      "html": "Врачи — Жабин Алексей, Кхатиб Массуд",
-=======
       "html": "Яндекс Карты",
->>>>>>> feature/ui-design
       "hidden": false
     },
     {
       "sel": ".rev-track > .rev:not(.rev-clone) .who small",
       "idx": 2,
-<<<<<<< HEAD
-      "html": "Врач — Медведев Даниил",
-=======
       "html": "Яндекс Карты",
       "hidden": false
     },
@@ -2950,7 +2927,6 @@
       "sel": ".rev-track > .rev:not(.rev-clone) .who small",
       "idx": 9,
       "html": "Яндекс Карты",
->>>>>>> feature/ui-design
       "hidden": false
     },
     {
@@ -3015,10 +2991,5 @@
     }
   ],
   "hiddenBlocks": [],
-<<<<<<< HEAD
   "docsV": 6
 }
-=======
-  "docsV": 5
-}
->>>>>>> feature/ui-design
