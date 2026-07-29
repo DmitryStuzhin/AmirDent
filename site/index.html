@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="assets/styles.css?v=form2">
+<link rel="stylesheet" href="assets/styles.css?v=stats2col">
 <link rel="stylesheet" href="assets/cms.css?v=9">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
@@ -54,7 +54,7 @@
     <div class="hero-grid">
       <div class="hero-copy">
         <span class="eyebrow on-dark"><span class="dot"></span>Стоматология на Яхромской</span>
-        <h1>Ваша идеальная улыбка — <span class="g">от 45 000 ₽</span> за брекеты</h1>
+        <h1>Ваша идеальная улыбка —<br><span class="g">от&nbsp;45&nbsp;000&nbsp;₽</span> за&nbsp;брекеты</h1>
         <p class="hero-sub">Исправление прикуса, имплантация, лечение и эстетика зубов. <b>Дипломированные врачи с опытом 12+ лет</b>, современное оборудование и честные цены — под ключ, с гарантией результата.</p>
         <div class="hero-actions">
           <a href="#zapis" class="btn btn-gold btn-lg">Записаться на приём
@@ -237,13 +237,32 @@
       <p>Реальные оценки на Яндекс Картах и ПроДокторов.</p>
     </div>
     <div class="rev-top reveal">
-      <a class="score" href="https://yandex.ru/maps/213/moscow/?mode=search&text=АмирДент" target="_blank" rel="noopener"><div class="v">5.0</div><div><div class="stars">★★★★★</div><small>Яндекс Карты</small></div></a>
+      <a class="score score-ya" href="https://yandex.ru/maps/org/amirdent/1781090864/reviews/" target="_blank" rel="noopener">
+        <span class="ya-goodplace" title="Хорошее место 2026" aria-label="Награда Яндекс Карт: Хорошее место 2026">
+          <img src="assets/badges/ya-goodplace.png" width="64" height="42" alt="" decoding="async">
+        </span>
+        <div class="v">5.0</div>
+        <div>
+          <div class="stars">★★★★★</div>
+          <small>Яндекс Карты</small>
+          <span class="ya-goodplace-lbl">Хорошее место 2026</span>
+        </div>
+      </a>
       <a class="score" href="https://prodoctorov.ru/moskva/lpu/45532-amirdent/otzivi/" target="_blank" rel="noopener"><div class="v">4.7</div><div><div class="stars">★★★★★</div><small>ПроДокторов</small></div></a>
     </div>
-    <div class="rev-grid">
-      <div class="rev reveal"><div class="stars">★★★★★</div><p>«Уже не первый раз посещаю „Амирдент“ и каждый раз ухожу в восторге! Лечусь у Лилии Краснощёковой — нравится её подход, участливость и человечное отношение».</p><div class="who"><div class="av">П</div><div><b>Пациент</b><small>Ортодонтия</small></div></div></div>
-      <div class="rev reveal"><div class="stars">★★★★★</div><p>«Хочу выделить крутого стоматолога-ортопеда Жабина А. Н. и, конечно, доктора Массуда. 2 года на брекет-системе пролетели незаметно, результат превзошёл все ожидания!»</p><div class="who"><div class="av">П</div><div><b>Пациент</b><small>Брекеты</small></div></div></div>
-      <div class="rev reveal"><div class="stars">★★★★★</div><p>«Очень понравился персонал, в особенности работа Медведева Даниила. Ситуация была сложная, но благодаря профессионализму хирурга всё прошло хорошо и безболезненно!»</p><div class="who"><div class="av">П</div><div><b>Пациент</b><small>Хирургия</small></div></div></div>
+  </div>
+  <div class="rev-marquee" id="revMarquee" aria-label="Лента отзывов пациентов">
+    <div class="rev-track" id="revTrack">
+      <article class="rev"><div class="stars">★★★★★</div><p>«Отличная клиника, все чисто, приветливый персонал, шикарные врачи. Пришла поставить брекеты и вылечить зубы — провели полную диагностику и подобрали лучший вариант. Пропал страх стоматологии! Спасибо докторам Массуду, Амиру и Евгении»</p><div class="who"><div class="av">А</div><div><b>Анастасия Ч.</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Отличные врачи! Поставили ребёнку брекеты, залечили пару дырок, сделали чистку — ни разу не крикнул. Наблюдаемся дальше, ребёнку нравится. Отношение супер: пока жду, всегда предложат чай или кофе»</p><div class="who"><div class="av">О</div><div><b>Ольга Филатова</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Евгения Михайловна — золотые руки! Показали все проблемы у ребёнка и фото до/после. Сын даже не понял, что зубы сделали. Стоматология стала безболезненной и понятной. Огромное спасибо!»</p><div class="who"><div class="av">A</div><div><b>Andrey Andrey</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Обратилась для установки безлигатурных корейских брекетов. Врач всё подробно объяснил и составил понятный план. Установка прошла быстро, почти без дискомфорта. Уже через несколько месяцев — первые результаты»</p><div class="who"><div class="av">Ю</div><div><b>Юлия Авдонина</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Лечусь здесь не первый год. Доктора внимательные, настоящие профессионалы. Доброжелательный коллектив, вежливые администраторы. Атмосфера в клинике чудесная — всем рекомендую!»</p><div class="who"><div class="av">A</div><div><b>ALLA</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Прекрасная клиника: новейшее оборудование и отличные специалисты. Ходим всей семьёй — детские стоматологи, ортодонты и ортопеды на высоте. На ресепшене всегда приветливый администратор»</p><div class="who"><div class="av">М</div><div><b>Мария Н.</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Уважаемый доктор Амир! Спасибо за профессионализм и внимательное отношение. Очень комфортно в кресле — умеете успокоить. Посещение перестало быть стрессом, результат превзошёл ожидания»</p><div class="who"><div class="av">К</div><div><b>Катерина Б.</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Если ищете современную стоматологию с атмосферой заботы — вам в АмирДент. Впечатления исключительно положительные: мастера своего дела и современное оборудование. Спасибо за красивую улыбку!»</p><div class="who"><div class="av">Ю</div><div><b>Юлия Яковлева</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Поставила безлигатурные корейские брекеты по рекомендации знакомых. Довольна результатом и отношением персонала. Приёмы вовремя, врачи внимательны и аккуратны. Рекомендую всем, кто планирует исправление прикуса»</p><div class="who"><div class="av">А</div><div><b>Анастасия Малых</b><small>Яндекс Карты</small></div></div></article>
+      <article class="rev"><div class="stars">★★★★★</div><p>«Очень хорошая стоматология: восстановили зуб, который треснул — в другой клинике говорили, что только коронка. Всё как новенькое, жевать удобно, ничего не мешает. 10/10»</p><div class="who"><div class="av">А</div><div><b>Александр</b><small>Яндекс Карты</small></div></div></article>
     </div>
   </div>
 </section>
@@ -337,12 +356,12 @@
 
 <a class="wa-float" href="https://wa.me/79262031828" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.5-.3.3c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.7-.9c.2-.3.4-.2.7-.1l2 .9c.3.2.5.2.5.4.1.1.1.7-.1 1.4Z"/></svg></a>
 
-<script src="assets/services-data.js"></script>
-<script src="assets/doctor-modal.js"></script>
+<script src="assets/services-data.js?v=pd1"></script>
+<script src="assets/doctor-modal.js?v=pd1"></script>
 <script src="assets/menu.js"></script>
 <script src="assets/steps.js"></script>
 <script src="assets/cms-auth.js?v=6"></script>
-<script src="assets/main.js?v=form2"></script>
-<script src="assets/cms.js?v=30"></script>
+<script src="assets/main.js?v=count1"></script>
+<script src="assets/cms.js?v=revs1"></script>
 </body>
 </html>

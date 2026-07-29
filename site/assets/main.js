@@ -2,6 +2,173 @@
   // адрес, по которому принимаются заявки (см. netlify/functions/lead.mjs)
   var LEAD_ENDPOINT='/api/lead';
 
+  /* Кастомный select: системный список на macOS/iOS нельзя стилизовать. */
+  function enhanceFormSelect(sel){
+    if(!sel||!sel.classList.contains('form-select')) return;
+    var wrap=sel.closest('.select-wrap');
+    if(!wrap) return;
+    if(wrap._csel){ wrap._csel.rebuild(); return; }
+
+    sel.classList.add('csel-native');
+    sel.setAttribute('tabindex','-1');
+    wrap.classList.add('is-custom');
+
+    var btn=document.createElement('button');
+    btn.type='button';
+    btn.className='csel-btn';
+    btn.setAttribute('aria-haspopup','listbox');
+    btn.setAttribute('aria-expanded','false');
+    btn.innerHTML='<span class="csel-label"></span><span class="csel-chev" aria-hidden="true"></span>';
+    var label=btn.querySelector('.csel-label');
+
+    var panel=document.createElement('ul');
+    panel.className='csel-panel';
+    panel.setAttribute('role','listbox');
+    panel.id='csel-'+Math.random().toString(36).slice(2,9);
+    btn.setAttribute('aria-controls',panel.id);
+
+    wrap.appendChild(btn);
+    wrap.appendChild(panel);
+
+    var open=false, active=-1;
+
+    function selectedOpt(){
+      return sel.options[sel.selectedIndex]||null;
+    }
+    function syncBtn(){
+      var o=selectedOpt();
+      var empty=!o||o.value==='';
+      label.textContent=(o&&o.text)?o.text:'Выберите направление';
+      btn.classList.toggle('is-placeholder',empty);
+      btn.classList.toggle('is-invalid',sel.classList.contains('is-invalid'));
+    }
+    function rebuild(){
+      panel.innerHTML='';
+      Array.prototype.forEach.call(sel.options,function(o,i){
+        var li=document.createElement('li');
+        li.className='csel-opt';
+        li.setAttribute('role','option');
+        li.dataset.index=String(i);
+        li.textContent=o.text;
+        if(o.value==='') li.classList.add('is-placeholder');
+        if(o.disabled) li.setAttribute('aria-disabled','true');
+        if(i===sel.selectedIndex){
+          li.classList.add('is-selected');
+          li.setAttribute('aria-selected','true');
+        }
+        li.addEventListener('click',function(e){
+          e.preventDefault();
+          if(o.disabled) return;
+          sel.selectedIndex=i;
+          sel.dispatchEvent(new Event('change',{bubbles:true}));
+          syncBtn();
+          paintSelected();
+          close();
+          btn.focus();
+        });
+        panel.appendChild(li);
+      });
+      syncBtn();
+    }
+    function paintSelected(){
+      var items=panel.querySelectorAll('.csel-opt');
+      items.forEach(function(li,i){
+        var on=i===sel.selectedIndex;
+        li.classList.toggle('is-selected',on);
+        if(on) li.setAttribute('aria-selected','true'); else li.removeAttribute('aria-selected');
+        li.classList.toggle('is-active',i===active);
+      });
+    }
+    function placePanel(){
+      // Всегда открываем вниз; если снизу мало места — чуть уменьшаем высоту.
+      wrap.classList.remove('is-up');
+      var rect=btn.getBoundingClientRect();
+      var spaceBelow=Math.max(120, window.innerHeight-rect.bottom-16);
+      panel.style.maxHeight=Math.min(280, spaceBelow, window.innerHeight*0.46)+'px';
+    }
+    function setOpen(v){
+      open=!!v;
+      if(open) placePanel();
+      else panel.style.maxHeight='';
+      wrap.classList.toggle('is-open',open);
+      btn.setAttribute('aria-expanded',open?'true':'false');
+      if(open){
+        active=sel.selectedIndex>=0?sel.selectedIndex:0;
+        paintSelected();
+        var cur=panel.querySelector('.csel-opt.is-selected');
+        if(cur&&cur.scrollIntoView) cur.scrollIntoView({block:'nearest'});
+      }
+    }
+    function close(){ setOpen(false); }
+    function toggle(){ setOpen(!open); }
+
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      toggle();
+    });
+    btn.addEventListener('keydown',function(e){
+      var max=sel.options.length-1;
+      if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+        e.preventDefault();
+        if(!open){ setOpen(true); return; }
+        active=e.key==='ArrowDown'?Math.min(max,active+1):Math.max(0,active-1);
+        paintSelected();
+        var el=panel.children[active];
+        if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'});
+      } else if(e.key==='Enter'||e.key===' '){
+        e.preventDefault();
+        if(!open){ setOpen(true); return; }
+        if(active>=0&&sel.options[active]&&!sel.options[active].disabled){
+          sel.selectedIndex=active;
+          sel.dispatchEvent(new Event('change',{bubbles:true}));
+          syncBtn();
+          paintSelected();
+          close();
+        }
+      } else if(e.key==='Escape'){
+        if(open){ e.preventDefault(); close(); }
+      } else if(e.key==='Home'&&open){
+        e.preventDefault(); active=0; paintSelected();
+      } else if(e.key==='End'&&open){
+        e.preventDefault(); active=max; paintSelected();
+      }
+    });
+
+    document.addEventListener('click',function(e){
+      if(open&&!wrap.contains(e.target)) close();
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape'&&open) close();
+    });
+
+    sel.addEventListener('change',function(){ syncBtn(); paintSelected(); });
+
+    // следим за is-invalid с формы
+    var mo=typeof MutationObserver==='function'?new MutationObserver(function(){
+      btn.classList.toggle('is-invalid',sel.classList.contains('is-invalid'));
+    }):null;
+    if(mo) mo.observe(sel,{attributes:true,attributeFilter:['class']});
+
+    wrap._csel={rebuild:rebuild,sync:syncBtn,close:close};
+    rebuild();
+  }
+
+  function enhanceAllFormSelects(){
+    document.querySelectorAll('.form select.form-select').forEach(enhanceFormSelect);
+  }
+  window.AMIR_formSelects={
+    refresh:function(sel){
+      if(sel) enhanceFormSelect(sel);
+      else enhanceAllFormSelects();
+    },
+    sync:function(sel){
+      if(sel&&sel.closest&&sel.closest('.select-wrap')&&sel.closest('.select-wrap')._csel)
+        sel.closest('.select-wrap')._csel.sync();
+      else enhanceAllFormSelects();
+    }
+  };
+  enhanceAllFormSelects();
+
   // sticky header shrink
   var hdr=document.querySelector('.hdr');
   window.addEventListener('scroll',function(){
@@ -60,15 +227,80 @@
     revealItems.forEach(function(el){ io.observe(el); });
   }
 
-  // count up
-  function animate(el){
-    var target=parseFloat(el.dataset.count), dur=1500, start=performance.now();
-    function tick(now){var p=Math.min((now-start)/dur,1),e=1-Math.pow(1-p,3),v=target*e;
-      el.textContent=(target%1===0?Math.floor(v):v.toFixed(1));if(p<1)requestAnimationFrame(tick);}
+  // Счётчики в блоке статистики: с 1 до целевого значения.
+  // Триггер — появление в зоне экрана (скролл + IntersectionObserver),
+  // чтобы работало на мобильных, где IO с высоким threshold иногда молчит.
+  var countNodes=[];
+  var countIO=null;
+  function countFormat(v, isInt){
+    return isInt ? String(Math.round(v)) : v.toFixed(1);
+  }
+  function countAnimate(el){
+    if(el._countDone || !el.isConnected) return;
+    el._countDone=true;
+    var target=el._countTarget;
+    var isInt=el._countInt;
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      el.textContent=countFormat(target, isInt);
+      return;
+    }
+    var from=1;
+    var dur=target>=1000?1800:target>=100?1400:1100;
+    var t0=performance.now();
+    function tick(now){
+      var p=Math.min((now-t0)/dur,1);
+      var e=1-Math.pow(1-p,3);
+      var v=from+(target-from)*e;
+      el.textContent=countFormat(v, isInt);
+      if(p<1) requestAnimationFrame(tick);
+      else el.textContent=countFormat(target, isInt);
+    }
     requestAnimationFrame(tick);
   }
-  var co=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){animate(e.target);co.unobserve(e.target);}});},{threshold:.5});
-  document.querySelectorAll('[data-count]').forEach(function(el){co.observe(el);});
+  function countPass(){
+    if(!countNodes.length) return;
+    var vh=window.innerHeight||0;
+    countNodes=countNodes.filter(function(el){
+      if(!el.isConnected || el._countDone) return false;
+      var r=el.getBoundingClientRect();
+      if(r.top<vh*0.92 && r.bottom>0){ countAnimate(el); return false; }
+      return true;
+    });
+  }
+  function initCountUps(){
+    countNodes=countNodes.filter(function(el){ return el.isConnected && !el._countDone; });
+    document.querySelectorAll('[data-count]').forEach(function(el){
+      if(el._countBound && el.isConnected) return;
+      var target=parseFloat(el.getAttribute('data-count'));
+      if(!isFinite(target) || target<=0) return;
+      el._countBound=true;
+      el._countDone=false;
+      el._countTarget=target;
+      el._countInt=Math.abs(target%1)<1e-9;
+      el.textContent=el._countInt?'1':'1.0';
+      countNodes.push(el);
+      if(countIO) countIO.observe(el);
+    });
+    countPass();
+  }
+  var countQueued=false;
+  function countOnScroll(){
+    if(countQueued) return;
+    countQueued=true;
+    requestAnimationFrame(function(){ countQueued=false; countPass(); });
+  }
+  if(window.IntersectionObserver){
+    countIO=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){ countAnimate(e.target); countIO.unobserve(e.target); }
+      });
+    },{threshold:0.15, rootMargin:'0px 0px -8% 0px'});
+  }
+  initCountUps();
+  window.addEventListener('scroll', countOnScroll, {passive:true});
+  window.addEventListener('resize', countOnScroll);
+  window.addEventListener('load', countPass);
+  window.AMIR_initCountUps=initCountUps;
 
   // hero chevron parallax
   var chev=document.querySelector('.chevrons');
@@ -312,7 +544,7 @@
         if(phoneField)phoneField.focus();
         return;
       }
-      if(!LEAD_ENDPOINT){window.open(whatsappLink(name,phone,service),'_blank');form.reset();if(phoneField)phoneField.value='+7 ';return;}
+      if(!LEAD_ENDPOINT){window.open(whatsappLink(name,phone,service),'_blank');form.reset();if(phoneField)phoneField.value='+7 ';if(window.AMIR_formSelects)AMIR_formSelects.sync(form.service);return;}
       if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
       say('Отправляем заявку…',false);
       fetch(LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -330,6 +562,7 @@
           if(btn)btn.textContent='Заявка отправлена ✓';
           form.reset();
           if(phoneField)phoneField.value='+7 ';
+          if(window.AMIR_formSelects) AMIR_formSelects.sync(form.service);
         })
         .catch(function(){ sayFailed(name,phone,service); })
         .finally(function(){
@@ -337,4 +570,56 @@
         });
     });
   }
+
+  // Лента отзывов: клоны + ширина 3-в-ряд + бесконечный скролл
+  (function(){
+    var root=document.getElementById('revMarquee');
+    var track=document.getElementById('revTrack');
+    if(!root||!track) return;
+
+    root.classList.remove('reveal','armed','in');
+    root.style.opacity='';
+    root.style.transform='';
+
+    track.querySelectorAll('.rev-clone').forEach(function(n){ n.parentNode.removeChild(n); });
+    var originals=Array.prototype.slice.call(track.children).filter(function(el){
+      return el.classList&&el.classList.contains('rev')&&!el.classList.contains('rev-clone');
+    });
+    if(!originals.length) return;
+
+    originals.forEach(function(card){
+      var clone=card.cloneNode(true);
+      clone.classList.add('rev-clone');
+      clone.setAttribute('aria-hidden','true');
+      clone.querySelectorAll('a,button,[tabindex]').forEach(function(el){ el.setAttribute('tabindex','-1'); });
+      track.appendChild(clone);
+    });
+
+    var gap=20;
+    function showCount(){
+      var w=window.innerWidth||1200;
+      if(w<=640) return 1;
+      if(w<=900) return 2;
+      return 3;
+    }
+    function layout(){
+      var padL=parseFloat(getComputedStyle(root).paddingLeft)||0;
+      var padR=parseFloat(getComputedStyle(root).paddingRight)||0;
+      var inner=Math.max(200, root.clientWidth-padL-padR);
+      var show=showCount();
+      var cardW=Math.floor((inner-(show-1)*gap)/show);
+      root.style.setProperty('--rev-gap',gap+'px');
+      root.style.setProperty('--rev-w',cardW+'px');
+      // ~38px/сек — плавно и заметно
+      var setW=originals.length*(cardW+gap);
+      var dur=Math.max(28, setW/38);
+      track.style.animationDuration=dur+'s';
+      track.style.animationPlayState='running';
+    }
+    layout();
+    window.addEventListener('resize',layout);
+    // на всякий случай после шрифтов/CMS
+    if(document.fonts&&document.fonts.ready) document.fonts.ready.then(layout);
+    setTimeout(layout,300);
+  })();
 })();

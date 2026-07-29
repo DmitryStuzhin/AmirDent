@@ -40,9 +40,9 @@
     '.why-grid .pcard.solid .plogos span',
     '.steps-grid .step h3',
     '.steps-grid .step p',
-    '.rev-grid .rev > p',
-    '.rev-grid .rev .who b',
-    '.rev-grid .rev .who small',
+    '.rev-track > .rev:not(.rev-clone) > p',
+    '.rev-track > .rev:not(.rev-clone) .who b',
+    '.rev-track > .rev:not(.rev-clone) .who small',
     '.score .v',
     '.score small',
     '.chip',
@@ -365,6 +365,7 @@
       // data-doc связывает карточку с врачом в services-data.js: по нему
       // открывается всплывающая карточка. Без него клик перестаёт работать.
       var link=d.id?' data-doc="'+escAttr(d.id)+'" tabindex="0" role="button" aria-haspopup="dialog"':'';
+      // Рейтинги ПроДокторов подставляются из services-data.js после вставки HTML.
       return '<article class="doc"'+link+'>'+
         '<div class="doc-photo"><img src="'+escAttr(src)+'" alt="'+escAttr(name)+'"></div>'+
         '<div class="doc-body">'+
@@ -512,7 +513,7 @@
     snap.textItems=queryUniqueTexts();
 
     snap.hiddenBlocks=[];
-    ['.why-grid .pcard','.rev-grid .rev','.steps-grid .step','.reel'].forEach(function(sel){
+    ['.why-grid .pcard','.rev-track > .rev:not(.rev-clone)','.steps-grid .step','.reel'].forEach(function(sel){
       document.querySelectorAll(sel).forEach(function(n, idx){
         if(n.style.display==='none') snap.hiddenBlocks.push({ sel:sel, idx:idx });
       });
@@ -616,6 +617,9 @@
         });
       });
     }
+
+    if(typeof window.AMIR_applyDocRatings==='function') window.AMIR_applyDocRatings();
+    if(typeof window.AMIR_initCountUps==='function') window.AMIR_initCountUps();
   }
 
   function markEditable(el, label, type){

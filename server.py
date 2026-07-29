@@ -96,6 +96,9 @@ class Handler(SimpleHTTPRequestHandler):
             or path.startswith("/assets/cms")
             or path.endswith("/service.js")
             or path.endswith("/service.html")
+            or path.endswith("/styles.css")
+            or path.endswith("/index.html")
+            or path == "/"
         ):
             self.send_header("Cache-Control", "no-store, max-age=0")
         super().end_headers()
