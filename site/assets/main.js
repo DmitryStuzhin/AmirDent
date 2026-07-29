@@ -195,8 +195,29 @@
 
   // mobile menu
   var burger=document.querySelector('.burger'), nav=document.querySelector('.nav');
-  if(burger&&nav){burger.addEventListener('click',function(){nav.classList.toggle('open');burger.classList.toggle('active');});
-    nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){nav.classList.remove('open');});});}
+  if(burger&&nav){
+    function setMobileMenu(open){
+      nav.classList.toggle('open',open);
+      burger.classList.toggle('active',open);
+      burger.setAttribute('aria-expanded',open?'true':'false');
+      document.documentElement.classList.toggle('menu-open',open);
+    }
+    burger.addEventListener('click',function(){ setMobileMenu(!nav.classList.contains('open')); });
+    nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setMobileMenu(false);});});
+    function blockBackgroundScroll(e){
+      if(!nav.classList.contains('open'))return;
+      if(e.type==='touchmove'&&nav.contains(e.target))return;
+      e.preventDefault();
+    }
+    document.addEventListener('touchmove',blockBackgroundScroll,{passive:false});
+    document.addEventListener('wheel',blockBackgroundScroll,{passive:false});
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape'){setMobileMenu(false);return;}
+      if(!nav.classList.contains('open'))return;
+      if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].indexOf(e.key)>-1)e.preventDefault();
+    });
+    window.addEventListener('resize',function(){if(window.innerWidth>860)setMobileMenu(false);});
+  }
 
   // Свет на первом экране следует за курсором очень медленно: это создаёт
   // глубину вокруг врача, но не двигает текст и не мешает чтению.

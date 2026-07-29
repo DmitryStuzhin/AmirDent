@@ -27,18 +27,19 @@
       if(started) return;
       started=true;
       box.classList.add('steps-run');
+      var delay=window.matchMedia&&window.matchMedia('(max-width: 560px)').matches?150:260;
       items.forEach(function(item,i){
         setTimeout(function(){
           item.classList.add('is-on');
           if(i===items.length-1) box.classList.add('steps-done');
-        }, 160+i*260);
+        }, 120+i*delay);
       });
       // Если анимация почему-то не доиграла, доводим блок до конечного вида,
       // чтобы приглушённые этапы не остались приглушёнными навсегда.
       setTimeout(function(){
         box.classList.add('steps-done');
         items.forEach(function(item){ item.classList.add('is-on'); });
-      }, 160+items.length*260+1200);
+      }, 120+items.length*delay+1000);
     }
 
     // Наблюдатель за прокруткой — лишь ускоритель: в некоторых браузерах он не
