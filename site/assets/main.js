@@ -8,10 +8,48 @@
     if(hdr) hdr.classList.toggle('scrolled', window.scrollY>20);
   },{passive:true});
 
+  // Тонкая линия сверху показывает прогресс по длинной странице.
+  var scrollProgress=document.getElementById('scrollProgress');
+  var hero=document.querySelector('.hero');
+  var scrollFxQueued=false;
+  function scrollFx(){
+    scrollFxQueued=false;
+    var max=Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+    if(scrollProgress) scrollProgress.style.width=Math.min(100,window.scrollY/max*100)+'%';
+  }
+  function queueScrollFx(){
+    if(scrollFxQueued)return;
+    scrollFxQueued=true;
+    requestAnimationFrame(scrollFx);
+  }
+  window.addEventListener('scroll',queueScrollFx,{passive:true});
+  window.addEventListener('resize',queueScrollFx);
+  scrollFx();
+
   // mobile menu
   var burger=document.querySelector('.burger'), nav=document.querySelector('.nav');
   if(burger&&nav){burger.addEventListener('click',function(){nav.classList.toggle('open');burger.classList.toggle('active');});
     nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){nav.classList.remove('open');});});}
+
+  // Свет на первом экране следует за курсором очень медленно: это создаёт
+  // глубину вокруг врача, но не двигает текст и не мешает чтению.
+  var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(hero&&!reduceMotion&&window.matchMedia('(pointer:fine)').matches){
+    hero.addEventListener('pointermove',function(e){
+      var r=hero.getBoundingClientRect();
+      var x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+      hero.style.setProperty('--hero-x',(x*100).toFixed(1)+'%');
+      hero.style.setProperty('--hero-y',(y*100).toFixed(1)+'%');
+      hero.style.setProperty('--hero-px',((x-.5)*18).toFixed(1)+'px');
+      hero.style.setProperty('--hero-py',((y-.34)*12).toFixed(1)+'px');
+    },{passive:true});
+    hero.addEventListener('pointerleave',function(){
+      hero.style.setProperty('--hero-x','50%');
+      hero.style.setProperty('--hero-y','34%');
+      hero.style.setProperty('--hero-px','0px');
+      hero.style.setProperty('--hero-py','0px');
+    },{passive:true});
+  }
 
   // Появление блоков при прокрутке.
   // Раньше это делал только IntersectionObserver, и если браузер не присылал его
@@ -21,7 +59,14 @@
   // 2,5 секунды показываем всё, что осталось скрытым.
   var revealItems=Array.prototype.slice.call(document.querySelectorAll('.reveal'));
   // Прячем только сейчас, когда анимацией управляет скрипт
-  revealItems.forEach(function(el){ el.classList.add('armed'); });
+  revealItems.forEach(function(el,index){
+    el.classList.add('armed');
+    // Соседние карточки появляются волной, а одиночные блоки — без задержки.
+    var parent=el.parentElement;
+    if(parent&&(parent.classList.contains('why-grid')||parent.classList.contains('doc-grid')||parent.classList.contains('rev-grid'))){
+      el.style.setProperty('--reveal-delay',Math.min(index%6,5)*70+'ms');
+    }
+  });
   function revealShow(el){ el.classList.add('in'); }
   function revealPass(){
     if(!revealItems.length) return;
@@ -62,17 +107,31 @@
 
   // count up
   function animate(el){
-    var target=parseFloat(el.dataset.count), dur=1500, start=performance.now();
+    var raw=String(el.dataset.count||'').trim();
+    // Точность берём из записи в разметке, а не из значения: у 5.0 дробная
+    // часть нулевая, и по значению получалось целое «5» — рейтинг выглядел
+    // сломанным рядом с «5.0 на Яндексе» в первом экране.
+    var dot=raw.indexOf('.');
+    var digits=dot<0?0:raw.length-dot-1;
+    var target=parseFloat(raw), dur=1500, start=performance.now();
     function tick(now){var p=Math.min((now-start)/dur,1),e=1-Math.pow(1-p,3),v=target*e;
-      el.textContent=(target%1===0?Math.floor(v):v.toFixed(1));if(p<1)requestAnimationFrame(tick);}
+      el.textContent=v.toFixed(digits);if(p<1)requestAnimationFrame(tick);}
     requestAnimationFrame(tick);
   }
   var co=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){animate(e.target);co.unobserve(e.target);}});},{threshold:.5});
   document.querySelectorAll('[data-count]').forEach(function(el){co.observe(el);});
 
-  // hero chevron parallax
-  var chev=document.querySelector('.chevrons');
-  if(chev){window.addEventListener('scroll',function(){chev.style.transform='translateY('+(window.scrollY*0.06)+'px)';},{passive:true});}
+  // Локальный блик на интерактивных карточках. Координаты уходят только в CSS,
+  // поэтому эффект не вызывает перерасчёт раскладки страницы.
+  if(!reduceMotion&&window.matchMedia('(pointer:fine)').matches){
+    document.querySelectorAll('.pcard,.sgroup').forEach(function(card){
+      card.addEventListener('pointermove',function(e){
+        var r=card.getBoundingClientRect();
+        card.style.setProperty('--spot-x',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+        card.style.setProperty('--spot-y',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+      },{passive:true});
+    });
+  }
 
   // price list search + filter
   var psearch=document.getElementById('priceSearch');

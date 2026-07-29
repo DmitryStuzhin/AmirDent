@@ -10,9 +10,9 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="assets/styles.css?v=form2">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="assets/styles.css?v=brandmark1">
 <link rel="stylesheet" href="assets/cms.css?v=9">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
@@ -47,13 +47,16 @@
     </div>
   </div>
 </header>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-brand-mark" aria-hidden="true"></div>
+  <div class="hero-gridlines" aria-hidden="true"></div>
   <div class="container">
     <div class="hero-grid">
       <div class="hero-copy">
-        <span class="eyebrow on-dark"><span class="dot"></span>Стоматология на Яхромской</span>
+        <span class="eyebrow on-dark"><span class="dot status-dot"></span>Стоматология на Яхромской · 5 минут от метро</span>
         <h1>Ваша идеальная улыбка — <span class="g">от 45 000 ₽</span> за брекеты</h1>
         <p class="hero-sub">Исправление прикуса, имплантация, лечение и эстетика зубов. <b>Дипломированные врачи с опытом 12+ лет</b>, современное оборудование и честные цены — под ключ, с гарантией результата.</p>
         <div class="hero-actions">
@@ -61,17 +64,23 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           <a href="#services" class="btn btn-ghost on-dark btn-lg">Услуги и цены</a>
         </div>
+        <div class="hero-note">
+          <span class="hero-note-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="m8 12 2.4 2.4L16.5 8"/></svg>
+          </span>
+          <span><b>Первичный осмотр и план лечения — 0 ₽</b><small>Покажем варианты и точную смету до начала лечения</small></span>
+        </div>
       </div>
       <div class="hero-media">
-        <svg class="chevrons" viewBox="0 0 400 400" fill="none" aria-hidden="true">
-          <path d="M120 60 L250 200 L120 340"/><path d="M180 60 L310 200 L180 340"/>
-          <path d="M240 60 L370 200 L240 340"/><path d="M60 120 L160 200 L60 280"/>
-        </svg>
         <div class="hero-glow"></div>
         <div class="chip c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg> Без боли</div>
         <div class="chip c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z"/></svg> Гарантия результата</div>
         <div class="chip c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2l3 6.3 6.9.9-5 4.8 1.2 6.9L12 17.8 5.9 20.9 7.1 14 2 9.2l6.9-.9z"/></svg> 5.0 на Яндексе</div>
         <img class="hero-doc" src="https://static.tildacdn.com/tild6238-3739-4737-b836-326430383731/1111_opti.png" alt="Кхатиб Массуд Зидан — главный врач АмирДент">
+        <div class="hero-doctor-card">
+          <span class="hero-doctor-line"></span>
+          <span><b>Кхатиб Массуд Зидан</b><small>Главный врач · 27 лет практики</small></span>
+        </div>
       </div>
     </div>
   </div>
@@ -83,6 +92,20 @@
     </div>
   </div>
 </section>
+<div class="proof-marquee" aria-label="Преимущества клиники">
+  <div class="proof-track">
+    <span><i>✦</i> Бесплатный первичный осмотр</span>
+    <span><i>✦</i> 5.0 на Яндекс Картах</span>
+    <span><i>✦</i> Честная смета до лечения</span>
+    <span><i>✦</i> 400 метров от метро</span>
+    <span><i>✦</i> Современная 3D-диагностика</span>
+    <span aria-hidden="true"><i>✦</i> Бесплатный первичный осмотр</span>
+    <span aria-hidden="true"><i>✦</i> 5.0 на Яндекс Картах</span>
+    <span aria-hidden="true"><i>✦</i> Честная смета до лечения</span>
+    <span aria-hidden="true"><i>✦</i> 400 метров от метро</span>
+    <span aria-hidden="true"><i>✦</i> Современная 3D-диагностика</span>
+  </div>
+</div>
 
 <!-- WHY -->
 <section class="pad" id="about">
@@ -216,11 +239,10 @@
       </div>
     </div>
     <div class="sec-title reveal" style="margin-bottom:36px"><h2 style="font-size:clamp(24px,3vw,36px)">Команда врачей</h2><div class="ul"></div></div>
-    <div class="doc-grid" data-docs-v="5">
+    <div class="doc-grid" data-docs-v="6">
       <article class="doc reveal" data-doc="liliya" tabindex="0" role="button" aria-haspopup="dialog"><div class="doc-photo"><img src="https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg" alt="Краснощёкова Лилия" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class="exp">Стоматолог-терапевт · 15 лет</div></div></article>
       <article class="doc reveal" data-doc="amir" tabindex="0" role="button" aria-haspopup="dialog"><div class="doc-photo"><img src="https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg" alt="Кхатиб Амир" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Ортодонтия</div><h3>Кхатиб Амир</h3><div class="exp">Стоматолог-ортодонт</div></div></article>
       <article class="doc reveal" data-doc="renas" tabindex="0" role="button" aria-haspopup="dialog"><div class="doc-photo"><img src="https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg" alt="Али Ренас" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Хирургия</div><h3>Али Ренас</h3><div class="exp">Хирург-имплантолог</div></div></article>
-      <article class="doc reveal" data-doc="fatima" tabindex="0" role="button" aria-haspopup="dialog"><div class="doc-photo"><img src="https://static.tildacdn.com/tild3338-3239-4665-a338-326364343832/IMG_035123130.jpg" alt="Джамилова Фатима" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Ортодонтия</div><h3>Джамилова Фатима</h3><div class="exp">Врач-ортодонт · 5 лет</div></div></article>
       <article class="doc reveal" data-doc="zhabin" tabindex="0" role="button" aria-haspopup="dialog"><div class="doc-photo"><img src="https://static.tildacdn.com/tild6462-3839-4162-b234-643864626639/noroot.png" alt="Жабин Алексей" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Протезирование</div><h3>Жабин Алексей</h3><div class="exp">Стоматолог-ортопед · 26 лет</div></div></article>
       <article class="doc reveal" data-doc="obai" tabindex="0" role="button" aria-haspopup="dialog"><div class="doc-photo"><img src="https://static.tildacdn.com/tild3366-3037-4930-b836-393035633165/fa6e87be-8fe0-4656-8.jpg" alt="Алхатиб Обай" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Протезирование</div><h3>Алхатиб Обай</h3><div class="exp">Врач-ортопед · 2 года</div></div></article>
       <article class="doc reveal" data-doc="olga" tabindex="0" role="button" aria-haspopup="dialog"><div class="doc-photo"><img src="https://static.tildacdn.com/tild6261-3561-4136-a265-396262393335/IMG_0968.jpg" alt="Кхатиб Ольга Николаевна" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Кардиология</div><h3>Кхатиб Ольга Николаевна</h3><div class="exp">Врач-кардиолог · 26 лет</div></div></article>
@@ -241,9 +263,9 @@
       <a class="score" href="https://prodoctorov.ru/moskva/lpu/45532-amirdent/otzivi/" target="_blank" rel="noopener"><div class="v">4.7</div><div><div class="stars">★★★★★</div><small>ПроДокторов</small></div></a>
     </div>
     <div class="rev-grid">
-      <div class="rev reveal"><div class="stars">★★★★★</div><p>«Уже не первый раз посещаю „Амирдент“ и каждый раз ухожу в восторге! Лечусь у Лилии Краснощёковой — нравится её подход, участливость и человечное отношение».</p><div class="who"><div class="av">П</div><div><b>Пациент</b><small>Ортодонтия</small></div></div></div>
-      <div class="rev reveal"><div class="stars">★★★★★</div><p>«Хочу выделить крутого стоматолога-ортопеда Жабина А. Н. и, конечно, доктора Массуда. 2 года на брекет-системе пролетели незаметно, результат превзошёл все ожидания!»</p><div class="who"><div class="av">П</div><div><b>Пациент</b><small>Брекеты</small></div></div></div>
-      <div class="rev reveal"><div class="stars">★★★★★</div><p>«Очень понравился персонал, в особенности работа Медведева Даниила. Ситуация была сложная, но благодаря профессионализму хирурга всё прошло хорошо и безболезненно!»</p><div class="who"><div class="av">П</div><div><b>Пациент</b><small>Хирургия</small></div></div></div>
+      <div class="rev reveal"><span class="rev-q" aria-hidden="true">”</span><div class="stars">★★★★★</div><p>«Уже не первый раз посещаю „Амирдент“ и каждый раз ухожу в восторге! Лечусь у Лилии Краснощёковой — нравится её подход, участливость и человечное отношение».</p><div class="who"><div><b>Лечение и гигиена</b><small>Врач — Краснощёкова Лилия</small></div></div></div>
+      <div class="rev reveal"><span class="rev-q" aria-hidden="true">”</span><div class="stars">★★★★★</div><p>«Хочу выделить крутого стоматолога-ортопеда Жабина А. Н. и, конечно, доктора Массуда. 2 года на брекет-системе пролетели незаметно, результат превзошёл все ожидания!»</p><div class="who"><div><b>Брекеты · 2 года лечения</b><small>Врачи — Жабин Алексей, Кхатиб Массуд</small></div></div></div>
+      <div class="rev reveal"><span class="rev-q" aria-hidden="true">”</span><div class="stars">★★★★★</div><p>«Очень понравился персонал, в особенности работа Медведева Даниила. Ситуация была сложная, но благодаря профессионализму хирурга всё прошло хорошо и безболезненно!»</p><div class="who"><div><b>Хирургия</b><small>Врач — Медведев Даниил</small></div></div></div>
     </div>
   </div>
 </section>
@@ -342,7 +364,7 @@
 <script src="assets/menu.js"></script>
 <script src="assets/steps.js"></script>
 <script src="assets/cms-auth.js?v=6"></script>
-<script src="assets/main.js?v=form2"></script>
+<script src="assets/main.js?v=brandmark1"></script>
 <script src="assets/cms.js?v=30"></script>
 </body>
 </html>
