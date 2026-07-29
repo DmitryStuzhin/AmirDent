@@ -23,8 +23,8 @@
       "alt": "Направления"
     },
     {
-      "src": "smile-after.png",
-      "alt": "После"
+      "src": "https://static.tildacdn.com/tild6238-3739-4737-b836-326430383731/1111_opti.png",
+      "alt": "Кхатиб Массуд Зидан"
     }
   ],
   "reels": [
@@ -2320,7 +2320,7 @@
     {
       "sel": ".hero-copy h1",
       "idx": 0,
-      "html": "Ваша идеальная улыбка — <span class=\"g\">от 45 000 ₽</span> за брекеты",
+      "html": "Ваша идеальная улыбка —<br><span class=\"g\">от&nbsp;45&nbsp;000&nbsp;₽</span> за&nbsp;брекеты",
       "hidden": false
     },
     {
@@ -2470,7 +2470,7 @@
     {
       "sel": "#doctors .chief-body .exp",
       "idx": 0,
-      "html": "Врач-ортодонт высшей категории · стаж 2 месяца",
+      "html": "Врач-ортодонт высшей категории · стаж 27 лет",
       "hidden": false
     },
     {
@@ -2750,57 +2750,207 @@
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev > p",
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
       "idx": 0,
-      "html": "«Уже не первый раз посещаю „Амирдент“ и каждый раз ухожу в восторге! Лечусь у Лилии Краснощёковой — нравится её подход, участливость и человечное отношение».",
+      "html": "«Отличная клиника, все чисто, приветливый персонал, шикарные врачи. Пришла поставить брекеты и вылечить зубы — провели полную диагностику и подобрали лучший вариант. Пропал страх стоматологии! Спасибо докторам Массуду, Амиру и Евгении»",
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev > p",
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
       "idx": 1,
-      "html": "«Хочу выделить крутого стоматолога-ортопеда Жабина А. Н. и, конечно, доктора Массуда. 2 года на брекет-системе пролетели незаметно, результат превзошёл все ожидания!»",
+      "html": "«Отличные врачи! Поставили ребёнку брекеты, залечили пару дырок, сделали чистку — ни разу не крикнул. Наблюдаемся дальше, ребёнку нравится. Отношение супер: пока жду, всегда предложат чай или кофе»",
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev > p",
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
       "idx": 2,
-      "html": "«Очень понравился персонал, в особенности работа Медведева Даниила. Ситуация была сложная, но благодаря профессионализму хирурга всё прошло хорошо и безболезненно!»",
+      "html": "«Евгения Михайловна — золотые руки! Показали все проблемы у ребёнка и фото до/после. Сын даже не понял, что зубы сделали. Стоматология стала безболезненной и понятной. Огромное спасибо!»",
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev .who b",
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
+      "idx": 3,
+      "html": "«Обратилась для установки безлигатурных корейских брекетов. Врач всё подробно объяснил и составил понятный план. Установка прошла быстро, почти без дискомфорта. Уже через несколько месяцев — первые результаты»",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
+      "idx": 4,
+      "html": "«Лечусь здесь не первый год. Доктора внимательные, настоящие профессионалы. Доброжелательный коллектив, вежливые администраторы. Атмосфера в клинике чудесная — всем рекомендую!»",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
+      "idx": 5,
+      "html": "«Прекрасная клиника: новейшее оборудование и отличные специалисты. Ходим всей семьёй — детские стоматологи, ортодонты и ортопеды на высоте. На ресепшене всегда приветливый администратор»",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
+      "idx": 6,
+      "html": "«Уважаемый доктор Амир! Спасибо за профессионализм и внимательное отношение. Очень комфортно в кресле — умеете успокоить. Посещение перестало быть стрессом, результат превзошёл ожидания»",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
+      "idx": 7,
+      "html": "«Если ищете современную стоматологию с атмосферой заботы — вам в АмирДент. Впечатления исключительно положительные: мастера своего дела и современное оборудование. Спасибо за красивую улыбку!»",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
+      "idx": 8,
+      "html": "«Поставила безлигатурные корейские брекеты по рекомендации знакомых. Довольна результатом и отношением персонала. Приёмы вовремя, врачи внимательны и аккуратны. Рекомендую всем, кто планирует исправление прикуса»",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) > p",
+      "idx": 9,
+      "html": "«Очень хорошая стоматология: восстановили зуб, который треснул — в другой клинике говорили, что только коронка. Всё как новенькое, жевать удобно, ничего не мешает. 10/10»",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
       "idx": 0,
+<<<<<<< HEAD
       "html": "Лечение и гигиена",
+=======
+      "html": "Анастасия Ч.",
+>>>>>>> feature/ui-design
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev .who b",
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
       "idx": 1,
+<<<<<<< HEAD
       "html": "Брекеты · 2 года лечения",
+=======
+      "html": "Ольга Филатова",
+>>>>>>> feature/ui-design
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev .who b",
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
       "idx": 2,
+<<<<<<< HEAD
       "html": "Хирургия",
+=======
+      "html": "Andrey Andrey",
+>>>>>>> feature/ui-design
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev .who small",
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
+      "idx": 3,
+      "html": "Юлия Авдонина",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
+      "idx": 4,
+      "html": "ALLA",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
+      "idx": 5,
+      "html": "Мария Н.",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
+      "idx": 6,
+      "html": "Катерина Б.",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
+      "idx": 7,
+      "html": "Юлия Яковлева",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
+      "idx": 8,
+      "html": "Анастасия Малых",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who b",
+      "idx": 9,
+      "html": "Александр",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
       "idx": 0,
+<<<<<<< HEAD
       "html": "Врач — Краснощёкова Лилия",
+=======
+      "html": "Яндекс Карты",
+>>>>>>> feature/ui-design
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev .who small",
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
       "idx": 1,
+<<<<<<< HEAD
       "html": "Врачи — Жабин Алексей, Кхатиб Массуд",
+=======
+      "html": "Яндекс Карты",
+>>>>>>> feature/ui-design
       "hidden": false
     },
     {
-      "sel": ".rev-grid .rev .who small",
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
       "idx": 2,
+<<<<<<< HEAD
       "html": "Врач — Медведев Даниил",
+=======
+      "html": "Яндекс Карты",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
+      "idx": 3,
+      "html": "Яндекс Карты",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
+      "idx": 4,
+      "html": "Яндекс Карты",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
+      "idx": 5,
+      "html": "Яндекс Карты",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
+      "idx": 6,
+      "html": "Яндекс Карты",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
+      "idx": 7,
+      "html": "Яндекс Карты",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
+      "idx": 8,
+      "html": "Яндекс Карты",
+      "hidden": false
+    },
+    {
+      "sel": ".rev-track > .rev:not(.rev-clone) .who small",
+      "idx": 9,
+      "html": "Яндекс Карты",
+>>>>>>> feature/ui-design
       "hidden": false
     },
     {
@@ -2865,5 +3015,10 @@
     }
   ],
   "hiddenBlocks": [],
+<<<<<<< HEAD
   "docsV": 6
 }
+=======
+  "docsV": 5
+}
+>>>>>>> feature/ui-design

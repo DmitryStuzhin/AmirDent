@@ -9,7 +9,7 @@
   var data = window.AMIR_SERVICES;
   if (!data || !data.doctors) return;
 
-  var dlg = null, panel = null, lastFocus = null, native = false;
+  var dlg = null, panel = null, lastFocus = null, native = false, fromKeyboard = false;
 
   function build() {
     if (dlg) return;
@@ -78,6 +78,25 @@
       box.appendChild(k); box.appendChild(v);
       stats.appendChild(box);
     });
+    if (d.pdRating != null) {
+      var pdBox = document.createElement('div');
+      pdBox.className = 'dm-stat';
+      var pdK = document.createElement('span'); pdK.textContent = 'ПроДокторов';
+      var pdV = document.createElement('b');
+      pdV.textContent = Number(d.pdRating).toFixed(1) + (d.pdReviews ? ' · ' + d.pdReviews : '');
+      pdBox.appendChild(pdK); pdBox.appendChild(pdV);
+      if (d.pdUrl) {
+        var pdA = document.createElement('a');
+        pdA.className = 'dm-pd-link';
+        pdA.href = d.pdUrl;
+        pdA.target = '_blank';
+        pdA.rel = 'noopener noreferrer';
+        pdA.appendChild(pdBox);
+        stats.appendChild(pdA);
+      } else {
+        stats.appendChild(pdBox);
+      }
+    }
 
     // Видео пока ни у кого не заполнено — блок появится, как только в данных
     // врача окажется ссылка на ролик.
@@ -143,7 +162,12 @@
     document.documentElement.classList.remove('dm-lock');
     if (native) dlg.close();
     else dlg.hidden = true;
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
+    // После клика мышкой не возвращаем фокус на карточку —
+    // иначе остаётся золотая рамка :focus-visible.
+    if (fromKeyboard && lastFocus && lastFocus.focus) lastFocus.focus();
+    else if (lastFocus && lastFocus.blur) lastFocus.blur();
+    lastFocus = null;
+    fromKeyboard = false;
   }
 
   // Запасной перехват фокуса там, где нет настоящего <dialog>.
@@ -165,6 +189,7 @@
     if (!hit) return;
     if (e.target.closest('a')) return; // ссылка внутри карточки важнее
     e.preventDefault();
+    fromKeyboard = false;
     open(hit.getAttribute('data-doc'));
   });
 
@@ -173,8 +198,60 @@
     var hit = document.activeElement;
     if (!hit || !hit.hasAttribute || !hit.hasAttribute('data-doc')) return;
     e.preventDefault();
+    fromKeyboard = true;
     open(hit.getAttribute('data-doc'));
   });
 
+  /* Рейтинг ПроДокторов на карточках (сетка, главный врач, стопка услуги).
+     Берётся из services-data.js: pdRating / pdReviews / pdUrl. */
+  function applyDocRatings() {
+    var docs = data.doctors;
+    if (!docs) return;
+    document.querySelectorAll('[data-doc]').forEach(function (el) {
+      var id = el.getAttribute('data-doc');
+      var d = docs[id];
+      var body = el.querySelector('.doc-body')
+        || el.querySelector('.chief-body')
+        || el.querySelector('.dp-doc-text');
+      if (!body) return;
+      var old = body.querySelector('.doc-pd');
+      if (old) old.remove();
+      if (!d || d.pdRating == null) return;
+      var a = document.createElement('a');
+      a.className = 'doc-pd';
+      a.href = d.pdUrl || 'https://prodoctorov.ru/';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.setAttribute('aria-label', 'Рейтинг на ПроДокторов: ' + Number(d.pdRating).toFixed(1));
+      var score = document.createElement('span');
+      score.className = 'doc-pd-score';
+      score.textContent = Number(d.pdRating).toFixed(1);
+      var stars = document.createElement('span');
+      stars.className = 'doc-pd-stars';
+      stars.setAttribute('aria-hidden', 'true');
+      stars.textContent = '★★★★★';
+      var label = document.createElement('span');
+      label.className = 'doc-pd-label';
+      label.textContent = 'ПроДокторов' + (d.pdReviews ? ' · ' + d.pdReviews : '');
+      a.appendChild(score);
+      a.appendChild(stars);
+      a.appendChild(label);
+      var btn = body.querySelector('.dp-doc-btn');
+      if (btn) body.insertBefore(a, btn);
+      else body.appendChild(a);
+    });
+  }
+
+  function scheduleRatings() {
+    applyDocRatings();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scheduleRatings);
+  } else {
+    scheduleRatings();
+  }
+  document.addEventListener('amir:service-ready', scheduleRatings);
+
   window.AMIR_DOCTOR_MODAL = { open: open, close: close };
+  window.AMIR_applyDocRatings = applyDocRatings;
 })();

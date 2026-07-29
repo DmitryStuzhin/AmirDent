@@ -35,11 +35,10 @@
   /* ---- папка врачей -------------------------------------------------
      Врачей по услуге обычно несколько, поэтому справа они лежат стопкой:
      из-под верхней карточки выглядывают края остальных, как у папки с
-     бумагами, и раз в несколько секунд верхняя уходит вверх, открывая
-     следующую. Листание замирает при наведении, при фокусе с клавиатуры,
-     на скрытой вкладке и при prefers-reduced-motion; точки под стопкой
-     дают перейти к нужному врачу вручную. */
-  var DOC_DELAY=5200, DOC_LIFT=520, DOC_PEEK=28, DOC_DEPTH=3;
+     бумагами, и каждые 6 секунд верхняя уходит вверх, открывая
+     следующую. Листание замирает при наведении, при фокусе с клавиатуры
+     и на скрытой вкладке; точки под стопкой дают перейти вручную. */
+  var DOC_DELAY=6000, DOC_LIFT=920, DOC_PEEK=28, DOC_DEPTH=3;
 
   function docPlural(n){
     var d=n%10, dd=n%100;
@@ -107,15 +106,19 @@
       return;
     }
 
-    var index=0, timer=null, lift=null, paused=false;
+    var index=0, timer=null, lift=null, hover=false, focusInside=false;
     var reduce=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+    var wrap=el('dirDoc');
 
     var dots=docs.map(function(d,i){
       var b=document.createElement('button');
       b.type='button';
       b.className='dp-docs-dot';
       b.setAttribute('aria-label','Показать врача: '+d.name);
-      b.addEventListener('click', function(){ paused=true; stop(); show(i); });
+      b.addEventListener('click', function(){
+        show(i);
+        schedule();
+      });
       nav.appendChild(b);
       return b;
     });
@@ -143,12 +146,18 @@
     function show(next){
       if(next===index||lift) return;
       var leaving=cards[index];
-      leaving.classList.add('is-leaving');
       index=next;
+      if(reduce&&reduce.matches){
+        apply();
+        return;
+      }
+      leaving.classList.add('is-leaving');
+      // следующая карточка сразу поднимается, пока верхняя улетает
+      apply();
       lift=setTimeout(function(){
         lift=null;
         leaving.classList.remove('is-leaving');
-        // вернуть ушедшую карточку вниз стопки без обратного полёта через все слои
+        // вернуть ушедшую карточку вниз стопки без обратного полёта
         leaving.style.transition='none';
         apply();
         void leaving.offsetWidth;
@@ -157,27 +166,45 @@
     }
 
     function next(){ show((index+1)%cards.length); }
-    function stop(){ if(timer){ clearInterval(timer); timer=null; } }
-    function play(){
+    function stop(){ if(timer){ clearTimeout(timer); timer=null; } }
+    function canPlay(){
+      return !hover && !focusInside && !document.hidden &&
+        !(document.documentElement&&document.documentElement.classList.contains('dm-lock'));
+    }
+    function schedule(){
       stop();
-      if(paused||document.hidden||(reduce&&reduce.matches)) return;
-      timer=setInterval(next, DOC_DELAY);
+      if(!canPlay()) return;
+      timer=setTimeout(function(){
+        timer=null;
+        if(!canPlay()||lift){ schedule(); return; }
+        next();
+        schedule();
+      }, DOC_DELAY);
     }
 
-    [stack,nav].forEach(function(box){
-      box.addEventListener('mouseenter', stop);
-      box.addEventListener('mouseleave', play);
-      box.addEventListener('focusin', stop);
-      box.addEventListener('focusout', play);
-    });
+    if(wrap){
+      wrap.addEventListener('mouseenter', function(){ hover=true; stop(); });
+      wrap.addEventListener('mouseleave', function(){ hover=false; schedule(); });
+      wrap.addEventListener('focusin', function(){ focusInside=true; stop(); });
+      wrap.addEventListener('focusout', function(e){
+        if(wrap.contains(e.relatedTarget)) return;
+        focusInside=false;
+        schedule();
+      });
+    }
     document.addEventListener('visibilitychange', function(){
-      if(document.hidden) stop(); else play();
+      if(document.hidden) stop(); else schedule();
     });
-    if(reduce&&reduce.addEventListener) reduce.addEventListener('change', play);
+    // пауза, пока открыто окно врача
+    var mo=typeof MutationObserver==='function'?new MutationObserver(function(){
+      if(document.documentElement.classList.contains('dm-lock')) stop();
+      else schedule();
+    }):null;
+    if(mo) mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
 
     apply();
     sizeStack();
-    play();
+    schedule();
   }
 
   var slug=slugFromUrl();
@@ -362,18 +389,21 @@
       fail('Не удалось загрузить цены. Позвоните нам или оставьте заявку — подскажем стоимость.');
     });
 
-  // заявка с этой страницы уходит с названием услуги
+  // На странице услуги добавляем её в список, но по умолчанию
+  // оставляем «Выберите направление», пока пользователь не выберет сам.
   var form=document.getElementById('booking');
   if(form&&form.service){
-    var opts=Array.prototype.slice.call(form.service.options), set=false;
+    var opts=Array.prototype.slice.call(form.service.options), has=false;
     for(var i=0;i<opts.length;i++){
-      if(opts[i].text===group.title){ form.service.value=opts[i].text; set=true; break; }
+      if(opts[i].text===group.title||opts[i].text===item.title){ has=true; break; }
     }
-    if(!set){
+    if(!has){
       var extra=document.createElement('option');
       extra.text=item.title;
       form.service.add(extra);
-      form.service.value=item.title;
     }
+    form.service.value='';
+    form.service.selectedIndex=0;
+    if(window.AMIR_formSelects) AMIR_formSelects.refresh(form.service);
   }
 })();
