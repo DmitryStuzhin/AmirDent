@@ -323,6 +323,23 @@
     return parts.join(' > ');
   }
 
+  /* Разметка для снимка, очищенная от того, что дорисовал скрипт.
+     Числа в статистике живут в двух местах: атрибут data-count — исходное
+     значение, а текст внутри — то, что нарисовал счётчик. Если снимать
+     innerHTML как есть, в снимок попадёт случайный кадр анимации (например
+     «3.7» вместо «5.0»), и он будет подставляться при каждой загрузке.
+     Поэтому снимаем с клона, вернув числам их исходные значения; живой DOM
+     не трогаем, иначе цифра на экране мигнёт. */
+  function canonicalHtml(n){
+    if(!n) return '';
+    if(!n.querySelector('[data-count]')) return n.innerHTML;
+    var clone=n.cloneNode(true);
+    clone.querySelectorAll('[data-count]').forEach(function(c){
+      c.textContent=c.getAttribute('data-count')||c.textContent;
+    });
+    return clone.innerHTML;
+  }
+
   function queryUniqueTexts(){
     var seen=new Set();
     var items=[];
@@ -333,7 +350,7 @@
       items.push({
         sel: sel,
         idx: idx||0,
-        html: n.innerHTML,
+        html: canonicalHtml(n),
         hidden: n.style.display==='none'
       });
     }
@@ -1186,8 +1203,29 @@
       el.classList.remove('cms-editing','cms-hot');
       if(save){
         // Оставляем простой текст; для заголовков с акцентом сохраняем один span.g если был
-        var hadGold=/\bclass=["']g["']/.test(el.getAttribute('data-cms-prev')||'');
+        var prev=el.getAttribute('data-cms-prev')||'';
+        var hadGold=/\bclass=["']g["']/.test(prev);
+        var hadCount=/\bdata-count=/.test(prev);
         var plain=(el.innerText||el.textContent||'').replace(/\u00a0/g,' ').trim();
+        if(hadCount){
+          /* Число статистики. Простым текстом его записывать нельзя: это сотрёт
+             span[data-count], счётчик перестанет находить элемент и анимация
+             молча исчезнет, а число застынет. Собираем span заново с новым
+             значением, чтобы атрибут и текст не разъезжались. */
+          var num=(plain.replace(/\s+/g,'').replace(',','.').match(/\d+(?:\.\d+)?/)||[])[0];
+          if(!num){
+            el.innerHTML=prev;
+            toast('Здесь нужно число, например 27 или 5.0');
+            el.removeAttribute('data-cms-prev');
+            return;
+          }
+          var tail=/\bclass=["']plus["']/.test(prev)?'<span class="plus">+</span>':'';
+          el.innerHTML='<span data-count="'+num+'">'+num+'</span>'+tail;
+          markDirty();
+          toast('Текст изменён. Нажмите «Сохранить»');
+          el.removeAttribute('data-cms-prev');
+          return;
+        }
         if(hadGold && el.matches('h1')){
           // Пробуем выделить цену «от N ₽» золотом
           var m=plain.match(/^(.*?)(от\s+[\d\s]+₽)(.*)$/i);

@@ -2536,7 +2536,7 @@
     {
       "sel": ".stats-grid .stat b",
       "idx": 3,
-      "html": "<span data-count=\"5.0\">5</span>",
+      "html": "<span data-count=\"5.0\">5.0</span>",
       "hidden": false
     },
     {
