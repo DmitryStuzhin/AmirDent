@@ -16,7 +16,7 @@
       col.appendChild(h);
       group.items.forEach(function(item){
         var a=document.createElement('a');
-        a.href='/uslugi/'+item.slug;
+        a.href='/uslugi/'+item.slug+'/';
         a.textContent=item.title;
         if(itemClass) a.className=itemClass;
         col.appendChild(a);
@@ -34,7 +34,7 @@
 
       var all=document.createElement('a');
       all.className='nav-mega-all';
-      all.href='/prices.html';
+      all.href='/prices';
       all.textContent='Полный прайс-лист со всеми ценами';
 
       menu.innerHTML='';

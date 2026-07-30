@@ -3,13 +3,12 @@
   "private": true,
   "description": "Сайт клиники АмирДент: страницы и функция приёма заявок в Telegram",
   "scripts": {
-    "dev": "netlify dev --port 8123 --offline",
-    "deploy": "netlify deploy --prod"
-  },
-  "devDependencies": {
-    "netlify-cli": "^27.0.0"
+    "build": "node scripts/build-site.mjs",
+    "check": "node --test tests/*.test.mjs && node scripts/check-site.mjs",
+    "dev": "npx --yes netlify-cli@27.0.0 dev --port 8123 --offline",
+    "deploy": "npx --yes netlify-cli@27.0.0 deploy --prod"
   },
   "dependencies": {
-    "@netlify/blobs": "^10.7.10"
+    "@netlify/blobs": "^10.7.11"
   }
 }

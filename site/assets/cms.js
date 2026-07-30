@@ -162,33 +162,19 @@
   function uploadCmsImage(file){
     toast('Обрабатываем фото…');
     return compressImageFile(file, 1100, 0.82).then(function(dataUrl){
-      var token=AmirCMS.getToken();
       return fetch('/api/cms/upload',{
         method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'X-CMS-Token':token||''
-        },
-        body:JSON.stringify({ token:token, image:dataUrl })
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ image:dataUrl })
       }).then(function(res){
         return res.json().catch(function(){ return null; }).then(function(json){
           if(res.ok && json && json.ok && json.url){
             toast('Фото загружено');
             return json.url;
           }
-          // Fallback: вставляем сжатый data URL, если сервер upload недоступен
-          if(dataUrl.length < 500000){
-            toast('Фото сжато и вставлено');
-            return dataUrl;
-          }
           throw new Error((json&&json.error)||'Не удалось сохранить фото');
         });
-      }).catch(function(err){
-        if(dataUrl.length < 500000){
-          toast('Фото сжато и вставлено');
-          return dataUrl;
-        }
-        throw err;
       });
     });
   }
@@ -240,7 +226,7 @@
     opts=opts||{};
     content=buildSnapshot();
     AmirCMS.saveContent(content);
-    if(!AmirCMS.getToken()){
+    if(!AmirCMS.isAuthed()){
       toast('Сессия устарела — войдите снова');
       setTimeout(function(){ location.href='admin.html'; }, 800);
       return Promise.reject(new Error('no token'));
@@ -388,7 +374,7 @@
       var name=d.name||'Врач';
       // data-doc связывает карточку с врачом в services-data.js: по нему
       // открывается всплывающая карточка. Без него клик перестаёт работать.
-      var link=d.id?' data-doc="'+escAttr(d.id)+'" tabindex="0" role="button" aria-haspopup="dialog"':'';
+      var link=d.id?' data-doc="'+escAttr(d.id)+'"':'';
       // Рейтинги ПроДокторов подставляются из services-data.js после вставки HTML.
       return '<article class="doc"'+link+'>'+
         '<div class="doc-photo"><img src="'+escAttr(src)+'" alt="'+escAttr(name)+'"></div>'+
@@ -396,6 +382,7 @@
         '<div class="role">'+(d.role||'').replace(/</g,'&lt;')+'</div>'+
         '<h3>'+name.replace(/</g,'&lt;')+'</h3>'+
         '<div class="exp">'+(d.exp||'').replace(/</g,'&lt;')+'</div>'+
+        '<button type="button" class="doc-details">Подробнее о враче</button>'+
         '</div></article>';
     }).join('');
   }
@@ -641,7 +628,7 @@
         ? base.services
         : servicesFromPriceHtml(base.priceHtml);
       snap.services=mergeServicesByName(baseServices, edited);
-      snap.priceHtml=servicesToHtml(snap.services);
+      delete snap.priceHtml;
       if(Array.isArray(base.doctors)) snap.doctors=base.doctors;
       if(typeof base.docsHtml==='string') snap.docsHtml=base.docsHtml;
       if(base.docsV!=null) snap.docsV=base.docsV;
@@ -689,9 +676,8 @@
     } else {
       snap.services=[];
     }
-    snap.priceHtml=servicesToHtml(snap.services);
     content.services=snap.services;
-    content.priceHtml=snap.priceHtml;
+    delete content.priceHtml;
     // Врач услуги → в подкатегорию до сбора групп
     syncSubcatDoctorsFromServices(snap.services);
     snap.serviceGroups=collectServiceGroups();
@@ -1434,6 +1420,71 @@
   function openDoctorsPanel(){ openDocsServicesPanel('doctors'); }
   function openServicesPanel(){ openDocsServicesPanel('services'); }
 
+  async function openHistoryPanel(){
+    panelMode='history';
+    currentEl=null;
+    var modal=document.getElementById('cmsModal');
+    var box=modal.querySelector('.cms-modal');
+    box.classList.add('cms-modal-wide');
+    document.getElementById('cmsModalTitle').textContent='История изменений';
+    document.getElementById('cmsModalSub').textContent='Можно вернуться к одной из предыдущих сохранённых версий';
+    document.getElementById('cmsDelete').style.display='none';
+    document.getElementById('cmsApply').style.display='none';
+    document.getElementById('cmsCancel').textContent='Закрыть';
+    var fields=document.getElementById('cmsModalFields');
+    fields.innerHTML='<p class="sub">Загружаем историю…</p>';
+    modal.classList.add('open');
+
+    try{
+      var versions=await AmirCMS.listVersions();
+      if(!versions.length){
+        fields.innerHTML='<p class="sub">История появится после первого сохранения.</p>';
+        return;
+      }
+      fields.innerHTML=
+        '<div class="cms-item-list">'+versions.slice(0,20).map(function(v,i){
+          var date=v.archivedAt?new Date(v.archivedAt).toLocaleString('ru-RU'):'Дата не указана';
+          var author=v.archivedBy?' · '+escHtml(v.archivedBy):'';
+          return '<div class="cms-item">'+
+            '<div class="cms-item-main"><b>Версия от '+escHtml(date)+'</b><small>'+author+'</small></div>'+
+            '<div class="cms-item-actions"><button type="button" class="btn btn-ghost cms-restore-version" data-idx="'+i+'" data-state="idle">Восстановить</button></div>'+
+          '</div>';
+        }).join('')+'</div>'+
+        '<p class="sub" style="margin-top:14px">Перед восстановлением текущая версия автоматически сохранится в истории.</p>';
+
+      fields.addEventListener('click',async function(e){
+        var btn=e.target.closest('.cms-restore-version');
+        if(!btn || !fields.contains(btn))return;
+        var state=btn.getAttribute('data-state')||'idle';
+        if(state!=='confirm'){
+          fields.querySelectorAll('.cms-restore-version[data-state="confirm"]').forEach(function(other){
+            other.setAttribute('data-state','idle');
+            other.textContent='Восстановить';
+          });
+          btn.setAttribute('data-state','confirm');
+          btn.textContent='Подтвердить восстановление';
+          return;
+        }
+        var index=parseInt(btn.getAttribute('data-idx'),10);
+        if(index<0 || index>=versions.length)return;
+        fields.querySelectorAll('button').forEach(function(other){other.disabled=true;});
+        btn.textContent='Восстанавливаем…';
+        try{
+          await AmirCMS.restoreVersion(versions[index].key);
+          location.reload();
+        }catch(err){
+          fields.querySelectorAll('button').forEach(function(other){other.disabled=false;});
+          btn.setAttribute('data-state','idle');
+          btn.textContent='Повторить восстановление';
+          toast('Не удалось восстановить версию: '+(err&&err.message?err.message:err));
+        }
+      });
+    }catch(err){
+      fields.innerHTML='<p class="sub">Не удалось загрузить историю. Закройте окно и попробуйте ещё раз.</p>';
+      toast('Ошибка истории: '+(err&&err.message?err.message:err));
+    }
+  }
+
   function buildBar(){
     var bar=document.createElement('div');
     bar.className='cms-bar';
@@ -1442,6 +1493,7 @@
       '<div class="right">'+
         '<button type="button" id="cmsManageDoctors">Врачи</button>'+
         '<button type="button" id="cmsManageServices">Услуги</button>'+
+        '<button type="button" id="cmsHistory">История</button>'+
         '<button type="button" class="primary" id="cmsSaveNow">Сохранить</button>'+
         '<button type="button" id="cmsPreview">Как видит клиент</button>'+
         '<button type="button" id="cmsLogout">Выйти</button>'+
@@ -1485,10 +1537,11 @@
       hint.textContent='На карточке услуги: нажмите поле в золотой рамке — откроется форма правки';
     }
     document.getElementById('cmsSaveNow').onclick=function(){ persist({openPreview:false}).catch(function(){}); };
+    document.getElementById('cmsHistory').onclick=function(){ openHistoryPanel(); };
     document.getElementById('cmsPreview').onclick=function(){
       window.open('index.html?preview=1&view='+Date.now(), '_blank', 'noopener,noreferrer');
     };
-    document.getElementById('cmsLogout').onclick=function(){ AmirCMS.logout(); location.href='index.html'; };
+    document.getElementById('cmsLogout').onclick=async function(){ await AmirCMS.logout(); location.href='index.html'; };
   }
 
   function buildModal(){
@@ -1840,9 +1893,6 @@
   }
 
   async function boot(){
-    var sess=AmirCMS.getSession();
-    if(sess && !sess.token) AmirCMS.logout();
-
     var params=new URLSearchParams(location.search);
     var previewOnly=params.get('preview')==='1';
     onServicePageReady._previewOnly=previewOnly;
@@ -1858,12 +1908,14 @@
 
     if(fileContent && (fileContent.v===2 || fileContent.v===3 || fileContent.v===4 || fileContent.priceHtml || fileContent.docsHtml || fileContent.doctors || fileContent.services || fileContent.textItems || fileContent.texts)){
       content=fileContent;
+      AmirCMS.setRevision(fileContent.revision||fileContent.savedAt||'');
       AmirCMS.saveContent(fileContent);
       applySnapshot(fileContent);
     }
 
     // Режим пользователя после сохранения из админки — без панели редактора
-    if(previewOnly || !AmirCMS.isAuthed()) return;
+    if(previewOnly) return;
+    if(!await AmirCMS.refreshSession()) return;
 
     enableAdminUi();
     if(window.__amirServiceReady || isServicePage()){

@@ -11,13 +11,17 @@
 
     sel.classList.add('csel-native');
     sel.setAttribute('tabindex','-1');
+    sel.setAttribute('aria-hidden','true');
     wrap.classList.add('is-custom');
 
     var btn=document.createElement('button');
     btn.type='button';
     btn.className='csel-btn';
+    btn.setAttribute('role','combobox');
     btn.setAttribute('aria-haspopup','listbox');
     btn.setAttribute('aria-expanded','false');
+    var sourceLabel=sel.id?document.querySelector('label[for="'+sel.id+'"]'):null;
+    btn.setAttribute('aria-label',sourceLabel?sourceLabel.textContent.trim():'Услуга');
     btn.innerHTML='<span class="csel-label"></span><span class="csel-chev" aria-hidden="true"></span>';
     var label=btn.querySelector('.csel-label');
 
@@ -48,6 +52,7 @@
         var li=document.createElement('li');
         li.className='csel-opt';
         li.setAttribute('role','option');
+        li.id=panel.id+'-option-'+i;
         li.dataset.index=String(i);
         li.textContent=o.text;
         if(o.value==='') li.classList.add('is-placeholder');
@@ -97,6 +102,9 @@
         paintSelected();
         var cur=panel.querySelector('.csel-opt.is-selected');
         if(cur&&cur.scrollIntoView) cur.scrollIntoView({block:'nearest'});
+        if(panel.children[active]) btn.setAttribute('aria-activedescendant',panel.children[active].id);
+      }else{
+        btn.removeAttribute('aria-activedescendant');
       }
     }
     function close(){ setOpen(false); }
@@ -114,6 +122,7 @@
         active=e.key==='ArrowDown'?Math.min(max,active+1):Math.max(0,active-1);
         paintSelected();
         var el=panel.children[active];
+        if(el) btn.setAttribute('aria-activedescendant',el.id);
         if(el&&el.scrollIntoView) el.scrollIntoView({block:'nearest'});
       } else if(e.key==='Enter'||e.key===' '){
         e.preventDefault();
@@ -196,14 +205,43 @@
   // mobile menu
   var burger=document.querySelector('.burger'), nav=document.querySelector('.nav');
   if(burger&&nav){
-    function setMobileMenu(open){
+    var menuWasOpen=false;
+    var pageBehindMenu=Array.prototype.slice.call(document.body.children).filter(function(el){
+      return el!==document.querySelector('.hdr')&&el.tagName!=='SCRIPT';
+    });
+    function setMobileMenu(open,restoreFocus){
       nav.classList.toggle('open',open);
       burger.classList.toggle('active',open);
       burger.setAttribute('aria-expanded',open?'true':'false');
       document.documentElement.classList.toggle('menu-open',open);
+      pageBehindMenu.forEach(function(el){
+        if('inert' in el) el.inert=open;
+        if(open) el.setAttribute('aria-hidden','true');
+        else el.removeAttribute('aria-hidden');
+        el.querySelectorAll('a,button,input,select,textarea,[tabindex]').forEach(function(control){
+          if(open){
+            if(!control.hasAttribute('data-menu-tabindex')){
+              control.setAttribute('data-menu-tabindex',control.getAttribute('tabindex')||'');
+            }
+            control.setAttribute('tabindex','-1');
+          }else if(control.hasAttribute('data-menu-tabindex')){
+            var old=control.getAttribute('data-menu-tabindex');
+            if(old)control.setAttribute('tabindex',old);else control.removeAttribute('tabindex');
+            control.removeAttribute('data-menu-tabindex');
+          }
+        });
+      });
+      if(open){
+        menuWasOpen=true;
+        var first=nav.querySelector('a,button,[tabindex]:not([tabindex="-1"])');
+        if(first)setTimeout(function(){first.focus();},0);
+      }else if(menuWasOpen&&restoreFocus!==false){
+        menuWasOpen=false;
+        burger.focus();
+      }
     }
     burger.addEventListener('click',function(){ setMobileMenu(!nav.classList.contains('open')); });
-    nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setMobileMenu(false);});});
+    nav.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setMobileMenu(false,false);});});
     function blockBackgroundScroll(e){
       if(!nav.classList.contains('open'))return;
       if(e.type==='touchmove'&&nav.contains(e.target))return;
@@ -214,9 +252,15 @@
     document.addEventListener('keydown',function(e){
       if(e.key==='Escape'){setMobileMenu(false);return;}
       if(!nav.classList.contains('open'))return;
-      if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].indexOf(e.key)>-1)e.preventDefault();
+      if(e.key==='Tab'){
+        var focusable=Array.prototype.slice.call(nav.querySelectorAll('a,button,[tabindex]:not([tabindex="-1"])')).filter(function(el){return !el.disabled&&el.offsetParent!==null;});
+        if(!focusable.length)return;
+        var first=focusable[0],last=focusable[focusable.length-1];
+        if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+        else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+      }
     });
-    window.addEventListener('resize',function(){if(window.innerWidth>860)setMobileMenu(false);});
+    window.addEventListener('resize',function(){if(window.innerWidth>860)setMobileMenu(false,false);});
   }
 
   // Свет на первом экране следует за курсором очень медленно: это создаёт
@@ -808,7 +852,7 @@
       if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
       say('Отправляем заявку…',false);
       fetch(LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:name,phone:phone,service:service,company:form.company?form.company.value:'',page:location.href})})
+        body:JSON.stringify({name:name,phone:phone,service:service,company:form.company?form.company.value:'',page:location.href,consent:true,consentVersion:'2026-07-31-v1'})})
         // «Заявка принята» только если lead.php подтвердил отправку своим {"ok":true}.
         // Сервер без PHP отдаёт lead.php как текстовый файл с кодом 200, и по одному
         // коду ответа заявку можно было счесть отправленной, хотя её никто не получил.

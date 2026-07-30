@@ -1,107 +1,138 @@
-/* AmirDent CMS auth — сессия админки; пароль проверяет сервер */
-(function(global){
-  var SESSION_KEY='amirdent_admin_session';
-  var CONTENT_KEY='amirdent_cms_content';
+/* AmirDent CMS auth — the password never becomes a browser-side bearer token. */
+(function (global) {
+  'use strict';
 
-  // Логин и пароль здесь намеренно не хранятся: этот файл загружает каждый
-  // посетитель сайта, поэтому любые значения в нём равносильны публикации.
-  // Проверка идёт на сервере (netlify/functions/cms.mjs), браузер отправляет
-  // только SHA-256 введённого пароля.
+  var CONTENT_KEY = 'amirdent_cms_content';
+  var state = { checked: false, authenticated: false, user: null, revision: '' };
 
-  function toHex(buf){
-    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  async function request(url, options) {
+    var response;
+    try {
+      response = await fetch(url, Object.assign({ credentials: 'same-origin' }, options || {}));
+    } catch (error) {
+      throw new Error('Нет связи с сервером');
+    }
+    var data = null;
+    try {
+      data = await response.json();
+    } catch (error) {}
+    return { response: response, data: data };
   }
-  async function sha256(str){
-    var data=new TextEncoder().encode(str);
-    var dig=await crypto.subtle.digest('SHA-256', data);
-    return toHex(dig);
-  }
 
-  var AmirCMS={
-    CONTENT_KEY:CONTENT_KEY,
-    SESSION_KEY:SESSION_KEY,
-    async login(login, password){
-      var ph=await sha256(password);
-      var res=null;
-      var json=null;
-      try{
-        res=await fetch('/api/cms/login',{
-          method:'POST',
-          headers:{'Content-Type':'application/json','X-CMS-Token':ph},
-          body:JSON.stringify({ login:login, token:ph })
-        });
-        try{ json=await res.json(); }catch(e){}
-      }catch(e){
-        throw new Error('Нет связи с сервером');
+  var AmirCMS = {
+    CONTENT_KEY: CONTENT_KEY,
+
+    async login(login, password) {
+      var result = await request('/api/cms/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login: login, password: password }),
+      });
+      if (result.response.status === 401) return false;
+      if (result.response.status === 429) {
+        throw new Error('Слишком много попыток. Подождите 15 минут.');
       }
-      // Локальный сервер разработки может не знать этого адреса — тогда пароль
-      // всё равно будет проверен при сохранении.
-      if(res.status===401||res.status===403) return false;
-      if(res.status!==404 && !res.ok){
-        // Сбой сервера — это не «неверный пароль», и путать их нельзя:
-        // именно из-за этого верный пароль выглядел как неправильный.
-        throw new Error('Сервер не смог проверить пароль (код '+res.status+'). '+
-          'Если сайт открыт локально, функциям нужен Node.js 20.12.2 или новее — '+
-          'войдите на рабочем сайте.');
+      if (!result.response.ok || !result.data || result.data.ok !== true) {
+        throw new Error('Сервер не смог выполнить вход (код ' + result.response.status + ')');
       }
-      // Успешный ответ API должен явно подтвердить вход (кроме 404-fallback)
-      if(res.status!==404 && (!json || json.ok!==true)) return false;
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-        login:login,
-        at:Date.now(),
-        token:ph
-      }));
+      state.checked = true;
+      state.authenticated = true;
+      state.user = result.data.user || null;
       return true;
     },
-    logout:function(){
-      sessionStorage.removeItem(SESSION_KEY);
+
+    async refreshSession() {
+      var result = await request('/api/cms/session', { cache: 'no-store' });
+      state.checked = true;
+      state.authenticated = result.response.ok && !!(result.data && result.data.authenticated);
+      state.user = state.authenticated ? result.data.user || null : null;
+      return state.authenticated;
     },
-    isAuthed:function(){
-      try{
-        var raw=sessionStorage.getItem(SESSION_KEY);
-        if(!raw) return false;
-        var s=JSON.parse(raw);
-        if(!s || !s.at || !s.token) return false;
-        if(Date.now()-s.at > 12*60*60*1000){ this.logout(); return false; }
-        return true;
-      }catch(e){ return false; }
+
+    async logout() {
+      try {
+        await request('/api/cms/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      } finally {
+        state.checked = true;
+        state.authenticated = false;
+        state.user = null;
+      }
     },
-    getSession:function(){
-      try{ return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); }catch(e){ return null; }
+
+    isAuthed() {
+      return state.checked && state.authenticated;
     },
-    getToken:function(){
-      var s=this.getSession();
-      return s&&s.token?s.token:'';
+
+    getSession() {
+      return state.authenticated ? { login: state.user && state.user.login } : null;
     },
-    loadContent:function(){
-      try{ return JSON.parse(localStorage.getItem(CONTENT_KEY)||'{}'); }catch(e){ return {}; }
+
+    getToken() {
+      return state.authenticated ? 'cookie-session' : '';
     },
-    saveContent:function(data){
+
+    setRevision(revision) {
+      state.revision = String(revision || '');
+    },
+
+    loadContent() {
+      try {
+        return JSON.parse(localStorage.getItem(CONTENT_KEY) || '{}');
+      } catch (error) {
+        return {};
+      }
+    },
+
+    saveContent(data) {
       localStorage.setItem(CONTENT_KEY, JSON.stringify(data));
+      if (data && data.revision) state.revision = data.revision;
     },
-    clearContent:function(){
+
+    clearContent() {
       localStorage.removeItem(CONTENT_KEY);
     },
-    async publishContent(data){
-      var token=this.getToken();
-      if(!token) throw new Error('Нет сессии');
-      var res=await fetch('/api/cms/save',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'X-CMS-Token':token
-        },
-        body:JSON.stringify({ content:data, token:token })
+
+    async publishContent(data) {
+      if (!state.authenticated) throw new Error('Нет сессии');
+      var result = await request('/api/cms/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: data, revision: state.revision }),
       });
-      var json=null;
-      try{ json=await res.json(); }catch(e){}
-      if(!res.ok || !json || !json.ok){
-        var msg=(json&&json.error)||('Ошибка сервера '+res.status);
-        throw new Error(msg);
+      if (!result.response.ok || !result.data || !result.data.ok) {
+        if (result.response.status === 401) state.authenticated = false;
+        if (result.response.status === 409) {
+          throw new Error('Контент уже изменён другим администратором. Обновите страницу перед сохранением.');
+        }
+        throw new Error((result.data && result.data.error) || 'Ошибка сервера ' + result.response.status);
       }
-      return json;
-    }
+      state.revision = result.data.revision || '';
+      if (data) {
+        data.savedAt = result.data.savedAt || data.savedAt;
+        data.revision = state.revision;
+        this.saveContent(data);
+      }
+      return result.data;
+    },
+
+    async listVersions() {
+      var result = await request('/api/cms/versions', { cache: 'no-store' });
+      if (!result.response.ok) throw new Error((result.data && result.data.error) || 'Не удалось загрузить историю');
+      return result.data.versions || [];
+    },
+
+    async restoreVersion(key) {
+      var result = await request('/api/cms/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: key }),
+      });
+      if (!result.response.ok || !result.data || !result.data.ok) {
+        throw new Error((result.data && result.data.error) || 'Не удалось восстановить версию');
+      }
+      return result.data;
+    },
   };
 
-  global.AmirCMS=AmirCMS;
+  global.AmirCMS = AmirCMS;
 })(window);

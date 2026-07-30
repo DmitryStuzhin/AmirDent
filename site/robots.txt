@@ -1,8 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
-Disallow: /assets/cms.js
-Disallow: /assets/cms-auth.js
-Disallow: /assets/cms.css
+Disallow: /api/cms/
 
-Sitemap: https://amirdent.ru/sitemap.xml
+Sitemap: https://amirdent.netlify.app/sitemap.xml

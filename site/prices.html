@@ -8,11 +8,15 @@
 <meta property="og:title" content="АмирДент — стоматология и ортодонтия в Москве">
 <meta property="og:description" content="Брекеты, элайнеры, имплантация, лечение и отбеливание. Бесплатная консультация.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://amirdent.netlify.app/prices">
+<meta property="og:image" content="https://amirdent.netlify.app/smile-after.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://amirdent.netlify.app/prices">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="/assets/styles.css?v=pricehier1">
+<link rel="stylesheet" href="/assets/styles.css?v=launch1">
 <link rel="stylesheet" href="/assets/cms.css?v=herofix1">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/favicon.svg">
@@ -25,7 +29,7 @@
 <header class="hdr">
   <div class="container hdr-in">
     <a href="/" class="logo"><span class="brand-mark" aria-hidden="true"></span><span>Амир<b>Дент</b></span></a>
-    <nav class="nav">
+    <nav class="nav" id="mainNav">
       <a href="/" class="active">Главная</a>
       <div class="nav-drop">
         <a href="/#services">Услуги</a>
@@ -50,7 +54,7 @@
       <a href="tel:+79262031828" class="hdr-phone"><b>+7 (926) 203-18-28</b><small>Ежедневно 09:00–21:00</small></a>
       <a class="hdr-call" href="tel:+79262031828" aria-label="Позвонить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg></a>
       <a href="#zapis" class="btn btn-gold">Записаться</a>
-      <button class="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+      <button class="burger" aria-label="Меню" aria-expanded="false" aria-controls="mainNav"><span></span><span></span><span></span></button>
     </div>
   </div>
 </header>
@@ -486,13 +490,13 @@
         <form class="form" id="booking" novalidate>
           <h3>Записаться онлайн</h3>
           <p class="s">Свяжемся в течение 15 минут</p>
-          <div class="field"><label>Ваше имя</label><input type="text" name="name" placeholder="Как к вам обращаться" required></div>
-          <div class="field"><label>Телефон</label><input type="tel" name="phone" value="+7 " inputmode="tel" maxlength="18" placeholder="+7 (___) ___-__-__" required></div>
-          <div class="field"><label>Услуга</label><div class="select-wrap"><select class="form-select" name="service"><option value="">Выберите направление</option><option>Ортодонтия и брекеты</option><option>Лечение и терапия</option><option>Гигиена и профилактика</option><option>Пародонтология</option><option>Хирургия</option><option>Имплантация</option><option>Протезирование</option><option>Детская стоматология</option><option>Отбеливание</option><option>Другое</option></select></div></div>
+          <div class="field"><label for="bookingName">Ваше имя</label><input id="bookingName" type="text" name="name" autocomplete="name" placeholder="Как к вам обращаться" required></div>
+          <div class="field"><label for="bookingPhone">Телефон</label><input id="bookingPhone" type="tel" name="phone" autocomplete="tel" value="+7 " inputmode="tel" maxlength="18" placeholder="+7 (___) ___-__-__" required></div>
+          <div class="field"><label for="bookingService">Услуга</label><div class="select-wrap"><select id="bookingService" class="form-select" name="service"><option value="">Выберите направление</option><option>Ортодонтия и брекеты</option><option>Лечение и терапия</option><option>Гигиена и профилактика</option><option>Пародонтология</option><option>Хирургия</option><option>Имплантация</option><option>Протезирование</option><option>Детская стоматология</option><option>Отбеливание</option><option>Другое</option></select></div></div>
           <div class="hp" aria-hidden="true"><input type="text" name="company" tabindex="-1" autocomplete="off"></div>
           <button type="submit" class="btn btn-gold">Записаться на приём</button>
+          <p class="form-policy">Нажимая на кнопку, вы соглашаетесь с <a href="/privacy" target="_blank" rel="noopener">политикой конфиденциальности</a>.</p>
           <p class="form-note" id="bookingNote" role="status" aria-live="polite"></p>
-          <p class="agree">Нажимая кнопку, вы соглашаетесь с <a href="#">политикой обработки персональных данных</a></p>
         </form>
       </div>
     </div>
@@ -511,7 +515,7 @@
       <div><h4>Контакты</h4><a href="tel:+79262031828">+7 (926) 203-18-28</a><p>Ежедневно 09:00–21:00</p><a href="https://wa.me/79262031828" target="_blank" rel="noopener">WhatsApp</a></div>
       <div><h4>Адрес</h4><p>г. Москва (САО),<br>Дмитровское ш., 96, корп. 5</p><p>м. Яхромская</p></div>
     </div>
-    <div class="ftr-bot"><small>© 2026 Клиника АмирДент. Все права защищены.</small><small>Лицензии и сертификаты — по запросу в клинике</small></div>
+    <div class="ftr-bot"><small>© 2026 Клиника АмирДент. Все права защищены.</small><small><a href="/privacy">Обработка персональных данных</a> · <a href="/legal">Правовая информация</a></small></div>
   </div>
 </footer>
 
@@ -519,8 +523,8 @@
 
 <script src="/assets/services-data.js?v=zub1"></script>
 <script src="/assets/menu.js?v=svcgroups1"></script>
-<script src="/assets/cms-auth.js?v=6"></script>
-<script src="/assets/main.js?v=pricehier1"></script>
-<script src="/assets/cms.js?v=livedel2"></script>
+<script src="/assets/cms-auth.js?v=8"></script>
+<script src="/assets/main.js?v=launch2"></script>
+<script src="/assets/cms.js?v=session1"></script>
 </body>
 </html>

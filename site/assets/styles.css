@@ -88,7 +88,7 @@ h1 .g,h2 .g{white-space:nowrap}
 .hdr-in{display:flex;align-items:center;justify-content:space-between;gap:22px;height:82px;transition:height .3s}
 .hdr.scrolled .hdr-in{height:68px}
 .logo{display:flex;align-items:center;gap:13px;font-family:var(--head);font-weight:800;font-size:24px;letter-spacing:-.02em}
-.brand-mark{width:52px;height:52px;flex:none;background:url('https://static.tildacdn.com/tild6330-6136-4335-a362-653732653237/996d2dad-bf34-43dc-9.png') no-repeat left center;background-size:auto 100%}
+.brand-mark{width:52px;height:52px;flex:none;background:url('/assets/images/81e96a5d4c.webp') no-repeat left center;background-size:auto 100%}
 .logo b{color:var(--gold-deep)}
 .nav{display:flex;align-items:center;gap:4px}
 .nav>a,.nav-drop>a{font-family:var(--head);font-weight:600;font-size:15px;padding:10px 15px;border-radius:100px;transition:.25s;position:relative;display:inline-block;white-space:nowrap}
@@ -138,11 +138,11 @@ h1 .g,h2 .g{white-space:nowrap}
   linear-gradient(115deg,#12110e 0%,#1e1a13 52%,#0d0d0b 100%)}
 .hero::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;box-shadow:inset 0 -100px 120px rgba(0,0,0,.26)}
 .hero-brand-mark{position:absolute;z-index:-2;right:2.5%;top:7%;width:min(47vw,680px);aspect-ratio:1;overflow:hidden;pointer-events:none;
-  background:url('https://static.tildacdn.com/tild6330-6136-4335-a362-653732653237/996d2dad-bf34-43dc-9.png') no-repeat left center;
+  background:url('/assets/images/81e96a5d4c.webp') no-repeat left center;
   background-size:auto 100%;opacity:.16;filter:blur(.7px) drop-shadow(0 0 36px rgba(211,186,134,.18));
   transform:translate3d(var(--hero-px),var(--hero-py),0);animation:brandBreathe 7s ease-in-out infinite}
 .hero-brand-mark::after{content:"";position:absolute;inset:0;
-  background:url('https://static.tildacdn.com/tild6330-6136-4335-a362-653732653237/996d2dad-bf34-43dc-9.png') no-repeat left center;
+  background:url('/assets/images/81e96a5d4c.webp') no-repeat left center;
   background-size:auto 100%;filter:brightness(1.75);opacity:.85;
   -webkit-mask-image:linear-gradient(112deg,transparent 34%,#000 48%,transparent 62%);
   mask-image:linear-gradient(112deg,transparent 34%,#000 48%,transparent 62%);
@@ -452,6 +452,8 @@ a.psub-title:hover{color:var(--gold-deep)}
 .dp-doc-name{font-family:var(--head);font-weight:800;font-size:21px;margin-bottom:10px}
 .dp-doc-exp{font-size:14.5px;line-height:1.6;color:var(--muted);margin-bottom:18px}
 .dp-doc-btn{display:inline-block;font-size:14px;font-weight:600;color:var(--gold-deep);text-decoration:underline}
+.doc-details{display:inline-flex;border:0;background:none;padding:6px 0;color:var(--gold-deep);font:600 14px/1.3 var(--body);text-decoration:underline;cursor:pointer}
+.doc-details:focus-visible{outline:3px solid rgba(179,154,107,.35);outline-offset:3px;border-radius:4px}
 .dp-info{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow-md);padding:30px;display:flex;flex-direction:column;gap:14px}
 .dp-info[hidden]{display:none}
 .dp-info h3{font-size:20px}
@@ -789,7 +791,7 @@ div.dm{align-items:center;justify-content:center}
 .form select.form-select option{color:var(--text);background:#fff}
 /* кастомный список услуг — в стиле формы */
 .form select.form-select.csel-native{
-  position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;
+  display:none!important;position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;
   margin:0;padding:0;border:0;
 }
 .csel-btn{
@@ -867,6 +869,8 @@ div.dm{align-items:center;justify-content:center}
 .form .btn{width:100%;margin-top:4px}
 .form .agree{font-size:12px;color:var(--muted);margin-top:14px;text-align:center}
 .form .agree a{color:var(--gold-deep);text-decoration:underline}
+.form .form-policy{margin:-2px 0 8px;color:var(--muted);font-size:12px;line-height:1.45;text-align:center}
+.form .form-policy a{display:inline;color:var(--gold-deep);text-decoration:underline;text-underline-offset:2px}
 .form .btn[disabled]{opacity:.6;cursor:default}
 .form .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .form-note{font-size:13.5px;line-height:1.5;margin-top:14px;text-align:center;color:var(--gold-deep)}
@@ -906,7 +910,7 @@ div.dm{align-items:center;justify-content:center}
   .reveal.armed{opacity:1;transform:none}
   .hero-brand-mark,.hero-brand-mark::after,.hero-glow,.chip,.hero-doc,.hero-doctor-card,.proof-track,.wa-float,.why-scan,.why-team-ring,.why-partners .plogos span,.scope-path i,.guarantee-seal,.why-swipe i{animation:none!important}
   .hero h1 .g::after{animation:none;transform:scaleX(1)}
-  .proof-track{transform:none}
+  .proof-track,.rev-track{animation:none!important;transform:none}
 }
 
 /* ---------- Responsive ---------- */
@@ -1028,4 +1032,17 @@ div.dm{align-items:center;justify-content:center}
   .hero-trust small{font-size:10.5px;margin:7px auto 0}
   .proof-track span{padding:13px 24px;font-size:10.5px}
   .cta-grid,.stats-grid{padding:32px 22px}
+}
+@media(max-width:360px){
+  .container{padding-inline:12px}
+  .hdr-in{gap:6px}
+  .hdr-cta{gap:5px}
+  .hdr .wa-ic{display:none}
+  .logo{gap:7px;font-size:18px}
+  .logo .brand-mark{width:36px;height:36px}
+  .hdr-call{width:38px;height:38px}
+  .burger{padding:6px}
+  .burger span{width:23px}
+  .hero h1{font-size:36px}
+  .hero-brand-mark{width:390px}
 }

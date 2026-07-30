@@ -196,8 +196,10 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    var hit = document.activeElement;
-    if (!hit || !hit.hasAttribute || !hit.hasAttribute('data-doc')) return;
+    var trigger = document.activeElement;
+    if (!trigger || !trigger.classList || !trigger.classList.contains('doc-details')) return;
+    var hit = trigger.closest('[data-doc]');
+    if (!hit) return;
     e.preventDefault();
     fromKeyboard = true;
     open(hit.getAttribute('data-doc'));
@@ -211,10 +213,22 @@
     document.querySelectorAll('[data-doc]').forEach(function (el) {
       var id = el.getAttribute('data-doc');
       var d = docs[id];
+      el.removeAttribute('role');
+      el.removeAttribute('tabindex');
+      el.removeAttribute('aria-haspopup');
       var body = el.querySelector('.doc-body')
         || el.querySelector('.chief-body')
         || el.querySelector('.dp-doc-text');
       if (!body) return;
+      var details = body.querySelector('.doc-details');
+      if (!details) {
+        details = document.createElement('button');
+        details.type = 'button';
+        details.className = 'doc-details';
+        details.textContent = 'Подробнее о враче';
+        details.setAttribute('aria-label', 'Подробнее о враче ' + (d && d.name ? d.name : ''));
+        body.appendChild(details);
+      }
       var old = body.querySelector('.doc-pd');
       if (old) old.remove();
       if (!d || d.pdRating == null) return;
@@ -240,7 +254,7 @@
       a.appendChild(score);
       a.appendChild(stars);
       a.appendChild(label);
-      var btn = body.querySelector('.dp-doc-btn');
+      var btn = body.querySelector('.dp-doc-btn,.doc-details');
       if (btn) body.insertBefore(a, btn);
       else body.appendChild(a);
     });

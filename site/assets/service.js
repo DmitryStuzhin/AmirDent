@@ -62,14 +62,13 @@
       card.className='dp-doc-card';
       if(ids&&ids[i]){
         card.setAttribute('data-doc', ids[i]);
-        card.setAttribute('role','button');
-        card.setAttribute('aria-haspopup','dialog');
       }
       card.innerHTML='<div class="dp-doc-photo"></div>'+
         '<div class="dp-doc-text">'+
           '<div class="dp-doc-role"></div>'+
           '<div class="dp-doc-name"></div>'+
           '<p class="dp-doc-exp"></p>'+
+          '<button type="button" class="doc-details">Подробнее о враче</button>'+
           '<a href="#zapis" class="dp-doc-btn">Записаться к врачу</a>'+
         '</div>';
       var img=document.createElement('img');
@@ -292,14 +291,12 @@
         card.className='dp-team-card';
         if(docIds[i]){
           card.setAttribute('data-doc', docIds[i]);
-          card.setAttribute('role','button');
-          card.setAttribute('aria-haspopup','dialog');
-          card.tabIndex=0;
         }
         card.innerHTML='<div class="dp-team-photo"><img src="'+d.photo+'" alt="'+d.name+'"></div>'+
           '<div class="dp-team-role">'+d.role+'</div>'+
           '<h3>'+d.name+'</h3>'+
-          '<p>'+(d.exp||'')+'</p>';
+          '<p>'+(d.exp||'')+'</p>'+
+          '<button type="button" class="doc-details">Подробнее о враче</button>';
         team.appendChild(card);
       });
       if(el('dirTeamWrap')) el('dirTeamWrap').hidden=false;
@@ -319,7 +316,7 @@
       if(other_item.slug===item.slug) return;
       var a=document.createElement('a');
       a.className='dp-other-item';
-      a.href='/uslugi/'+other_item.slug;
+      a.href='/uslugi/'+other_item.slug+'/';
       a.textContent=other_item.title;
       other.appendChild(a);
     });
@@ -463,10 +460,7 @@
     }).join('');
   }
 
-  var lastPriceRows=null;
-
   function applySavedPrices(saved){
-    if(!lastPriceRows) return false;
     var savedRows=[];
     var savedIsMaster=false;
     if(saved){
@@ -484,7 +478,7 @@
       }
     }
     // content.json важнее prices.html: иначе удалённые услуги возвращаются из статики
-    var ok=savedIsMaster ? fillRows(savedRows) : mergeFill(lastPriceRows, savedRows);
+    var ok=savedIsMaster ? fillRows(savedRows) : false;
     if(!ok){
       if(!item.match){
         el('dirPrices').hidden=true;
@@ -506,32 +500,9 @@
   }
   document.addEventListener('amir:cms-content-ready', onCmsContentReady);
 
-  fetch('/prices.html',{cache:'no-cache'})
-    .then(function(r){
-      if(!r.ok) throw new Error('prices '+r.status);
-      return r.text();
-    })
-    .then(function(html){
-      var doc=new DOMParser().parseFromString(html,'text/html');
-      lastPriceRows=doc.querySelectorAll('.price-list .prow');
-      return fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
-        .then(function(r){ return r.ok?r.json():null; })
-        .then(function(saved){
-          applySavedPrices(saved);
-        })
-        .catch(function(){
-          var ok=fillRows(lastPriceRows);
-          if(!ok){
-            if(!item.match){
-              el('dirPrices').hidden=true;
-              renderFacts(null);
-              signalServiceReady();
-            } else {
-              fail('Цены по этой услуге назовёт администратор — оставьте заявку или позвоните.');
-            }
-          }
-        });
-    })
+  fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error('content '+r.status); return r.json(); })
+    .then(function(saved){ applySavedPrices(saved); })
     .catch(function(){
       fail('Не удалось загрузить цены. Позвоните нам или оставьте заявку — подскажем стоимость.');
     });

@@ -46,12 +46,10 @@ def _load_dotenv():
 
 _load_dotenv()
 
-# Пароль админки: CMS_PASSWORD_HASH в окружении / .env (SHA-256 пароля).
-# Для локального python3 server.py, если не задан — временный fallback (AmirDent2026!).
+# Устаревший локальный сервер не должен иметь встроенных реквизитов.
+# Для админки используйте `npm run dev`, который запускает реальные Netlify Functions.
 PASS_HASH = os.environ.get("CMS_PASSWORD_HASH", "").strip().lower()
-CMS_LOGIN = os.environ.get("CMS_LOGIN", "admin").strip() or "admin"
-if not PASS_HASH:
-    PASS_HASH = "967297ed8703119a5dcfa394969506d97b7223d88c678cf87d9677678479c91d"
+CMS_LOGIN = os.environ.get("CMS_LOGIN", "").strip()
 
 
 def _load_telegram_config():
@@ -357,7 +355,7 @@ class Handler(SimpleHTTPRequestHandler):
         if token and chat:
             telegram_ok = _send_telegram(token, chat, text)
 
-        print(f"[lead] {name} / {phone} / {service}  telegram={'ok' if telegram_ok else 'skip'}")
+        print(f"[lead] stored locally; telegram={'ok' if telegram_ok else 'skip'}")
         return self._json_response(200, {"ok": True, "telegram": telegram_ok, "local": True})
 
     def log_message(self, fmt, *args):
