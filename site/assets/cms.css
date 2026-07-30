@@ -26,7 +26,7 @@ body.cms-admin{padding-top:0}
   border:1.5px solid var(--line);background:var(--cream);color:var(--text);cursor:pointer;
 }
 .cms-tab.active{background:linear-gradient(135deg,#dcc493,#9c7f4b);color:#241d10;border-color:transparent}
-.cms-bar #cmsManageAll{border-color:rgba(211,186,134,.55);color:var(--gold-bright)}
+.cms-bar #cmsManageDoctors,.cms-bar #cmsManageServices{border-color:rgba(211,186,134,.55);color:var(--gold-bright)}
 .cms-bar button.primary:hover{filter:brightness(1.05);color:#241d10}
 .cms-bar label.cms-file{display:inline-flex;align-items:center}
 .cms-bar label.cms-file input{display:none}
@@ -42,6 +42,10 @@ body.cms-admin{padding-top:0}
 body.cms-admin .cms-editable{
   outline:2px dashed transparent;outline-offset:4px;cursor:pointer;transition:outline-color .15s,box-shadow .15s;
   position:relative;
+}
+/* Чипы героя уже absolute — relative ломал «полёт» и сдвигал фото врача */
+body.cms-admin .chip.cms-editable{
+  position:absolute !important;
 }
 body.cms-admin .cms-editable:hover,
 body.cms-admin .cms-editable.cms-hot{

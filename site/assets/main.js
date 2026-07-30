@@ -391,21 +391,6 @@
   var pempty=document.getElementById('priceEmpty');
   var curCat='all';
 
-  // Направления каталога. Порядок задаёт порядок групп в списке услуг.
-  var CATS=[
-    ['ortho','Ортодонтия и брекеты'],
-    ['therapy','Лечение и терапия'],
-    ['hygiene','Гигиена и профилактика'],
-    ['paro','Пародонтология'],
-    ['surgery','Хирургия'],
-    ['implant','Имплантация'],
-    ['prosth','Протезирование'],
-    ['kids','Детская стоматология']
-  ];
-  function catName(cat){
-    for(var i=0;i<CATS.length;i++) if(CATS[i][0]===cat) return CATS[i][1];
-    return 'Другие услуги';
-  }
   function plural(n){
     var d=n%10, dd=n%100;
     if(d===1&&dd!==11) return 'услуга';
@@ -413,33 +398,196 @@
     return 'услуг';
   }
 
-  // Услуги в разметке идут вперемешку, а админка при сохранении возвращает их
-  // плоским списком. Поэтому группы строим из DOM при каждой загрузке, а не
-  // в разметке: иначе после первой публикации из админки они бы исчезли.
-  // только каталог на главной: на странице направления свой список без групп
-  var priceList=document.querySelector('#services .price-list');
+  /* Категория прайса (data-cat) → колонка сайта из AMIR_SERVICES */
+  function priceCatToGroupTitle(cat){
+    if(cat==='ortho') return 'Ортодонтия';
+    if(cat==='cosmo') return 'Космеология';
+    return 'Стоматология';
+  }
+
+  function priceCatalog(){
+    var data=window.AMIR_SERVICES;
+    if(data && Array.isArray(data.groups) && data.groups.length){
+      return data.groups.map(function(g){
+        return {
+          title:g.title,
+          items:(g.items||[]).map(function(it){
+            return {
+              slug:it.slug,
+              title:it.title,
+              match:it.match||null
+            };
+          })
+        };
+      });
+    }
+    // запасной каталог, если services-data не загрузился
+    return [
+      { title:'Ортодонтия', items:[{ slug:'ortho-other', title:'Ортодонтия', match:{ cat:'ortho' } }] },
+      { title:'Стоматология', items:[
+        { slug:'therapy', title:'Терапия', match:{ cat:'therapy' } },
+        { slug:'hygiene', title:'Гигиена', match:{ cat:'hygiene' } },
+        { slug:'surgery', title:'Хирургия', match:{ cat:'surgery' } },
+        { slug:'implant', title:'Имплантация', match:{ cat:'implant' } },
+        { slug:'prosth', title:'Протезирование', match:{ cat:'prosth' } },
+        { slug:'paro', title:'Пародонтология', match:{ cat:'paro' } },
+        { slug:'kids', title:'Детская стоматология', match:{ cat:'kids' } }
+      ]},
+      { title:'Космеология', items:[{ slug:'cosmo-other', title:'Космеология', match:{ cat:'cosmo' } }] }
+    ];
+  }
+
+  /* Подбираем подкатегорию: data-subcat → слова из match → запас «Другие». */
+  function resolveSubcat(row, catalog){
+    var forced=(row.getAttribute('data-subcat')||'').trim();
+    var cat=(row.getAttribute('data-cat')||'').trim();
+    var name=((row.getAttribute('data-name')||'')+' '+((row.querySelector('.pn')&&row.querySelector('.pn').textContent)||'')).toLowerCase();
+    var groupTitle=priceCatToGroupTitle(cat);
+
+    if(forced){
+      for(var g=0;g<catalog.length;g++){
+        var items=catalog[g].items||[];
+        for(var i=0;i<items.length;i++){
+          if(items[i].slug===forced){
+            return { groupTitle:catalog[g].title, slug:forced, title:items[i].title };
+          }
+        }
+      }
+    }
+
+    var best=null, bestScore=0;
+    catalog.forEach(function(g){
+      (g.items||[]).forEach(function(it){
+        var m=it.match;
+        if(!m) return;
+        if(m.cat && cat && m.cat!==cat) return;
+        var words=m.words;
+        if(!words || !words.length) return;
+        var hit=0, len=0;
+        for(var w=0;w<words.length;w++){
+          if(name.indexOf(words[w])>-1){
+            hit++;
+            if(words[w].length>len) len=words[w].length;
+          }
+        }
+        if(!hit) return;
+        var score=hit*100+len;
+        if(score>bestScore){
+          bestScore=score;
+          best={ groupTitle:g.title, slug:it.slug, title:it.title };
+        }
+      });
+    });
+    if(best) return best;
+
+    // Запас: подкатегория с match.cat без слов (вся «Гигиена» → «Чистка зубов» и т.п.)
+    var fallback=null;
+    catalog.forEach(function(g){
+      (g.items||[]).forEach(function(it){
+        var m=it.match;
+        if(!m || !m.cat || m.cat!==cat) return;
+        if(m.words && m.words.length) return;
+        if(!fallback) fallback={ groupTitle:g.title, slug:it.slug, title:it.title };
+      });
+    });
+    if(fallback) return fallback;
+
+    return {
+      groupTitle:groupTitle,
+      slug:'__other__'+groupTitle,
+      title:'Другие услуги'
+    };
+  }
+
+  // Услуги в разметке идут плоско. Группы и подгруппы собираем из
+  // AMIR_SERVICES + data-cat/data-subcat при каждой загрузке и после правок CMS.
+  var priceList=document.querySelector('#services .price-list, .price-page .price-list, main .price-list');
   var priceObserver=null;
   function buildGroups(){
     if(!priceList) return;
-    // Наблюдатель отключается на время перестройки: его колбэк вызывается
-    // асинхронно, поэтому простого флага мало — он успевает сброситься, и
-    // наблюдатель реагирует на наши же изменения, зацикливая страницу.
     if(priceObserver) priceObserver.disconnect();
-    priceList.querySelectorAll('.pgroup-h').forEach(function(h){ h.remove(); });
+    priceList.querySelectorAll('.pgroup-h, .psub-h').forEach(function(h){ h.remove(); });
+
     var rows=Array.prototype.slice.call(priceList.querySelectorAll('.prow'));
-    var used=[], frag=document.createDocumentFragment();
-    CATS.forEach(function(c){
-      var group=rows.filter(function(r){ return (r.dataset.cat||'')===c[0]; });
-      if(!group.length) return;
-      var h=document.createElement('div');
-      h.className='pgroup-h';
-      h.setAttribute('data-cat-h', c[0]);
-      h.innerHTML='<h3>'+c[1]+'</h3><span class="pgroup-n">'+group.length+' '+plural(group.length)+'</span>';
-      frag.appendChild(h);
-      group.forEach(function(r){ frag.appendChild(r); used.push(r); });
+    var catalog=priceCatalog();
+    var frag=document.createDocumentFragment();
+
+    // groupTitle → { order, subs: slug → { title, rows:[] } }
+    var tree={};
+    var groupOrder=[];
+    catalog.forEach(function(g){
+      groupOrder.push(g.title);
+      tree[g.title]={ subs:{}, subOrder:[] };
+      (g.items||[]).forEach(function(it){
+        tree[g.title].subOrder.push(it.slug);
+        tree[g.title].subs[it.slug]={ title:it.title, rows:[] };
+      });
+      tree[g.title].subOrder.push('__other__'+g.title);
+      tree[g.title].subs['__other__'+g.title]={ title:'Другие услуги', rows:[] };
     });
-    // строки с неизвестной категорией не теряем — они уходят в конец списка
-    rows.forEach(function(r){ if(used.indexOf(r)<0) frag.appendChild(r); });
+
+    rows.forEach(function(r){
+      var place=resolveSubcat(r, catalog);
+      if(!tree[place.groupTitle]){
+        groupOrder.push(place.groupTitle);
+        tree[place.groupTitle]={ subs:{}, subOrder:[] };
+      }
+      var g=tree[place.groupTitle];
+      if(!g.subs[place.slug]){
+        g.subOrder.push(place.slug);
+        g.subs[place.slug]={ title:place.title, rows:[] };
+      }
+      if(place.slug && place.slug.indexOf('__other__')!==0){
+        r.setAttribute('data-subcat', place.slug);
+      }
+      r.setAttribute('data-group', place.groupTitle);
+      g.subs[place.slug].rows.push(r);
+    });
+
+    groupOrder.forEach(function(gTitle){
+      var g=tree[gTitle];
+      if(!g) return;
+      var allRows=[];
+      g.subOrder.forEach(function(slug){
+        var sub=g.subs[slug];
+        if(sub && sub.rows.length) allRows=allRows.concat(sub.rows);
+      });
+      // подкатегории, добавленные на лету
+      Object.keys(g.subs).forEach(function(slug){
+        if(g.subOrder.indexOf(slug)<0 && g.subs[slug].rows.length){
+          allRows=allRows.concat(g.subs[slug].rows);
+          g.subOrder.push(slug);
+        }
+      });
+      if(!allRows.length) return;
+
+      var gh=document.createElement('div');
+      gh.className='pgroup-h';
+      gh.setAttribute('data-group-h', gTitle);
+      gh.innerHTML='<h3>'+gTitle+'</h3><span class="pgroup-n">'+allRows.length+' '+plural(allRows.length)+'</span>';
+      frag.appendChild(gh);
+
+      g.subOrder.forEach(function(slug){
+        var sub=g.subs[slug];
+        if(!sub || !sub.rows.length) return;
+        // «Другие» не показываем отдельным заголовком, если это единственная подгруппа
+        var filled=g.subOrder.filter(function(s){ return g.subs[s]&&g.subs[s].rows.length; });
+        var onlyOther=filled.length===1 && slug.indexOf('__other__')===0;
+        if(!onlyOther){
+          var sh=document.createElement('div');
+          sh.className='psub-h';
+          sh.setAttribute('data-sub-h', slug);
+          sh.setAttribute('data-group-h', gTitle);
+          var link=slug.indexOf('__other__')===0?'':('/uslugi/'+slug);
+          sh.innerHTML=link
+            ? '<a class="psub-title" href="'+link+'">'+sub.title+'</a><span class="psub-n">'+sub.rows.length+' '+plural(sub.rows.length)+'</span>'
+            : '<span class="psub-title">'+sub.title+'</span><span class="psub-n">'+sub.rows.length+' '+plural(sub.rows.length)+'</span>';
+          frag.appendChild(sh);
+        }
+        sub.rows.forEach(function(r){ frag.appendChild(r); });
+      });
+    });
+
     priceList.appendChild(frag);
     if(priceObserver){
       priceObserver.takeRecords();
@@ -456,27 +604,60 @@
     priceObserver.observe(priceList, {childList:true});
   }
   buildGroups();
+  // CMS подставляет прайс после boot — пересоберём иерархию
+  document.addEventListener('amir:cms-content-ready', function(){
+    buildGroups();
+    applyPrice();
+  });
+
+  function filterMatchesCat(rowCat, filter){
+    if(filter==='all') return true;
+    if(filter==='ortho') return rowCat==='ortho';
+    if(filter==='cosmo') return rowCat==='cosmo';
+    if(filter==='stoma'){
+      return rowCat!=='ortho' && rowCat!=='cosmo';
+    }
+    return rowCat===filter;
+  }
 
   function applyPrice(){
     if(!priceList) return;
     var q=(psearch&&psearch.value||'').trim().toLowerCase();
-    var prows=priceList?priceList.querySelectorAll('.prow'):[];
-    var shown=0, perCat={};
+    var prows=priceList.querySelectorAll('.prow');
+    var shown=0;
+    var perGroup={}, perSub={};
+
     prows.forEach(function(r){
-      var cat=r.dataset.cat||'';
-      var okCat=curCat==='all'||cat===curCat;
-      var okQ=!q||(r.dataset.name||'').indexOf(q)>-1;
+      var cat=r.getAttribute('data-cat')||'';
+      var group=r.getAttribute('data-group')||priceCatToGroupTitle(cat);
+      var sub=r.getAttribute('data-subcat')||('__other__'+group);
+      var okCat=filterMatchesCat(cat, curCat);
+      var okQ=!q||(r.getAttribute('data-name')||'').indexOf(q)>-1||((r.querySelector('.pn')&&r.querySelector('.pn').textContent)||'').toLowerCase().indexOf(q)>-1;
       var vis=okCat&&okQ;
       r.style.display=vis?'':'none';
-      if(vis){ shown++; perCat[cat]=(perCat[cat]||0)+1; }
+      if(vis){
+        shown++;
+        perGroup[group]=(perGroup[group]||0)+1;
+        perSub[group+'::'+sub]=(perSub[group+'::'+sub]||0)+1;
+      }
     });
-    document.querySelectorAll('.pgroup-h').forEach(function(h){
-      var n=perCat[h.getAttribute('data-cat-h')]||0;
+
+    priceList.querySelectorAll('.pgroup-h').forEach(function(h){
+      var g=h.getAttribute('data-group-h')||'';
+      var n=perGroup[g]||0;
       h.style.display=n?'':'none';
       var badge=h.querySelector('.pgroup-n');
       if(badge) badge.textContent=n+' '+plural(n);
     });
-    if(pempty)pempty.hidden=shown>0;
+    priceList.querySelectorAll('.psub-h').forEach(function(h){
+      var g=h.getAttribute('data-group-h')||'';
+      var s=h.getAttribute('data-sub-h')||'';
+      var n=perSub[g+'::'+s]||0;
+      h.style.display=n?'':'none';
+      var badge=h.querySelector('.psub-n');
+      if(badge) badge.textContent=n+' '+plural(n);
+    });
+    if(pempty) pempty.hidden=shown>0;
   }
   // Названия в прайсе и на страницах услуг отличаются («Система Invisalign» против
   // «Элайнеры»), поэтому по запросу подсказываем подходящие страницы услуг.

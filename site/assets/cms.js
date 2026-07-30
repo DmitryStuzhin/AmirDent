@@ -396,7 +396,10 @@
   function servicesToHtml(list){
     return (list||[]).map(function(s){
       var name=s.name||'Услуга';
-      return '<div class="prow" data-cat="'+escAttr(s.cat||'therapy')+'" data-name="'+escAttr(name.toLowerCase())+'">'+
+      var attrs=' data-cat="'+escAttr(s.cat||'therapy')+'" data-name="'+escAttr(name.toLowerCase())+'"';
+      if(s.subcat) attrs+=' data-subcat="'+escAttr(s.subcat)+'"';
+      if(s.doctor) attrs+=' data-doctor="'+escAttr(s.doctor)+'"';
+      return '<div class="prow"'+attrs+'>'+
         '<span class="pn">'+name.replace(/</g,'&lt;')+'</span>'+
         '<span class="ptag">'+(s.tag||'').replace(/</g,'&lt;')+'</span>'+
         '<span class="pp">'+(s.price||'').replace(/</g,'&lt;')+'</span></div>';
@@ -438,12 +441,32 @@
         name:(el.querySelector('.pn')&&el.querySelector('.pn').textContent.trim())||'',
         tag:(el.querySelector('.ptag')&&el.querySelector('.ptag').textContent.trim())||'',
         price:(el.querySelector('.pp')&&el.querySelector('.pp').textContent.trim())||'',
-        cat:el.getAttribute('data-cat')||'therapy'
+        cat:el.getAttribute('data-cat')||'therapy',
+        subcat:el.getAttribute('data-subcat')||'',
+        doctor:el.getAttribute('data-doctor')||''
       };
     });
   }
 
-  function mergeServicesByName(baseList, editedList){
+  function mergeServicesByName(baseList, editedList, opts){
+    opts=opts||{};
+    // master = полный актуальный список (с учётом удалений). Не возвращаем
+    // строки, которых в нём уже нет — иначе удаление «откатывается».
+    if(opts.master && Array.isArray(opts.master)){
+      var byName={};
+      (baseList||[]).forEach(function(s){
+        var k=(s.name||'').toLowerCase();
+        if(k) byName[k]=s;
+      });
+      (editedList||[]).forEach(function(s){
+        var k=(s.name||'').toLowerCase();
+        if(k) byName[k]=s;
+      });
+      return opts.master.map(function(s){
+        var k=(s.name||'').toLowerCase();
+        return Object.assign({}, byName[k]||s, s);
+      }).filter(function(s){ return s && s.name; });
+    }
     var out=(baseList||[]).map(function(s){ return Object.assign({}, s); });
     (editedList||[]).forEach(function(ed){
       var key=(ed.name||'').toLowerCase();
@@ -478,9 +501,123 @@
         name:(el.querySelector('.pn')&&el.querySelector('.pn').textContent.trim())||'',
         tag:(el.querySelector('.ptag')&&el.querySelector('.ptag').textContent.trim())||'',
         price:(el.querySelector('.pp')&&el.querySelector('.pp').textContent.trim())||'',
-        cat:el.getAttribute('data-cat')||'therapy'
+        cat:el.getAttribute('data-cat')||'therapy',
+        subcat:el.getAttribute('data-subcat')||'',
+        doctor:el.getAttribute('data-doctor')||''
       };
     });
+  }
+
+  function collectServiceGroups(){
+    var groups=window.AMIR_SERVICES&&window.AMIR_SERVICES.groups;
+    if(!Array.isArray(groups)) return null;
+    return groups.map(function(g){
+      return {
+        title:g.title,
+        items:(g.items||[]).map(function(it){
+          var row={ slug:it.slug, title:it.title, desc:it.desc||'', doctors:it.doctors?it.doctors.slice():[] };
+          if(it.match) row.match=it.match;
+          return row;
+        })
+      };
+    });
+  }
+
+  function applyServiceGroups(groups){
+    if(!Array.isArray(groups) || !window.AMIR_SERVICES) return;
+    window.AMIR_SERVICES.groups=groups.map(function(g){
+      return {
+        title:g.title,
+        items:(g.items||[]).map(function(it){
+          var row={ slug:it.slug, title:it.title, desc:it.desc||'', doctors:it.doctors?it.doctors.slice():[] };
+          if(it.match) row.match=it.match;
+          return row;
+        })
+      };
+    });
+    if(typeof window.AMIR_rebuildServiceMenus==='function') window.AMIR_rebuildServiceMenus();
+  }
+
+  /* Новые врачи из content.json должны попасть в AMIR_SERVICES.doctors —
+     иначе страница /uslugi/ не сможет показать карточку по id. */
+  function syncDoctorsIntoServicesData(snap){
+    if(!snap || !window.AMIR_SERVICES) return;
+    if(!window.AMIR_SERVICES.doctors) window.AMIR_SERVICES.doctors={};
+    (snap.doctors||[]).forEach(function(d){
+      if(!d || !d.id) return;
+      var prev=window.AMIR_SERVICES.doctors[d.id]||{};
+      window.AMIR_SERVICES.doctors[d.id]={
+        name:d.name||prev.name||'Врач',
+        role:d.role||prev.role||'',
+        exp:d.exp||prev.exp||'',
+        photo:d.src||prev.photo||'',
+        spec:prev.spec||d.role||'',
+        years:prev.years||'',
+        video:prev.video||'',
+        bio:prev.bio||[],
+        pdRating:prev.pdRating,
+        pdReviews:prev.pdReviews,
+        pdUrl:prev.pdUrl,
+        ratingSource:prev.ratingSource
+      };
+    });
+  }
+
+  /* Врач из строки прайса (data-doctor + data-subcat) → в список врачей подкатегории. */
+  function syncSubcatDoctorsFromServices(list){
+    (list||[]).forEach(function(s){
+      if(s && s.subcat && s.doctor) ensureDoctorOnSubcat(s.subcat, s.doctor);
+    });
+  }
+
+  function findServiceGroupByCat(cat){
+    var title=groupCatLabel(cat);
+    var groups=window.AMIR_SERVICES&&window.AMIR_SERVICES.groups;
+    if(!groups) return null;
+    for(var i=0;i<groups.length;i++){
+      if(groups[i].title===title) return groups[i];
+    }
+    return null;
+  }
+
+  function slugifyService(name){
+    var map={
+      а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',
+      к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',
+      х:'h',ц:'c',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya'
+    };
+    var s=String(name||'').toLowerCase().replace(/[а-яё]/g,function(ch){ return map[ch]||''; });
+    s=s.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').replace(/-+/g,'-');
+    return s||'usluga';
+  }
+
+  function uniqueServiceSlug(base){
+    var slug=base;
+    var n=2;
+    while(true){
+      var taken=false;
+      var groups=window.AMIR_SERVICES.groups||[];
+      for(var g=0;g<groups.length && !taken;g++){
+        var items=groups[g].items||[];
+        for(var i=0;i<items.length;i++){
+          if(items[i].slug===slug){ taken=true; break; }
+        }
+      }
+      if(!taken) return slug;
+      slug=base+'-'+n;
+      n++;
+    }
+  }
+
+  function flatServiceItems(){
+    var out=[];
+    var groups=window.AMIR_SERVICES&&window.AMIR_SERVICES.groups||[];
+    groups.forEach(function(g, gi){
+      (g.items||[]).forEach(function(it, ii){
+        out.push({ groupIndex:gi, itemIndex:ii, groupTitle:g.title, item:it });
+      });
+    });
+    return out;
   }
 
   function buildSnapshot(){
@@ -503,6 +640,11 @@
       if(base.docsV!=null) snap.docsV=base.docsV;
       if(Array.isArray(base.images)) snap.images=base.images;
       if(Array.isArray(base.reels)) snap.reels=base.reels;
+      if(Array.isArray(base.serviceGroups)) snap.serviceGroups=base.serviceGroups;
+      else {
+        var liveGroups=collectServiceGroups();
+        if(liveGroups) snap.serviceGroups=liveGroups;
+      }
       return snap;
     }
 
@@ -522,10 +664,33 @@
     });
 
     snap.doctors=collectDoctors();
-    snap.services=collectServices();
-    snap.docsV=docsVersion();
-    snap.docsHtml=doctorsToHtml(snap.doctors);
+    // На страницах без блока врачей (например prices.html) не затираем список
+    if(!snap.doctors.length && content && Array.isArray(content.doctors) && content.doctors.length){
+      snap.doctors=content.doctors;
+    }
+    // Прайс: память — источник правды после правок админки (в т.ч. удалений)
+    var collectedServices=collectServices();
+    var memServices=(content && Array.isArray(content.services)) ? content.services : [];
+    if(dirty && memServices){
+      snap.services=memServices.slice();
+    } else if(memServices.length && collectedServices.length){
+      snap.services=mergeServicesByName(collectedServices, memServices, { master:memServices });
+    } else if(memServices.length){
+      snap.services=memServices.slice();
+    } else if(collectedServices.length){
+      snap.services=collectedServices;
+    } else {
+      snap.services=[];
+    }
     snap.priceHtml=servicesToHtml(snap.services);
+    content.services=snap.services;
+    content.priceHtml=snap.priceHtml;
+    // Врач услуги → в подкатегорию до сбора групп
+    syncSubcatDoctorsFromServices(snap.services);
+    snap.serviceGroups=collectServiceGroups();
+    snap.docsV=docsVersion();
+    if(!snap.docsV && content && content.docsV!=null) snap.docsV=content.docsV;
+    snap.docsHtml=doctorsToHtml(snap.doctors);
 
     snap.textItems=queryUniqueTexts();
 
@@ -563,6 +728,10 @@
         }
       }
     }
+
+    if(Array.isArray(snap.serviceGroups)) applyServiceGroups(snap.serviceGroups);
+    syncDoctorsIntoServicesData(snap);
+    if(Array.isArray(snap.services)) syncSubcatDoctorsFromServices(snap.services);
 
     // 2) texts (unique items)
     var textItems=snap.textItems;
@@ -637,6 +806,7 @@
 
     if(typeof window.AMIR_applyDocRatings==='function') window.AMIR_applyDocRatings();
     if(typeof window.AMIR_initCountUps==='function') window.AMIR_initCountUps();
+    try{ document.dispatchEvent(new CustomEvent('amir:cms-content-ready',{detail:snap})); }catch(e){}
   }
 
   function markEditable(el, label, type){
@@ -735,7 +905,7 @@
 
   function addPriceRow(list, data){
     list=list||document.querySelector('.price-list');
-    if(!list){ alert('Блок прайса не найден'); return null; }
+    if(!list){ return null; }
     data=data||{};
     var name=data.name||'Новая услуга';
     var tag=data.tag||'Терапия';
@@ -745,6 +915,8 @@
     row.className='prow';
     row.dataset.cat=cat;
     row.dataset.name=String(name).toLowerCase();
+    if(data.subcat) row.setAttribute('data-subcat', data.subcat);
+    if(data.doctor) row.setAttribute('data-doctor', data.doctor);
     row.innerHTML='<span class="pn"></span><span class="ptag"></span><span class="pp"></span>';
     row.querySelector('.pn').textContent=name;
     row.querySelector('.ptag').textContent=tag;
@@ -763,6 +935,23 @@
     return 'data:image/svg+xml,'+encodeURIComponent(svg);
   }
 
+  function uniqueDoctorId(name){
+    var base=slugifyService(name||'vrach');
+    var id=base;
+    var n=2;
+    var docs=(window.AMIR_SERVICES&&window.AMIR_SERVICES.doctors)||{};
+    while(docs[id] || document.querySelector('[data-doc="'+id+'"]')){
+      id=base+'-'+n;
+      n++;
+    }
+    return id;
+  }
+  function bumpDocsVersion(){
+    var grid=document.querySelector('.doc-grid');
+    if(!grid) return;
+    var v=(parseInt(grid.getAttribute('data-docs-v')||'0',10)||0)+1;
+    grid.setAttribute('data-docs-v', String(v));
+  }
   function addDoctor(grid, data){
     grid=grid||document.querySelector('.doc-grid');
     if(!grid){ alert('Блок врачей не найден'); return null; }
@@ -771,8 +960,13 @@
     var role=data.role||'Специализация';
     var exp=data.exp||'Опыт работы';
     var src=data.src||doctorPlaceholder();
+    var id=data.id||uniqueDoctorId(name);
     var art=document.createElement('article');
     art.className='doc';
+    art.setAttribute('data-doc', id);
+    art.setAttribute('tabindex', '0');
+    art.setAttribute('role', 'button');
+    art.setAttribute('aria-haspopup', 'dialog');
     art.innerHTML=
       '<div class="doc-photo"><img alt=""></div>'+
       '<div class="doc-body">'+
@@ -788,15 +982,191 @@
     art.querySelector('.exp').textContent=exp;
     markEditable(art,'Врач','doctor');
     grid.appendChild(art);
+    bumpDocsVersion();
+    if(window.AMIR_SERVICES){
+      if(!window.AMIR_SERVICES.doctors) window.AMIR_SERVICES.doctors={};
+      window.AMIR_SERVICES.doctors[id]={
+        name:name,
+        role:role,
+        exp:exp,
+        photo:src,
+        spec:role,
+        years:'',
+        video:'',
+        bio:[]
+      };
+    }
     return art;
+  }
+  function ensureDoctorOnSubcat(subcat, doctorId){
+    if(!subcat || !doctorId || !window.AMIR_SERVICES || !window.AMIR_SERVICES.groups) return;
+    window.AMIR_SERVICES.groups.forEach(function(g){
+      (g.items||[]).forEach(function(it){
+        if(it.slug!==subcat) return;
+        if(!it.doctors) it.doctors=[];
+        if(it.doctors.indexOf(doctorId)<0) it.doctors.unshift(doctorId);
+      });
+    });
+    if(typeof window.AMIR_rebuildServiceMenus==='function') window.AMIR_rebuildServiceMenus();
   }
 
   function catOptions(selected){
     return [
       ['ortho','Ортодонтия'],['therapy','Терапия'],['hygiene','Гигиена'],
       ['surgery','Хирургия'],['implant','Имплантация'],['prosth','Протезирование'],
-      ['paro','Пародонтология'],['kids','Детская']
+      ['paro','Пародонтология'],['kids','Детская'],['cosmo','Косметология']
     ].map(function(p){ return opt(p[0],p[1],selected); }).join('');
+  }
+
+  /* Три главных направления сайта — ими выбирают категорию при добавлении услуги. */
+  function groupCatKey(cat){
+    if(cat==='ortho') return 'ortho';
+    if(cat==='cosmo') return 'cosmo';
+    return 'stoma';
+  }
+  function groupCatLabel(cat){
+    if(cat==='ortho') return 'Ортодонтия';
+    if(cat==='cosmo') return 'Косметология';
+    return 'Стоматология';
+  }
+  function groupCatOptions(selectedCat){
+    var cur=groupCatKey(selectedCat||'stoma');
+    return [
+      ['ortho','Ортодонтия'],
+      ['stoma','Стоматология'],
+      ['cosmo','Косметология']
+    ].map(function(p){ return opt(p[0],p[1],cur); }).join('');
+  }
+  function groupCatToPriceCat(cat){
+    if(cat==='ortho') return 'ortho';
+    if(cat==='cosmo') return 'cosmo';
+    return 'stoma';
+  }
+  function subcatsForGroup(cat){
+    var group=findServiceGroupByCat(cat);
+    return (group&&group.items)||[];
+  }
+  function subcatTitleBySlug(slug){
+    var groups=window.AMIR_SERVICES&&window.AMIR_SERVICES.groups||[];
+    for(var g=0;g<groups.length;g++){
+      var items=groups[g].items||[];
+      for(var i=0;i<items.length;i++){
+        if(items[i].slug===slug) return items[i].title;
+      }
+    }
+    return slug||'';
+  }
+  function doctorNameById(id){
+    if(!id) return '';
+    var d=window.AMIR_SERVICES&&window.AMIR_SERVICES.doctors&&window.AMIR_SERVICES.doctors[id];
+    if(d&&d.name) return d.name;
+    var card=document.querySelector('.doc-grid .doc[data-doc="'+id+'"], .chief[data-doc="'+id+'"]');
+    if(card){
+      var h=card.querySelector('h3');
+      if(h) return h.textContent.trim();
+    }
+    return id;
+  }
+  function doctorSelectOptions(subcatSlug, selected){
+    var docs=window.AMIR_SERVICES&&window.AMIR_SERVICES.doctors||{};
+    var preferred=[];
+    var groups=window.AMIR_SERVICES&&window.AMIR_SERVICES.groups||[];
+    for(var g=0;g<groups.length;g++){
+      var items=groups[g].items||[];
+      for(var i=0;i<items.length;i++){
+        if(items[i].slug===subcatSlug && items[i].doctors) preferred=items[i].doctors.slice();
+      }
+    }
+    var names={};
+    Object.keys(docs).forEach(function(id){ names[id]=docs[id].name||id; });
+    document.querySelectorAll('.doc-grid .doc[data-doc], .chief[data-doc]').forEach(function(el){
+      var id=el.getAttribute('data-doc');
+      if(!id) return;
+      var h=el.querySelector('h3');
+      names[id]=(h&&h.textContent.trim())||names[id]||id;
+      if(!docs[id]){
+        docs[id]={
+          name:names[id],
+          role:(el.querySelector('.role')&&el.querySelector('.role').textContent.trim())||'',
+          exp:(el.querySelector('.exp')&&el.querySelector('.exp').textContent.trim())||'',
+          photo:(el.querySelector('img')&&el.querySelector('img').getAttribute('src'))||'',
+          spec:'', years:'', video:'', bio:[]
+        };
+      }
+    });
+    var ids=[];
+    preferred.forEach(function(id){ if(names[id] && ids.indexOf(id)<0) ids.push(id); });
+    Object.keys(names).forEach(function(id){ if(ids.indexOf(id)<0) ids.push(id); });
+    if(!ids.length) return '<option value="">Нет врачей</option>';
+    return ids.map(function(id){
+      return opt(id, names[id]||id, selected||preferred[0]||'');
+    }).join('');
+  }
+  function getEditableServices(){
+    var fromDom=collectServices();
+    if(fromDom.length) return fromDom;
+    if(Array.isArray(content.services) && content.services.length) return content.services.slice();
+    return [];
+  }
+  function setEditableServices(list){
+    content.services=Array.isArray(list)?list.slice():[];
+    content.priceHtml=servicesToHtml(content.services);
+    var priceList=mainPriceList();
+    if(priceList) priceList.innerHTML=content.priceHtml;
+  }
+  function hydrateServicesForAdmin(done){
+    var local=Array.isArray(content.services)?content.services.slice():[];
+    // Несохранённые правки (добавление/удаление) важнее сервера и DOM
+    if(dirty){
+      done(local);
+      return;
+    }
+    var priceList=mainPriceList();
+    if(priceList && priceList.querySelector('.prow') && local.length){
+      // DOM может содержать старые строки — берём состав из memory, цены подтягиваем из DOM
+      done(mergeServicesByName(collectServices(), local, { master:local }));
+      return;
+    }
+    if(priceList && priceList.querySelector('.prow') && !local.length){
+      done(collectServices());
+      return;
+    }
+    if(local.length){
+      done(local);
+      return;
+    }
+    Promise.all([
+      fetch('/prices.html?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.text():''; }).catch(function(){ return ''; }),
+      fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
+    ]).then(function(pair){
+      var html=pair[0], saved=pair[1];
+      var base=[];
+      if(html){
+        var doc=new DOMParser().parseFromString(html,'text/html');
+        base=Array.prototype.map.call(doc.querySelectorAll('.price-list .prow'), function(el){
+          return {
+            name:(el.querySelector('.pn')&&el.querySelector('.pn').textContent.trim())||'',
+            tag:(el.querySelector('.ptag')&&el.querySelector('.ptag').textContent.trim())||'',
+            price:(el.querySelector('.pp')&&el.querySelector('.pp').textContent.trim())||'',
+            cat:el.getAttribute('data-cat')||'therapy',
+            subcat:el.getAttribute('data-subcat')||'',
+            doctor:el.getAttribute('data-doctor')||''
+          };
+        });
+      }
+      var edited=local;
+      if(saved){
+        var fromSaved=[];
+        if(Array.isArray(saved.services) && saved.services.length) fromSaved=saved.services;
+        else if(typeof saved.priceHtml==='string') fromSaved=servicesFromPriceHtml(saved.priceHtml);
+        edited=mergeServicesByName(fromSaved, local, { master:fromSaved.length?fromSaved:null });
+      }
+      var master=edited.length?edited:null;
+      var merged=mergeServicesByName(base, edited, { master:master });
+      content.services=merged;
+      content.priceHtml=servicesToHtml(merged);
+      done(merged);
+    }).catch(function(){ done(local); });
   }
 
   function openDocsServicesPanel(tab){
@@ -806,28 +1176,15 @@
     var modal=document.getElementById('cmsModal');
     var box=modal.querySelector('.cms-modal');
     box.classList.add('cms-modal-wide');
-    document.getElementById('cmsModalTitle').textContent='Врачи и услуги';
+    document.getElementById('cmsModalTitle').textContent=tab==='doctors'?'Врачи':'Услуги';
     document.getElementById('cmsDelete').style.display='none';
     document.getElementById('cmsApply').style.display='none';
     document.getElementById('cmsCancel').textContent='Закрыть';
     var fields=document.getElementById('cmsModalFields');
-
-    fields.innerHTML=
-      '<div class="cms-tabs">'+
-        '<button type="button" class="cms-tab'+(tab==='doctors'?' active':'')+'" data-tab="doctors">Врачи</button>'+
-        '<button type="button" class="cms-tab'+(tab==='services'?' active':'')+'" data-tab="services">Услуги</button>'+
-      '</div>'+
-      '<div id="cmsManagePane"></div>';
-
-    function showTab(name){
-      tab=name;
-      fields.querySelectorAll('.cms-tab').forEach(function(b){
-        b.classList.toggle('active', b.getAttribute('data-tab')===name);
-      });
-      var pane=document.getElementById('cmsManagePane');
-      if(name==='doctors') renderDoctorsPane(pane);
-      else renderServicesPane(pane);
-    }
+    fields.innerHTML='<div id="cmsManagePane"></div>';
+    var pane=document.getElementById('cmsManagePane');
+    if(tab==='doctors') renderDoctorsPane(pane);
+    else renderServicesPane(pane);
 
     function renderDoctorsPane(pane){
       var docs=Array.prototype.slice.call(document.querySelectorAll('.doc-grid .doc'));
@@ -902,86 +1259,158 @@
     }
 
     function renderServicesPane(pane){
-      var rows=Array.prototype.slice.call(document.querySelectorAll('.price-list .prow'));
+      if(!window.AMIR_SERVICES || !Array.isArray(window.AMIR_SERVICES.groups)){
+        pane.innerHTML='<p class="sub" style="margin-top:0">Список направлений не загружен. Обновите страницу.</p>';
+        return;
+      }
+      pane.innerHTML='<p class="sub" style="margin-top:0">Загружаем список услуг…</p>';
+      hydrateServicesForAdmin(function(rows){
+        renderServicesPaneReady(pane, rows||[]);
+      });
+    }
+
+    function renderServicesPaneReady(pane, rows){
+      var svcRows=Array.isArray(rows)?rows.slice():[];
+      function subcatOptionsHtml(cat, selected){
+        var items=subcatsForGroup(cat);
+        if(!items.length) return '<option value="">Нет подкатегорий</option>';
+        return items.map(function(it){ return opt(it.slug, it.title, selected||''); }).join('');
+      }
+      var firstCat='ortho';
+      var firstSubs=subcatsForGroup(firstCat);
+      var firstSub=firstSubs[0]?firstSubs[0].slug:'';
       pane.innerHTML=
-        '<p class="sub" style="margin-top:0">Добавьте услугу формой ниже или удалите из списка. Потом нажмите «Сохранить».</p>'+
+        '<p class="sub" style="margin-top:0">Новая услуга попадает в общий прайс и в список цен внутри выбранной подкатегории (например, «Брекеты»). В колонки на главной она не добавляется.</p>'+
         '<div class="field"><label>Поиск в списке</label><input id="cmsSvcSearch" type="search" placeholder="Начните вводить название…"></div>'+
         '<div class="cms-item-list" id="cmsSvcList"></div>'+
         '<div class="cms-divider"></div>'+
         '<h4 class="cms-h4">Добавить услугу</h4>'+
         '<div class="field"><label>Название</label><input id="cmsNewSvcName" type="text" placeholder="Название услуги"></div>'+
-        '<div class="field"><label>Категория (подпись)</label><input id="cmsNewSvcTag" type="text" placeholder="Терапия"></div>'+
+        '<div class="field"><label>Категория</label><select id="cmsNewSvcCat">'+groupCatOptions(firstCat)+'</select></div>'+
+        '<div class="field"><label>Подкатегория</label><select id="cmsNewSvcSubcat">'+subcatOptionsHtml(firstCat, firstSub)+'</select></div>'+
+        '<div class="field"><label>Врач</label><select id="cmsNewSvcDoctor">'+doctorSelectOptions(firstSub, '')+'</select></div>'+
         '<div class="field"><label>Цена</label><input id="cmsNewSvcPrice" type="text" placeholder="5 000 ₽"></div>'+
-        '<div class="field"><label>Фильтр</label><select id="cmsNewSvcCat">'+catOptions('therapy')+'</select></div>'+
         '<button type="button" class="btn btn-gold" id="cmsCreateService" style="width:100%">+ Добавить услугу</button>';
+
+      function refreshSubcatAndDoctor(){
+        var cat=document.getElementById('cmsNewSvcCat').value||'ortho';
+        var subSel=document.getElementById('cmsNewSvcSubcat');
+        var cur=subSel.value;
+        var items=subcatsForGroup(cat);
+        var keep=items.some(function(it){ return it.slug===cur; })?cur:(items[0]?items[0].slug:'');
+        subSel.innerHTML=subcatOptionsHtml(cat, keep);
+        document.getElementById('cmsNewSvcDoctor').innerHTML=doctorSelectOptions(subSel.value, '');
+      }
+
+      function persistSvcRows(){
+        setEditableServices(svcRows);
+        markDirty();
+      }
+
+      function removeServiceAt(idx){
+        if(idx<0 || idx>=svcRows.length) return false;
+        var removed=svcRows.splice(idx,1)[0];
+        persistSvcRows();
+        // Убрать строку из DOM-прайса точечно (без полной пересборки, если уже обновили)
+        var name=(removed&&removed.name||'').trim().toLowerCase();
+        if(name){
+          document.querySelectorAll('.price-list .prow').forEach(function(el){
+            var n=((el.querySelector('.pn')&&el.querySelector('.pn').textContent)||el.getAttribute('data-name')||'').trim().toLowerCase();
+            if(n===name) el.remove();
+          });
+        }
+        return true;
+      }
 
       function renderList(q){
         q=(q||'').trim().toLowerCase();
         var listBox=document.getElementById('cmsSvcList');
-        var matched=rows.map(function(row, i){
-          var name=(row.querySelector('.pn')&&row.querySelector('.pn').textContent)||'';
-          var tag=(row.querySelector('.ptag')&&row.querySelector('.ptag').textContent)||'';
-          if(q && name.toLowerCase().indexOf(q)<0 && tag.toLowerCase().indexOf(q)<0) return '';
-          return '<div class="cms-item" data-idx="'+i+'">'+
-            '<div class="cms-item-main"><b></b><small></small></div>'+
-            '<div class="cms-item-actions">'+
-              '<button type="button" class="btn btn-ghost cms-edit-svc" data-idx="'+i+'">Изменить</button>'+
-              '<button type="button" class="btn btn-danger cms-del-svc" data-idx="'+i+'">Удалить</button>'+
-            '</div></div>';
-        }).filter(Boolean);
-        listBox.innerHTML=matched.length?matched.join(''):'<p class="sub">Ничего не найдено</p>';
+        if(!listBox) return;
+        var html=[];
+        svcRows.forEach(function(row, i){
+          var name=row.name||'';
+          var tag=row.tag||'';
+          var sub=subcatTitleBySlug(row.subcat||'');
+          if(q && name.toLowerCase().indexOf(q)<0 && tag.toLowerCase().indexOf(q)<0 && sub.toLowerCase().indexOf(q)<0) return;
+          html.push(
+            '<div class="cms-item" data-idx="'+i+'">'+
+              '<div class="cms-item-main"><b></b><small></small></div>'+
+              '<div class="cms-item-actions">'+
+                '<button type="button" class="btn btn-danger cms-del-svc" data-idx="'+i+'" data-state="idle">Удалить</button>'+
+              '</div></div>'
+          );
+        });
+        listBox.innerHTML=html.length?html.join(''):'<p class="sub">Пока нет услуг или ничего не найдено</p>';
         listBox.querySelectorAll('.cms-item').forEach(function(item){
           var i=+item.getAttribute('data-idx');
-          var row=rows[i]; if(!row) return;
-          item.querySelector('b').textContent=(row.querySelector('.pn')&&row.querySelector('.pn').textContent)||'';
-          var price=(row.querySelector('.pp')&&row.querySelector('.pp').textContent)||'';
-          var tag=(row.querySelector('.ptag')&&row.querySelector('.ptag').textContent)||'';
-          item.querySelector('small').textContent=tag+(price?' · '+price:'');
-        });
-        listBox.querySelectorAll('.cms-del-svc').forEach(function(btn){
-          btn.onclick=function(){
-            var i=+btn.getAttribute('data-idx');
-            var el=document.querySelectorAll('.price-list .prow')[i];
-            if(!el) return;
-            var nm=(el.querySelector('.pn')&&el.querySelector('.pn').textContent)||'эту услугу';
-            if(!confirm('Удалить услугу «'+nm+'»?')) return;
-            el.remove();
-            markDirty();
-            toast('Услуга удалена. Нажмите «Сохранить»');
-            openDocsServicesPanel('services');
-          };
-        });
-        listBox.querySelectorAll('.cms-edit-svc').forEach(function(btn){
-          btn.onclick=function(){
-            var i=+btn.getAttribute('data-idx');
-            var el=document.querySelectorAll('.price-list .prow')[i];
-            if(el){ closeModal(); openModal(el); }
-          };
+          var row=svcRows[i]; if(!row) return;
+          item.querySelector('b').textContent=row.name||'';
+          var bits=[row.tag||'', subcatTitleBySlug(row.subcat||''), doctorNameById(row.doctor||''), row.price||''].filter(Boolean);
+          item.querySelector('small').textContent=bits.join(' · ');
         });
       }
 
+      var listBox=document.getElementById('cmsSvcList');
+      // Делегирование: без native confirm (он даёт «клик навылет» и откат списка)
+      listBox.addEventListener('click', function(e){
+        var btn=e.target&&e.target.closest?e.target.closest('.cms-del-svc'):null;
+        if(!btn || !listBox.contains(btn)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var i=+btn.getAttribute('data-idx');
+        var row=svcRows[i];
+        if(!row) return;
+        var state=btn.getAttribute('data-state')||'idle';
+        if(state!=='confirm'){
+          listBox.querySelectorAll('.cms-del-svc[data-state="confirm"]').forEach(function(b){
+            b.setAttribute('data-state','idle');
+            b.textContent='Удалить';
+          });
+          btn.setAttribute('data-state','confirm');
+          btn.textContent='Точно удалить?';
+          return;
+        }
+        if(!removeServiceAt(i)) return;
+        toast('Услуга «'+(row.name||'')+'» удалена. Нажмите «Сохранить»');
+        var qEl=document.getElementById('cmsSvcSearch');
+        renderList(qEl?qEl.value:'');
+      });
+
       renderList('');
       document.getElementById('cmsSvcSearch').oninput=function(){ renderList(this.value); };
+      document.getElementById('cmsNewSvcCat').onchange=refreshSubcatAndDoctor;
+      document.getElementById('cmsNewSvcSubcat').onchange=function(){
+        document.getElementById('cmsNewSvcDoctor').innerHTML=doctorSelectOptions(this.value, '');
+      };
       document.getElementById('cmsCreateService').onclick=function(){
         var name=document.getElementById('cmsNewSvcName').value.trim();
         if(!name){ alert('Введите название услуги'); return; }
-        var row=addPriceRow(null, {
+        var cat=document.getElementById('cmsNewSvcCat').value||'ortho';
+        var subcat=document.getElementById('cmsNewSvcSubcat').value;
+        if(!subcat){ alert('Выберите подкатегорию'); return; }
+        var doctor=document.getElementById('cmsNewSvcDoctor').value;
+        if(!doctor){ alert('Выберите врача'); return; }
+        var price=document.getElementById('cmsNewSvcPrice').value.trim()||'0 ₽';
+        var entry={
           name:name,
-          tag:document.getElementById('cmsNewSvcTag').value.trim()||'Терапия',
-          price:document.getElementById('cmsNewSvcPrice').value.trim()||'0 ₽',
-          cat:document.getElementById('cmsNewSvcCat').value
-        });
-        if(!row) return;
-        markDirty();
-        toast('Услуга добавлена. Нажмите «Сохранить»');
-        openDocsServicesPanel('services');
+          tag:groupCatLabel(cat),
+          price:price,
+          cat:groupCatToPriceCat(cat),
+          subcat:subcat,
+          doctor:doctor
+        };
+        svcRows.unshift(entry);
+        ensureDoctorOnSubcat(subcat, doctor);
+        persistSvcRows();
+        toast('Услуга добавлена в «'+subcatTitleBySlug(subcat)+'». Нажмите «Сохранить»');
+        document.getElementById('cmsNewSvcName').value='';
+        document.getElementById('cmsNewSvcPrice').value='';
+        var qEl=document.getElementById('cmsSvcSearch');
+        if(qEl) qEl.value='';
+        renderList('');
       };
     }
 
-    fields.querySelectorAll('.cms-tab').forEach(function(btn){
-      btn.onclick=function(){ showTab(btn.getAttribute('data-tab')); };
-    });
-    showTab(tab);
     modal.classList.add('open');
   }
 
@@ -994,7 +1423,8 @@
     bar.innerHTML=
       '<div class="left"><span class="badge">Режим правки</span><span class="meta">Клик по тексту / фото / блоку</span></div>'+
       '<div class="right">'+
-        '<button type="button" id="cmsManageAll">Врачи и услуги</button>'+
+        '<button type="button" id="cmsManageDoctors">Врачи</button>'+
+        '<button type="button" id="cmsManageServices">Услуги</button>'+
         '<button type="button" class="primary" id="cmsSaveNow">Сохранить</button>'+
         '<button type="button" id="cmsPreview">Как видит клиент</button>'+
         '<button type="button" id="cmsLogout">Выйти</button>'+
@@ -1012,17 +1442,27 @@
     toastEl.id='cmsToast';
     document.body.appendChild(toastEl);
 
-    document.getElementById('cmsManageAll').onclick=function(e){
+    document.getElementById('cmsManageDoctors').onclick=function(e){
+      e.preventDefault(); e.stopPropagation();
+      if(isServicePage()){
+        location.href='/';
+        return;
+      }
+      openDoctorsPanel();
+    };
+    document.getElementById('cmsManageServices').onclick=function(e){
       e.preventDefault(); e.stopPropagation();
       if(isServicePage()){
         location.href='/prices.html';
         return;
       }
-      openDocsServicesPanel('services');
+      openServicesPanel();
     };
     if(isServicePage()){
-      var manage=document.getElementById('cmsManageAll');
-      if(manage) manage.textContent='Весь прайс';
+      var docsBtn=document.getElementById('cmsManageDoctors');
+      var svcBtn=document.getElementById('cmsManageServices');
+      if(docsBtn) docsBtn.style.display='none';
+      if(svcBtn) svcBtn.textContent='Весь прайс';
       var meta=document.querySelector('.cms-bar .meta');
       if(meta) meta.textContent='Золотая рамка = можно нажать';
       hint.textContent='На карточке услуги: нажмите поле в золотой рамке — откроется форма правки';
@@ -1117,17 +1557,10 @@
       var pn=el.querySelector('.pn'); var pp=el.querySelector('.pp'); var pt=el.querySelector('.ptag');
       fields.innerHTML=
         '<div class="field"><label>Название</label><input id="cmsName" type="text"></div>'+
-        '<div class="field"><label>Категория</label><input id="cmsTag" type="text"></div>'+
+        '<div class="field"><label>Категория</label><select id="cmsCat">'+groupCatOptions(el.dataset.cat)+'</select></div>'+
         '<div class="field"><label>Цена</label><input id="cmsPrice" type="text"></div>'+
-        '<div class="field"><label>Фильтр</label><select id="cmsCat">'+
-          opt('ortho','Ортодонтия',el.dataset.cat)+opt('therapy','Терапия',el.dataset.cat)+
-          opt('hygiene','Гигиена',el.dataset.cat)+opt('surgery','Хирургия',el.dataset.cat)+
-          opt('implant','Имплантация',el.dataset.cat)+opt('prosth','Протезирование',el.dataset.cat)+
-          opt('paro','Пародонтология',el.dataset.cat)+opt('kids','Детская',el.dataset.cat)+
-        '</select></div>'+
         '<div class="field"><label><input id="cmsAddAfter" type="checkbox"> Добавить ещё услугу ниже</label></div>';
       document.getElementById('cmsName').value=pn?pn.textContent:'';
-      document.getElementById('cmsTag').value=pt?pt.textContent:'';
       document.getElementById('cmsPrice').value=pp?pp.textContent:'';
     } else if(type==='doctor'){
       title.textContent='Редактировать врача';
@@ -1288,9 +1721,9 @@
       if(cap) cap.innerHTML=parts[0].replace(/</g,'&lt;')+(parts[1]?'<small>'+parts.slice(1).join(' ').replace(/</g,'&lt;')+'</small>':'');
     } else if(type==='price'){
       var name=document.getElementById('cmsName').value.trim();
-      var tag=document.getElementById('cmsTag').value.trim();
+      var cat=document.getElementById('cmsCat').value||'stoma';
+      var tag=groupCatLabel(cat);
       var price=document.getElementById('cmsPrice').value.trim();
-      var cat=document.getElementById('cmsCat').value;
       var pn=el.querySelector('.pn'); var pp=el.querySelector('.pp'); var pt=el.querySelector('.ptag');
       if(pn) pn.textContent=name;
       if(pt) pt.textContent=tag;

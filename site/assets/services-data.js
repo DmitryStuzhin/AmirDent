@@ -75,6 +75,11 @@ window.AMIR_SERVICES = {
       spec: 'Хирург-имплантолог',
       years: '6 лет',
       video: '',
+      // На ПроДокторов профиля нет — рейтинг с Зуб.ру
+      pdRating: 5.0,
+      pdReviews: 24,
+      pdUrl: 'https://zub.ru/doctors/ali-renas-bakrievich-khirurg/',
+      ratingSource: 'zub',
       bio: []
     },
     zhabin: {
@@ -85,9 +90,7 @@ window.AMIR_SERVICES = {
       spec: 'Стоматолог-ортопед',
       years: '26 лет',
       video: '',
-      pdRating: 2.8,
-      pdReviews: 2,
-      pdUrl: 'https://prodoctorov.ru/moskva/vrach/481194-zhabin/',
+      // На ПроДокторов 2.8 (<4.0), на Зуб.ру профиля нет — рейтинг не показываем
       bio: []
     },
     obai: {

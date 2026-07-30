@@ -26,27 +26,30 @@
     return box;
   }
 
-  if(menu){
-    var mega=document.createElement('div');
-    mega.className='nav-mega';
-    mega.appendChild(buildColumns('nav-col'));
+  function rebuild(){
+    if(menu){
+      var mega=document.createElement('div');
+      mega.className='nav-mega';
+      mega.appendChild(buildColumns('nav-col'));
 
-    var all=document.createElement('a');
-    all.className='nav-mega-all';
-    all.href='/prices.html';
-    all.textContent='Полный прайс-лист со всеми ценами';
+      var all=document.createElement('a');
+      all.className='nav-mega-all';
+      all.href='/prices.html';
+      all.textContent='Полный прайс-лист со всеми ценами';
 
-    menu.innerHTML='';
-    menu.appendChild(mega);
-    menu.appendChild(all);
+      menu.innerHTML='';
+      menu.appendChild(mega);
+      menu.appendChild(all);
+    }
+
+    var groupsBox=document.getElementById('servicesGroups');
+    if(groupsBox){
+      groupsBox.innerHTML='';
+      groupsBox.appendChild(buildColumns('sgroup','sgroup-item'));
+    }
   }
 
-  // те же группы услуг блоком на главной
-  var groupsBox=document.getElementById('servicesGroups');
-  if(groupsBox){
-    groupsBox.innerHTML='';
-    groupsBox.appendChild(buildColumns('sgroup','sgroup-item'));
-  }
+  rebuild();
 
   // На телефоне меню раскрыто внутри бургера, поэтому по ссылке его надо закрыть
   var nav=document.querySelector('.nav');
@@ -56,4 +59,6 @@
     if(nav) nav.classList.remove('open');
     if(burger) burger.classList.remove('active');
   });
+
+  window.AMIR_rebuildServiceMenus=rebuild;
 })();

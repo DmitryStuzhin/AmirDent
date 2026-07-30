@@ -238,7 +238,79 @@ class Handler(SimpleHTTPRequestHandler):
         tmp = CONTENT_FILE.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(content, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         os.replace(tmp, CONTENT_FILE)
+
+        # Синхронизируем prices.html, иначе удалённые услуги возвращаются из статики
+        try:
+            self._sync_prices_html(content)
+        except Exception as e:
+            print("[cms] prices.html sync failed:", e)
+
         return self._json_response(200, {"ok": True, "saved": "assets/content.json"})
+
+    def _sync_prices_html(self, content):
+        if not isinstance(content, dict):
+            return
+        price_html = content.get("priceHtml")
+        if not price_html and isinstance(content.get("services"), list):
+            # Соберём HTML из services, если priceHtml нет
+            parts = []
+            for s in content["services"]:
+                if not isinstance(s, dict):
+                    continue
+                name = str(s.get("name") or "Услуга")
+                tag = str(s.get("tag") or "")
+                price = str(s.get("price") or "")
+                cat = str(s.get("cat") or "therapy")
+                subcat = str(s.get("subcat") or "")
+                doctor = str(s.get("doctor") or "")
+
+                def esc(t: str) -> str:
+                    return (
+                        t.replace("&", "&amp;")
+                        .replace("<", "&lt;")
+                        .replace('"', "&quot;")
+                    )
+
+                attrs = f' data-cat="{esc(cat)}" data-name="{esc(name.lower())}"'
+                if subcat:
+                    attrs += f' data-subcat="{esc(subcat)}"'
+                if doctor:
+                    attrs += f' data-doctor="{esc(doctor)}"'
+                parts.append(
+                    f'<div class="prow"{attrs}>'
+                    f'<span class="pn">{esc(name)}</span>'
+                    f'<span class="ptag">{esc(tag)}</span>'
+                    f'<span class="pp">{esc(price)}</span></div>'
+                )
+            price_html = "\n".join(parts)
+        if not isinstance(price_html, str) or not price_html.strip():
+            return
+
+        prices_path = SITE / "prices.html"
+        if not prices_path.exists():
+            return
+        html = prices_path.read_text(encoding="utf-8")
+        start = html.find('<div class="price-list">')
+        if start < 0:
+            return
+        inner_start = start + len('<div class="price-list">')
+        # price-empty живёт внутри .price-list — сохраняем его
+        empty_pos = html.find('<div class="price-empty"', inner_start)
+        if empty_pos < 0:
+            # запасной: закрывающий тег price-list
+            empty_pos = html.find("</div>", inner_start)
+            if empty_pos < 0:
+                return
+        new_html = (
+            html[:inner_start]
+            + "\n"
+            + price_html.strip()
+            + "\n      "
+            + html[empty_pos:]
+        )
+        tmp = prices_path.with_suffix(".html.tmp")
+        tmp.write_text(new_html, encoding="utf-8")
+        os.replace(tmp, prices_path)
 
     def _save_lead(self):
         """Local stand-in for api/lead.php while developing with python3 server.py."""

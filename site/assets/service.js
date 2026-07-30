@@ -39,6 +39,7 @@
      следующую. Листание замирает при наведении, при фокусе с клавиатуры
      и на скрытой вкладке; точки под стопкой дают перейти вручную. */
   var DOC_DELAY=6000, DOC_LIFT=920, DOC_PEEK=28, DOC_DEPTH=3;
+  var destroyDocStack=null;
 
   function docPlural(n){
     var d=n%10, dd=n%100;
@@ -48,6 +49,10 @@
   }
 
   function buildDocStack(docs, ids){
+    if(typeof destroyDocStack==='function'){
+      try{ destroyDocStack(); }catch(e){}
+      destroyDocStack=null;
+    }
     var stack=el('dirDocStack'), nav=el('dirDocNav'), count=el('dirDocCount');
     if(!stack) return;
     if(count) count.textContent=docs.length+' '+docPlural(docs.length);
@@ -103,9 +108,14 @@
       cards[0].dataset.pos='0';
       stack.classList.add('is-single');
       sizeStack();
+      destroyDocStack=function(){
+        window.removeEventListener('resize', sizeSoon);
+        if(sizeRaf) cancelAnimationFrame(sizeRaf);
+      };
       return;
     }
 
+    stack.classList.remove('is-single');
     var index=0, timer=null, lift=null, hover=false, focusInside=false;
     var reduce=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
     var wrap=el('dirDoc');
@@ -182,25 +192,45 @@
       }, DOC_DELAY);
     }
 
-    if(wrap){
-      wrap.addEventListener('mouseenter', function(){ hover=true; stop(); });
-      wrap.addEventListener('mouseleave', function(){ hover=false; schedule(); });
-      wrap.addEventListener('focusin', function(){ focusInside=true; stop(); });
-      wrap.addEventListener('focusout', function(e){
-        if(wrap.contains(e.relatedTarget)) return;
-        focusInside=false;
-        schedule();
-      });
+    function onEnter(){ hover=true; stop(); }
+    function onLeave(){ hover=false; schedule(); }
+    function onFocusIn(){ focusInside=true; stop(); }
+    function onFocusOut(e){
+      if(wrap.contains(e.relatedTarget)) return;
+      focusInside=false;
+      schedule();
     }
-    document.addEventListener('visibilitychange', function(){
+    function onVis(){
       if(document.hidden) stop(); else schedule();
-    });
+    }
+    if(wrap){
+      wrap.addEventListener('mouseenter', onEnter);
+      wrap.addEventListener('mouseleave', onLeave);
+      wrap.addEventListener('focusin', onFocusIn);
+      wrap.addEventListener('focusout', onFocusOut);
+    }
+    document.addEventListener('visibilitychange', onVis);
     // пауза, пока открыто окно врача
     var mo=typeof MutationObserver==='function'?new MutationObserver(function(){
       if(document.documentElement.classList.contains('dm-lock')) stop();
       else schedule();
     }):null;
     if(mo) mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+
+    destroyDocStack=function(){
+      stop();
+      if(lift){ clearTimeout(lift); lift=null; }
+      window.removeEventListener('resize', sizeSoon);
+      if(sizeRaf) cancelAnimationFrame(sizeRaf);
+      document.removeEventListener('visibilitychange', onVis);
+      if(wrap){
+        wrap.removeEventListener('mouseenter', onEnter);
+        wrap.removeEventListener('mouseleave', onLeave);
+        wrap.removeEventListener('focusin', onFocusIn);
+        wrap.removeEventListener('focusout', onFocusOut);
+      }
+      if(mo) mo.disconnect();
+    };
 
     apply();
     sizeStack();
@@ -214,8 +244,10 @@
     return;
   }
   var item=found.item, group=found.group;
+  var docIds=[];
+  var docs=[];
 
-  // ---- текст и врачи ----
+  // ---- текст ----
   document.title=item.title+' — цена и запись · АмирДент';
   var meta=document.querySelector('meta[name="description"]');
   if(meta) meta.setAttribute('content', item.desc);
@@ -225,48 +257,74 @@
   el('dirCrumb').textContent=item.title;
   el('dirGroup').innerHTML='<span class="dot"></span>'+group.title;
 
-  // id нужны, чтобы карточка открывала всплывающее окно врача
-  var docIds=(item.doctors||[]).filter(function(id){ return data.doctors[id]; });
-  var docs=docIds.map(function(id){ return data.doctors[id]; });
-  if(docs.length){
-    buildDocStack(docs, docIds);
-    el('dirDoc').hidden=false;
-  } else {
-    // Врача по услуге пока нет — вместо пустого места контакты и запись
-    el('dirInfo').hidden=false;
-    var hero=document.querySelector('.dp-hero');
-    if(hero) hero.classList.add('dp-hero-info');
-  }
-  if(docs.length>1){
-    var team=el('dirTeam');
-    docs.forEach(function(d,i){
-      var card=document.createElement('article');
-      card.className='dp-team-card';
-      if(docIds[i]){
-        card.setAttribute('data-doc', docIds[i]);
-        card.setAttribute('role','button');
-        card.setAttribute('aria-haspopup','dialog');
-        card.tabIndex=0;
-      }
-      card.innerHTML='<div class="dp-team-photo"><img src="'+d.photo+'" alt="'+d.name+'"></div>'+
-        '<div class="dp-team-role">'+d.role+'</div>'+
-        '<h3>'+d.name+'</h3>'+
-        '<p>'+(d.exp||'')+'</p>';
-      team.appendChild(card);
-    });
-    el('dirTeamWrap').hidden=false;
+  function refreshItemFromData(){
+    var again=findService(slug);
+    if(!again) return false;
+    item=again.item;
+    group=again.group;
+    return true;
   }
 
+  function renderDoctors(){
+    docIds=(item.doctors||[]).filter(function(id){ return data.doctors[id]; });
+    docs=docIds.map(function(id){ return data.doctors[id]; });
+
+    var stack=el('dirDocStack'), nav=el('dirDocNav'), team=el('dirTeam');
+    if(stack) stack.innerHTML='';
+    if(nav) nav.innerHTML='';
+    if(team) team.innerHTML='';
+
+    var hero=document.querySelector('.dp-hero');
+    if(docs.length){
+      buildDocStack(docs, docIds);
+      if(el('dirDoc')) el('dirDoc').hidden=false;
+      if(el('dirInfo')) el('dirInfo').hidden=true;
+      if(hero) hero.classList.remove('dp-hero-info');
+    } else {
+      if(el('dirDoc')) el('dirDoc').hidden=true;
+      if(el('dirInfo')) el('dirInfo').hidden=false;
+      if(hero) hero.classList.add('dp-hero-info');
+    }
+
+    if(docs.length>1 && team){
+      docs.forEach(function(d,i){
+        var card=document.createElement('article');
+        card.className='dp-team-card';
+        if(docIds[i]){
+          card.setAttribute('data-doc', docIds[i]);
+          card.setAttribute('role','button');
+          card.setAttribute('aria-haspopup','dialog');
+          card.tabIndex=0;
+        }
+        card.innerHTML='<div class="dp-team-photo"><img src="'+d.photo+'" alt="'+d.name+'"></div>'+
+          '<div class="dp-team-role">'+d.role+'</div>'+
+          '<h3>'+d.name+'</h3>'+
+          '<p>'+(d.exp||'')+'</p>';
+        team.appendChild(card);
+      });
+      if(el('dirTeamWrap')) el('dirTeamWrap').hidden=false;
+    } else if(el('dirTeamWrap')){
+      el('dirTeamWrap').hidden=true;
+    }
+  }
+
+  renderDoctors();
+
   // ---- другие услуги направления ----
-  var other=el('dirOther');
-  group.items.forEach(function(other_item){
-    if(other_item.slug===item.slug) return;
-    var a=document.createElement('a');
-    a.className='dp-other-item';
-    a.href='/uslugi/'+other_item.slug;
-    a.textContent=other_item.title;
-    other.appendChild(a);
-  });
+  function renderOther(){
+    var other=el('dirOther');
+    if(!other) return;
+    other.innerHTML='';
+    group.items.forEach(function(other_item){
+      if(other_item.slug===item.slug) return;
+      var a=document.createElement('a');
+      a.className='dp-other-item';
+      a.href='/uslugi/'+other_item.slug;
+      a.textContent=other_item.title;
+      other.appendChild(a);
+    });
+  }
+  renderOther();
 
   function signalServiceReady(){
     window.__amirServiceReady=true;
@@ -302,15 +360,10 @@
   }
 
   // ---- цены ----
-  if(!item.match){
-    // Косметология в прайс-лист пока не заведена — цену называет администратор
-    el('dirPrices').hidden=true;
-    renderFacts(null);
-    signalServiceReady();
-    return;
-  }
-
   function matches(row){
+    var subcat=row.getAttribute('data-subcat')||'';
+    if(subcat) return subcat===item.slug;
+    if(!item.match) return false;
     var name=(row.getAttribute('data-name')||row.textContent||'').toLowerCase();
     if(item.match.cat && (row.getAttribute('data-cat')||'')!==item.match.cat) return false;
     if(!item.match.words) return true;
@@ -320,11 +373,23 @@
     return false;
   }
 
+  function rowKey(row){
+    return ((row.querySelector&&row.querySelector('.pn')&&row.querySelector('.pn').textContent)||row.getAttribute('data-name')||'').trim().toLowerCase();
+  }
+
   function fillRows(rows){
     var list=el('dirList');
     if(!list) return false;
-    var picked=Array.prototype.filter.call(rows, matches);
+    var map={};
+    Array.prototype.forEach.call(rows, function(r){
+      if(!matches(r)) return;
+      var key=rowKey(r);
+      if(!key) return;
+      map[key]=r;
+    });
+    var picked=Object.keys(map).map(function(k){ return map[k]; });
     if(!picked.length) return false;
+    el('dirPrices').hidden=false;
     list.innerHTML='';
     picked.forEach(function(r){
       var row=r.cloneNode(true);
@@ -338,6 +403,23 @@
     setupCollapse(picked.length);
     try{ signalServiceReady(); }catch(e){}
     return true;
+  }
+
+  function mergeFill(aRows, bRows){
+    var map={};
+    function add(rows){
+      Array.prototype.forEach.call(rows||[], function(r){
+        if(!matches(r)) return;
+        var key=rowKey(r);
+        if(!key) return;
+        map[key]=r;
+      });
+    }
+    add(aRows);
+    add(bRows); // b перекрывает a при том же названии
+    var keys=Object.keys(map);
+    if(!keys.length) return false;
+    return fillRows(keys.map(function(k){ return map[k]; }));
   }
 
   // Список из сорока строк листать бессмысленно: показываем четыре, остальное по кнопке
@@ -365,6 +447,65 @@
     apply();
   }
 
+  function servicesHtmlFromList(list){
+    return (list||[]).map(function(s){
+      var name=s.name||'Услуга';
+      var tag=s.tag||'';
+      var price=s.price||'';
+      function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+      var attrs=' data-cat="'+esc(s.cat||'therapy')+'" data-name="'+esc(String(name).toLowerCase())+'"';
+      if(s.subcat) attrs+=' data-subcat="'+esc(s.subcat)+'"';
+      if(s.doctor) attrs+=' data-doctor="'+esc(s.doctor)+'"';
+      return '<div class="prow"'+attrs+'>'+
+        '<span class="pn">'+esc(name)+'</span>'+
+        '<span class="ptag">'+esc(tag)+'</span>'+
+        '<span class="pp">'+esc(price)+'</span></div>';
+    }).join('');
+  }
+
+  var lastPriceRows=null;
+
+  function applySavedPrices(saved){
+    if(!lastPriceRows) return false;
+    var savedRows=[];
+    var savedIsMaster=false;
+    if(saved){
+      if(Array.isArray(saved.services) && saved.services.length){
+        var box=document.createElement('div');
+        box.innerHTML=servicesHtmlFromList(saved.services);
+        savedRows=box.querySelectorAll('.prow');
+        savedIsMaster=true;
+      } else if(typeof saved.priceHtml==='string' && saved.priceHtml){
+        var box2=document.createElement('div');
+        box2.innerHTML=saved.priceHtml;
+        savedRows=box2.querySelectorAll('.prow');
+        // priceHtml из CMS — полный актуальный прайс
+        if(savedRows.length) savedIsMaster=true;
+      }
+    }
+    // content.json важнее prices.html: иначе удалённые услуги возвращаются из статики
+    var ok=savedIsMaster ? fillRows(savedRows) : mergeFill(lastPriceRows, savedRows);
+    if(!ok){
+      if(!item.match){
+        el('dirPrices').hidden=true;
+        renderFacts(null);
+        signalServiceReady();
+      } else {
+        fail('Цены по этой услуге назовёт администратор — оставьте заявку или позвоните.');
+      }
+    }
+    return ok;
+  }
+
+  function onCmsContentReady(ev){
+    refreshItemFromData();
+    renderDoctors();
+    renderOther();
+    if(ev && ev.detail) applySavedPrices(ev.detail);
+    if(typeof window.AMIR_applyDocRatings==='function') window.AMIR_applyDocRatings();
+  }
+  document.addEventListener('amir:cms-content-ready', onCmsContentReady);
+
   fetch('/prices.html',{cache:'no-cache'})
     .then(function(r){
       if(!r.ok) throw new Error('prices '+r.status);
@@ -372,18 +513,24 @@
     })
     .then(function(html){
       var doc=new DOMParser().parseFromString(html,'text/html');
-      var ok=fillRows(doc.querySelectorAll('.price-list .prow'));
-      if(!ok) fail('Цены по этой услуге назовёт администратор — оставьте заявку или позвоните.');
-      // Правки из админки лежат отдельно: если они есть, показываем их
+      lastPriceRows=doc.querySelectorAll('.price-list .prow');
       return fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
         .then(function(r){ return r.ok?r.json():null; })
         .then(function(saved){
-          if(!saved||typeof saved.priceHtml!=='string') return;
-          var box=document.createElement('div');
-          box.innerHTML=saved.priceHtml;
-          fillRows(box.querySelectorAll('.prow'));
+          applySavedPrices(saved);
         })
-        .catch(function(){});
+        .catch(function(){
+          var ok=fillRows(lastPriceRows);
+          if(!ok){
+            if(!item.match){
+              el('dirPrices').hidden=true;
+              renderFacts(null);
+              signalServiceReady();
+            } else {
+              fail('Цены по этой услуге назовёт администратор — оставьте заявку или позвоните.');
+            }
+          }
+        });
     })
     .catch(function(){
       fail('Не удалось загрузить цены. Позвоните нам или оставьте заявку — подскажем стоимость.');

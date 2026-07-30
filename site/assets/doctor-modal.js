@@ -81,7 +81,8 @@
     if (d.pdRating != null) {
       var pdBox = document.createElement('div');
       pdBox.className = 'dm-stat';
-      var pdK = document.createElement('span'); pdK.textContent = 'ПроДокторов';
+      var srcLabel = d.ratingSource === 'zub' ? 'Зуб.ру' : 'ПроДокторов';
+      var pdK = document.createElement('span'); pdK.textContent = srcLabel;
       var pdV = document.createElement('b');
       pdV.textContent = Number(d.pdRating).toFixed(1) + (d.pdReviews ? ' · ' + d.pdReviews : '');
       pdBox.appendChild(pdK); pdBox.appendChild(pdV);
@@ -202,8 +203,8 @@
     open(hit.getAttribute('data-doc'));
   });
 
-  /* Рейтинг ПроДокторов на карточках (сетка, главный врач, стопка услуги).
-     Берётся из services-data.js: pdRating / pdReviews / pdUrl. */
+  /* Рейтинг на карточках. Берётся из services-data.js (pdRating / pdReviews / pdUrl).
+     ratingSource: 'zub' — Зуб.ру (если на ПроДокторов нет профиля или рейтинг < 4.0). */
   function applyDocRatings() {
     var docs = data.doctors;
     if (!docs) return;
@@ -217,12 +218,15 @@
       var old = body.querySelector('.doc-pd');
       if (old) old.remove();
       if (!d || d.pdRating == null) return;
+      var source = d.ratingSource === 'zub' ? 'zub' : 'pd';
+      var sourceLabel = source === 'zub' ? 'Зуб.ру' : 'ПроДокторов';
+      var fallbackUrl = source === 'zub' ? 'https://zub.ru/doctors/' : 'https://prodoctorov.ru/';
       var a = document.createElement('a');
       a.className = 'doc-pd';
-      a.href = d.pdUrl || 'https://prodoctorov.ru/';
+      a.href = d.pdUrl || fallbackUrl;
       a.target = '_blank';
       a.rel = 'noopener noreferrer';
-      a.setAttribute('aria-label', 'Рейтинг на ПроДокторов: ' + Number(d.pdRating).toFixed(1));
+      a.setAttribute('aria-label', 'Рейтинг на ' + sourceLabel + ': ' + Number(d.pdRating).toFixed(1));
       var score = document.createElement('span');
       score.className = 'doc-pd-score';
       score.textContent = Number(d.pdRating).toFixed(1);
@@ -232,7 +236,7 @@
       stars.textContent = '★★★★★';
       var label = document.createElement('span');
       label.className = 'doc-pd-label';
-      label.textContent = 'ПроДокторов' + (d.pdReviews ? ' · ' + d.pdReviews : '');
+      label.textContent = sourceLabel + (d.pdReviews ? ' · ' + d.pdReviews : '');
       a.appendChild(score);
       a.appendChild(stars);
       a.appendChild(label);
