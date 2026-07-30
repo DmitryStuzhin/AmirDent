@@ -193,14 +193,21 @@
     });
   }
 
-  function wireImageFileInput(inputEl, onUrl){
+  function wireImageFileInput(inputEl, onUrl, onBusy){
     if(!inputEl) return;
+    var uploadSeq=0;
     inputEl.onchange=function(e){
       var f=e.target.files&&e.target.files[0];
       if(!f) return;
+      var seq=++uploadSeq;
+      if(typeof onBusy==='function') onBusy(true);
       uploadCmsImage(f).then(function(url){
+        if(seq!==uploadSeq) return;
         if(typeof onUrl==='function') onUrl(url);
+        if(typeof onBusy==='function') onBusy(false);
       }).catch(function(err){
+        if(seq!==uploadSeq) return;
+        if(typeof onBusy==='function') onBusy(false);
         alert(err&&err.message?err.message:err);
       });
     };
@@ -1217,11 +1224,21 @@
         item.querySelector('small').textContent=[role,exp].filter(Boolean).join(' · ');
       });
 
+      var createDoctorBtn=document.getElementById('cmsCreateDoctor');
+      var newDoctorUploading=false;
       wireImageFileInput(document.getElementById('cmsNewDocFile'), function(url){
         document.getElementById('cmsNewDocSrc').value=url;
+      }, function(busy){
+        newDoctorUploading=busy;
+        createDoctorBtn.disabled=busy;
+        createDoctorBtn.textContent=busy?'Загружаем фото…':'+ Добавить врача';
       });
 
-      document.getElementById('cmsCreateDoctor').onclick=function(){
+      createDoctorBtn.onclick=function(){
+        if(newDoctorUploading){
+          toast('Дождитесь окончания загрузки фото');
+          return;
+        }
         var name=document.getElementById('cmsNewDocName').value.trim();
         if(!name){ alert('Введите ФИО врача'); return; }
         var doc=addDoctor(null, {
