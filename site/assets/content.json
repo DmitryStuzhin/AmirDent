@@ -1,6 +1,6 @@
 {
   "v": 4,
-  "savedAt": "2026-07-30T12:03:10.220Z",
+  "savedAt": "2026-07-31T02:11:57.419Z",
   "images": [
     {
       "src": "https://static.tildacdn.com/tild6238-3739-4737-b836-326430383731/1111_opti.png",
@@ -27,7 +27,7 @@
       "alt": "Кхатиб Массуд Зидан"
     },
     {
-      "src": "assets/badges/ya-goodplace.png",
+      "src": "/assets/badges/ya-goodplace.png",
       "alt": ""
     }
   ],
@@ -64,42 +64,196 @@
       "name": "Краснощёкова Лилия",
       "role": "Терапия · дети",
       "exp": "Стоматолог-терапевт · 15 лет",
-      "src": "https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg"
+      "src": "https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg",
+      "spec": "Стоматолог-терапевт, детский стоматолог",
+      "years": "15 лет",
+      "bio": [
+        [
+          "2009",
+          "Закончила Ростовский государственный медицинский колледж при РостГМУ по специальности «Зубной врач»."
+        ],
+        [
+          "2017",
+          "Закончила Пензенский государственный университет по специальности «Стоматолог общей практики»."
+        ],
+        [
+          "2019",
+          "Закончила Первый Московский государственный медицинский университет имени И.М. Сеченова по специальности «Стоматология ортопедическая»."
+        ]
+      ],
+      "video": "",
+      "pdRating": 5,
+      "pdReviews": 20,
+      "pdUrl": "https://prodoctorov.ru/moskva/vrach/1004768-krasnoshekova/",
+      "ratingSource": "",
+      "cardHidden": false
     },
     {
       "id": "amir",
       "name": "Кхатиб Амир",
       "role": "Ортодонтия",
       "exp": "Стоматолог-ортодонт",
-      "src": "https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg"
+      "src": "https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg",
+      "spec": "Стоматолог-ортодонт",
+      "years": "2 года",
+      "bio": [
+        [
+          "2024",
+          "Высшее образование, ФГБОУ ВО РОСУНИМЕД."
+        ],
+        [
+          "2024",
+          "ClearCorrect study club Moscow, курс докторов Eren Korunmus и Arnd Wroblesky."
+        ],
+        [
+          "2024",
+          "Онлайн-школа Star Smile."
+        ],
+        [
+          "2024",
+          "XXIV съезд ортодонтов России."
+        ],
+        [
+          "2023",
+          "XXIII съезд ортодонтов России."
+        ]
+      ],
+      "video": "",
+      "pdRating": 4.2,
+      "pdReviews": 5,
+      "pdUrl": "https://prodoctorov.ru/moskva/vrach/1154380-khatib/",
+      "ratingSource": "",
+      "cardHidden": false
     },
     {
       "id": "renas",
       "name": "Али Ренас",
       "role": "Хирургия",
       "exp": "Хирург-имплантолог",
-      "src": "https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg"
+      "src": "https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg",
+      "spec": "Хирург-имплантолог",
+      "years": "6 лет",
+      "bio": [],
+      "video": "",
+      "pdRating": 5,
+      "pdReviews": 24,
+      "pdUrl": "https://zub.ru/doctors/ali-renas-bakrievich-khirurg/",
+      "ratingSource": "zub",
+      "cardHidden": false
     },
     {
       "id": "zhabin",
       "name": "Жабин Алексей",
       "role": "Протезирование",
       "exp": "Стоматолог-ортопед · 26 лет",
-      "src": "https://static.tildacdn.com/tild6462-3839-4162-b234-643864626639/noroot.png"
+      "src": "https://static.tildacdn.com/tild6462-3839-4162-b234-643864626639/noroot.png",
+      "spec": "Стоматолог-ортопед",
+      "years": "26 лет",
+      "bio": [],
+      "video": "",
+      "pdRating": 4.4,
+      "pdReviews": 7,
+      "pdUrl": "https://doctu.ru/msk/doctor/zhabin-aleksejj-nikolaevich",
+      "ratingSource": "doctu",
+      "cardHidden": false
     },
     {
       "id": "obai",
       "name": "Алхатиб Обай",
       "role": "Протезирование",
       "exp": "Врач-ортопед · 2 года",
-      "src": "https://static.tildacdn.com/tild3366-3037-4930-b836-393035633165/fa6e87be-8fe0-4656-8.jpg"
+      "src": "https://static.tildacdn.com/tild3366-3037-4930-b836-393035633165/fa6e87be-8fe0-4656-8.jpg",
+      "spec": "Врач-ортопед",
+      "years": "2 года",
+      "bio": [],
+      "video": "",
+      "pdRating": 4.7,
+      "pdReviews": 9,
+      "pdUrl": "https://prodoctorov.ru/moskva/vrach/1325654-alhatib/",
+      "ratingSource": "",
+      "cardHidden": false
     },
     {
       "id": "olga",
       "name": "Кхатиб Ольга Николаевна",
       "role": "Кардиология",
       "exp": "Врач-кардиолог · 26 лет",
-      "src": "https://static.tildacdn.com/tild6261-3561-4136-a265-396262393335/IMG_0968.jpg"
+      "src": "https://static.tildacdn.com/tild6261-3561-4136-a265-396262393335/IMG_0968.jpg",
+      "spec": "Врач-кардиолог",
+      "years": "26 лет",
+      "bio": [
+        [
+          "1992—1998",
+          "Закончила Тверскую государственную медицинскую академию по специальности «Лечебное дело»."
+        ],
+        [
+          "1998—2000",
+          "Клиническая ординатура по специальности «Кардиология» на базе Тверской государственной медицинской академии, отделение кардиоревматологии Областной клинической больницы."
+        ]
+      ],
+      "video": "",
+      "pdRating": 4.1,
+      "pdReviews": 10,
+      "pdUrl": "https://prodoctorov.ru/moskva/vrach/393856-khatib/",
+      "ratingSource": "",
+      "cardHidden": false
+    },
+    {
+      "id": "borodina-inna",
+      "name": "Бородина Инна",
+      "role": "Терапия",
+      "exp": "Стоматолог-терапевт · 14",
+      "src": "/assets/uploads/b90121892ea97320.jpg",
+      "spec": "Стоматолог-терапевт",
+      "years": "14",
+      "bio": [],
+      "video": "",
+      "pdRating": 4.9,
+      "pdReviews": 19,
+      "pdUrl": "https://prodoctorov.ru/moskva/vrach/393860-borodina/",
+      "ratingSource": "pd",
+      "cardHidden": false
+    },
+    {
+      "id": "massud",
+      "name": "Кхатиб Массуд Зидан",
+      "role": "Главный врач клиники",
+      "exp": "Врач-ортодонт высшей категории · стаж 27 лет",
+      "src": "https://static.tildacdn.com/tild6238-3739-4737-b836-326430383731/1111_opti.png",
+      "spec": "Врач-ортодонт",
+      "years": "27 лет",
+      "bio": [
+        [
+          "1997",
+          "Закончил Тверскую государственную медицинскую академию по специальности «Стоматология»."
+        ],
+        [
+          "1997—2000",
+          "Клиническая ординатура по специальности «Ортодонтия» на кафедре стоматологии детского возраста Тверской государственной медицинской академии с выдачей сертификата международного образца."
+        ],
+        [
+          "2000",
+          "Профессиональная деятельность в стоматологических клиниках Москвы."
+        ],
+        [
+          "2005",
+          "Решением аттестационной комиссии департамента здравоохранения г. Москвы присвоена первая квалификационная категория врача стоматолога-ортодонта."
+        ],
+        [
+          "2006",
+          "Член профессионального общества ортодонтов России."
+        ],
+        [
+          "2010",
+          "Присвоена высшая квалификационная категория по специальности «Ортодонтия»."
+        ]
+      ],
+      "video": "",
+      "pdRating": 5,
+      "pdReviews": 113,
+      "pdUrl": "https://prodoctorov.ru/moskva/vrach/393863-khatib/",
+      "ratingSource": "",
+      "cardHidden": true
     }
   ],
   "services": [
@@ -2335,8 +2489,8 @@
           "title": "Исправление прикуса",
           "desc": "Исправление прикуса в любом возрасте: брекеты, элайнеры, съёмные аппараты. Подбираем способ по снимку и слепкам.",
           "doctors": [
-            "massud",
-            "amir"
+            "amir",
+            "massud"
           ],
           "match": {
             "cat": "ortho"
@@ -2347,6 +2501,7 @@
           "title": "Капы для исправления прикуса",
           "desc": "Капы и трейнеры для мягкой коррекции прикуса и удержания результата после лечения.",
           "doctors": [
+            "amir",
             "massud"
           ],
           "match": {
@@ -2363,6 +2518,7 @@
           "title": "Пластинки",
           "desc": "Съёмные пластинки для детей и подростков: расширяют челюсть и направляют рост зубов на раннем этапе.",
           "doctors": [
+            "amir",
             "massud"
           ],
           "match": {
@@ -2377,8 +2533,8 @@
           "title": "Элайнеры",
           "desc": "Прозрачные капы вместо брекетов: незаметны, снимаются на время еды. Курс рассчитывается по 3D-модели.",
           "doctors": [
-            "massud",
-            "amir"
+            "amir",
+            "massud"
           ],
           "match": {
             "cat": "ortho",
@@ -2394,7 +2550,8 @@
           "title": "Металлические брекеты",
           "desc": "Самый надёжный и доступный вариант брекетов. Справляются со сложными случаями быстрее прочих систем.",
           "doctors": [
-            "amir"
+            "amir",
+            "massud"
           ],
           "match": {
             "cat": "ortho",
@@ -2425,6 +2582,7 @@
           "title": "Детская ортодонтия",
           "desc": "Раннее исправление прикуса у детей: пластинки, трейнеры, наблюдение за сменой зубов.",
           "doctors": [
+            "amir",
             "massud"
           ],
           "match": {
@@ -2447,8 +2605,11 @@
           "title": "Чистка зубов",
           "desc": "Профессиональная гигиена: снятие налёта и камня, полировка, фторирование. Рекомендуем раз в полгода.",
           "doctors": [
-            "amir",
-            "liliya"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "hygiene"
@@ -2459,7 +2620,11 @@
           "title": "Отбеливание зубов",
           "desc": "Осветление эмали на несколько тонов. Перед отбеливанием проводим гигиену, чтобы цвет получился ровным.",
           "doctors": [
-            "liliya"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "hygiene",
@@ -2473,7 +2638,11 @@
           "title": "Детская стоматология",
           "desc": "Лечение и профилактика для детей без страха: адаптационный приём, серебрение, герметизация фиссур.",
           "doctors": [
-            "liliya"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "kids"
@@ -2484,7 +2653,11 @@
           "title": "Реставрация",
           "desc": "Восстановление формы и цвета зуба после травмы или скола. Подбираем материал по цвету эмали.",
           "doctors": [
-            "liliya"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "therapy",
@@ -2499,7 +2672,11 @@
           "title": "Лечение кариеса",
           "desc": "Лечение кариеса под анестезией: убираем поражённые ткани и ставим пломбу под цвет зуба.",
           "doctors": [
-            "liliya"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "therapy",
@@ -2514,7 +2691,11 @@
           "title": "Лечение каналов",
           "desc": "Эндодонтическое лечение при пульпите и периодонтите: чистка и пломбирование каналов под контролем снимка.",
           "doctors": [
-            "liliya"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "therapy",
@@ -2531,7 +2712,11 @@
           "title": "Лечение дёсен",
           "desc": "Кровоточивость, воспаление, пародонтит: снимаем воспаление и подбираем курс после осмотра и снимка.",
           "doctors": [
-            "liliya"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "paro"
@@ -2542,7 +2727,11 @@
           "title": "Удаление зубов",
           "desc": "Удаление любой сложности, включая восьмёрки, с анестезией и подготовкой к дальнейшей имплантации.",
           "doctors": [
-            "renas"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "surgery"
@@ -2553,7 +2742,11 @@
           "title": "Имплантация",
           "desc": "Восстановление утраченных зубов имплантами — от одного зуба до полной челюсти. Снимок, план и смета до начала работы.",
           "doctors": [
-            "renas"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "implant"
@@ -2564,7 +2757,11 @@
           "title": "Имплантация all on 4",
           "desc": "Полная челюсть на четырёх имплантах: подходит при значительной потере зубов, протез фиксируется в короткий срок.",
           "doctors": [
-            "renas"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "implant",
@@ -2580,7 +2777,11 @@
           "title": "Имплантация all on 6",
           "desc": "Полная челюсть на шести имплантах — надёжнее распределяет нагрузку при жевании.",
           "doctors": [
-            "renas"
+            "liliya",
+            "renas",
+            "zhabin",
+            "obai",
+            "borodina-inna"
           ],
           "match": {
             "cat": "implant",
@@ -2596,10 +2797,11 @@
           "title": "Протезирование",
           "desc": "Коронки, мосты, съёмные и частичные протезы. Конструкцию подбираем под ваш случай и бюджет.",
           "doctors": [
+            "liliya",
+            "renas",
             "zhabin",
             "obai",
-            "massud",
-            "renas"
+            "borodina-inna"
           ],
           "match": {
             "cat": "prosth"
@@ -2656,7 +2858,7 @@
     }
   ],
   "docsV": 6,
-  "docsHtml": "<article class=\"doc\" data-doc=\"liliya\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg\" alt=\"Краснощёкова Лилия\"></div><div class=\"doc-body\"><div class=\"role\">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class=\"exp\">Стоматолог-терапевт · 15 лет</div></div></article><article class=\"doc\" data-doc=\"amir\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg\" alt=\"Кхатиб Амир\"></div><div class=\"doc-body\"><div class=\"role\">Ортодонтия</div><h3>Кхатиб Амир</h3><div class=\"exp\">Стоматолог-ортодонт</div></div></article><article class=\"doc\" data-doc=\"renas\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg\" alt=\"Али Ренас\"></div><div class=\"doc-body\"><div class=\"role\">Хирургия</div><h3>Али Ренас</h3><div class=\"exp\">Хирург-имплантолог</div></div></article><article class=\"doc\" data-doc=\"zhabin\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6462-3839-4162-b234-643864626639/noroot.png\" alt=\"Жабин Алексей\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Жабин Алексей</h3><div class=\"exp\">Стоматолог-ортопед · 26 лет</div></div></article><article class=\"doc\" data-doc=\"obai\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild3366-3037-4930-b836-393035633165/fa6e87be-8fe0-4656-8.jpg\" alt=\"Алхатиб Обай\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Алхатиб Обай</h3><div class=\"exp\">Врач-ортопед · 2 года</div></div></article><article class=\"doc\" data-doc=\"olga\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6261-3561-4136-a265-396262393335/IMG_0968.jpg\" alt=\"Кхатиб Ольга Николаевна\"></div><div class=\"doc-body\"><div class=\"role\">Кардиология</div><h3>Кхатиб Ольга Николаевна</h3><div class=\"exp\">Врач-кардиолог · 26 лет</div></div></article>",
+  "docsHtml": "<article class=\"doc\" data-doc=\"liliya\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg\" alt=\"Краснощёкова Лилия\"></div><div class=\"doc-body\"><div class=\"role\">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class=\"exp\">Стоматолог-терапевт · 15 лет</div></div></article><article class=\"doc\" data-doc=\"amir\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg\" alt=\"Кхатиб Амир\"></div><div class=\"doc-body\"><div class=\"role\">Ортодонтия</div><h3>Кхатиб Амир</h3><div class=\"exp\">Стоматолог-ортодонт</div></div></article><article class=\"doc\" data-doc=\"renas\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg\" alt=\"Али Ренас\"></div><div class=\"doc-body\"><div class=\"role\">Хирургия</div><h3>Али Ренас</h3><div class=\"exp\">Хирург-имплантолог</div></div></article><article class=\"doc\" data-doc=\"zhabin\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6462-3839-4162-b234-643864626639/noroot.png\" alt=\"Жабин Алексей\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Жабин Алексей</h3><div class=\"exp\">Стоматолог-ортопед · 26 лет</div></div></article><article class=\"doc\" data-doc=\"obai\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild3366-3037-4930-b836-393035633165/fa6e87be-8fe0-4656-8.jpg\" alt=\"Алхатиб Обай\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Алхатиб Обай</h3><div class=\"exp\">Врач-ортопед · 2 года</div></div></article><article class=\"doc\" data-doc=\"olga\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6261-3561-4136-a265-396262393335/IMG_0968.jpg\" alt=\"Кхатиб Ольга Николаевна\"></div><div class=\"doc-body\"><div class=\"role\">Кардиология</div><h3>Кхатиб Ольга Николаевна</h3><div class=\"exp\">Врач-кардиолог · 26 лет</div></div></article><article class=\"doc\" data-doc=\"borodina-inna\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/uploads/b90121892ea97320.jpg\" alt=\"Бородина Инна\"></div><div class=\"doc-body\"><div class=\"role\">Терапия</div><h3>Бородина Инна</h3><div class=\"exp\">Стоматолог-терапевт · 14</div></div></article>",
   "textItems": [
     {
       "sel": ".hero-copy h1",

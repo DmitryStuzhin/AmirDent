@@ -11,6 +11,16 @@
 
   var dlg = null, panel = null, lastFocus = null, native = false, fromKeyboard = false;
 
+  function mediaUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    var u = url.trim();
+    if (!u) return '';
+    if (/^data:|^https?:\/\//i.test(u) || u.indexOf('//') === 0) return u;
+    if (u.charAt(0) === '/') return u;
+    if (u.indexOf('assets/') === 0) return '/' + u;
+    return u;
+  }
+
   function build() {
     if (dlg) return;
     native = typeof HTMLDialogElement === 'function' && 'showModal' in HTMLDialogElement.prototype;
@@ -59,7 +69,7 @@
 
   function fill(d) {
     var img = dlg.querySelector('#dmPhoto');
-    img.src = d.photo || '';
+    img.src = mediaUrl(d.photo || '');
     img.alt = d.name || '';
     dlg.querySelector('#dmRole').textContent = d.spec || d.role || '';
     dlg.querySelector('#dmName').textContent = d.name || '';
@@ -81,7 +91,11 @@
     if (d.pdRating != null) {
       var pdBox = document.createElement('div');
       pdBox.className = 'dm-stat';
-      var srcLabel = d.ratingSource === 'zub' ? 'Зуб.ру' : 'ПроДокторов';
+      var srcLabel = d.ratingSource === 'zub' ? 'Зуб.ру'
+        : d.ratingSource === 'docdoc' ? 'DocDoc'
+        : d.ratingSource === 'yandex' ? 'Яндекс Карты'
+        : d.ratingSource === 'doctu' ? 'Doctu'
+        : 'ПроДокторов';
       var pdK = document.createElement('span'); pdK.textContent = srcLabel;
       var pdV = document.createElement('b');
       pdV.textContent = Number(d.pdRating).toFixed(1) + (d.pdReviews ? ' · ' + d.pdReviews : '');
@@ -204,7 +218,14 @@
   });
 
   /* Рейтинг на карточках. Берётся из services-data.js (pdRating / pdReviews / pdUrl).
-     ratingSource: 'zub' — Зуб.ру (если на ПроДокторов нет профиля или рейтинг < 4.0). */
+     ratingSource: pd | zub | docdoc | yandex | doctu — источник лучшего найденного рейтинга. */
+  function ratingSourceMeta(source) {
+    if (source === 'zub') return { key: 'zub', label: 'Зуб.ру', fallback: 'https://zub.ru/doctors/' };
+    if (source === 'docdoc') return { key: 'docdoc', label: 'DocDoc', fallback: 'https://docdoc.ru/' };
+    if (source === 'yandex') return { key: 'yandex', label: 'Яндекс Карты', fallback: 'https://yandex.ru/maps/org/amirdent/1781090864/' };
+    if (source === 'doctu') return { key: 'doctu', label: 'Doctu', fallback: 'https://doctu.ru/msk/' };
+    return { key: 'pd', label: 'ПроДокторов', fallback: 'https://prodoctorov.ru/' };
+  }
   function applyDocRatings() {
     var docs = data.doctors;
     if (!docs) return;
@@ -218,9 +239,9 @@
       var old = body.querySelector('.doc-pd');
       if (old) old.remove();
       if (!d || d.pdRating == null) return;
-      var source = d.ratingSource === 'zub' ? 'zub' : 'pd';
-      var sourceLabel = source === 'zub' ? 'Зуб.ру' : 'ПроДокторов';
-      var fallbackUrl = source === 'zub' ? 'https://zub.ru/doctors/' : 'https://prodoctorov.ru/';
+      var meta = ratingSourceMeta(d.ratingSource);
+      var sourceLabel = meta.label;
+      var fallbackUrl = meta.fallback;
       var a = document.createElement('a');
       a.className = 'doc-pd';
       a.href = d.pdUrl || fallbackUrl;

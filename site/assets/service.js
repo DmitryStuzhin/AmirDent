@@ -6,6 +6,17 @@
   function el(id){ return document.getElementById(id); }
   var note=el('dirNote');
 
+  /* Локальные фото из админки: /assets/..., иначе на /uslugi/... путь ломается. */
+  function mediaUrl(url){
+    if(!url || typeof url!=='string') return '';
+    var u=url.trim();
+    if(!u) return '';
+    if(/^data:|^https?:\/\//i.test(u) || u.indexOf('//')===0) return u;
+    if(u.charAt(0)==='/') return u;
+    if(u.indexOf('assets/')===0) return '/'+u;
+    return u;
+  }
+
   function fail(msg){
     if(note){ note.hidden=false; note.textContent=msg; }
   }
@@ -73,7 +84,7 @@
           '<a href="#zapis" class="dp-doc-btn">Записаться к врачу</a>'+
         '</div>';
       var img=document.createElement('img');
-      img.src=d.photo; img.alt=d.name; img.loading='lazy'; img.decoding='async';
+      img.src=mediaUrl(d.photo); img.alt=d.name; img.loading='lazy'; img.decoding='async';
       card.querySelector('.dp-doc-photo').appendChild(img);
       card.querySelector('.dp-doc-role').textContent=d.role;
       card.querySelector('.dp-doc-name').textContent=d.name;
@@ -238,24 +249,21 @@
   }
 
   var slug=slugFromUrl();
-  var found=findService(slug);
-  if(!found){
-    fail('Такой услуги нет. Откройте прайс-лист, чтобы выбрать нужную.');
-    return;
-  }
-  var item=found.item, group=found.group;
+  var item=null, group=null;
   var docIds=[];
   var docs=[];
+  var booted=false;
 
-  // ---- текст ----
-  document.title=item.title+' — цена и запись · АмирДент';
-  var meta=document.querySelector('meta[name="description"]');
-  if(meta) meta.setAttribute('content', item.desc);
-
-  el('dirTitle').textContent=item.title;
-  el('dirDesc').textContent=item.desc;
-  el('dirCrumb').textContent=item.title;
-  el('dirGroup').innerHTML='<span class="dot"></span>'+group.title;
+  function paintServiceTexts(){
+    if(!item || !group) return;
+    document.title=item.title+' — цена и запись · АмирДент';
+    var meta=document.querySelector('meta[name="description"]');
+    if(meta) meta.setAttribute('content', item.desc||'');
+    if(el('dirTitle')) el('dirTitle').textContent=item.title;
+    if(el('dirDesc')) el('dirDesc').textContent=item.desc||'';
+    if(el('dirCrumb')) el('dirCrumb').textContent=item.title;
+    if(el('dirGroup')) el('dirGroup').innerHTML='<span class="dot"></span>'+group.title;
+  }
 
   function refreshItemFromData(){
     var again=findService(slug);
@@ -263,6 +271,23 @@
     item=again.item;
     group=again.group;
     return true;
+  }
+
+  /* Новые услуги из админки живут в content.json, а не в services-data.js.
+     Подставляем группы оттуда, иначе страница /uslugi/<slug> их не видит. */
+  function applyGroupsFromSnap(groups){
+    if(!Array.isArray(groups) || !data) return;
+    data.groups=groups.map(function(g){
+      return {
+        title:g.title,
+        items:(g.items||[]).map(function(it){
+          var row={ slug:it.slug, title:it.title, desc:it.desc||'', doctors:it.doctors?it.doctors.slice():[] };
+          if(it.match) row.match=it.match;
+          return row;
+        })
+      };
+    });
+    if(typeof window.AMIR_rebuildServiceMenus==='function') window.AMIR_rebuildServiceMenus();
   }
 
   function renderDoctors(){
@@ -296,7 +321,7 @@
           card.setAttribute('aria-haspopup','dialog');
           card.tabIndex=0;
         }
-        card.innerHTML='<div class="dp-team-photo"><img src="'+d.photo+'" alt="'+d.name+'"></div>'+
+        card.innerHTML='<div class="dp-team-photo"><img src="'+mediaUrl(d.photo)+'" alt="'+d.name+'"></div>'+
           '<div class="dp-team-role">'+d.role+'</div>'+
           '<h3>'+d.name+'</h3>'+
           '<p>'+(d.exp||'')+'</p>';
@@ -308,12 +333,10 @@
     }
   }
 
-  renderDoctors();
-
   // ---- другие услуги направления ----
   function renderOther(){
     var other=el('dirOther');
-    if(!other) return;
+    if(!other || !group || !item) return;
     other.innerHTML='';
     group.items.forEach(function(other_item){
       if(other_item.slug===item.slug) return;
@@ -324,7 +347,6 @@
       other.appendChild(a);
     });
   }
-  renderOther();
 
   function signalServiceReady(){
     window.__amirServiceReady=true;
@@ -498,48 +520,58 @@
   }
 
   function onCmsContentReady(ev){
-    refreshItemFromData();
-    renderDoctors();
-    renderOther();
+    if(ev && ev.detail && Array.isArray(ev.detail.serviceGroups)){
+      applyGroupsFromSnap(ev.detail.serviceGroups);
+    }
+    if(!booted){
+      if(refreshItemFromData()) bootServicePage();
+      return;
+    }
+    if(refreshItemFromData()){
+      paintServiceTexts();
+      renderDoctors();
+      renderOther();
+    }
     if(ev && ev.detail) applySavedPrices(ev.detail);
     if(typeof window.AMIR_applyDocRatings==='function') window.AMIR_applyDocRatings();
   }
   document.addEventListener('amir:cms-content-ready', onCmsContentReady);
 
-  fetch('/prices.html',{cache:'no-cache'})
-    .then(function(r){
-      if(!r.ok) throw new Error('prices '+r.status);
-      return r.text();
-    })
-    .then(function(html){
-      var doc=new DOMParser().parseFromString(html,'text/html');
-      lastPriceRows=doc.querySelectorAll('.price-list .prow');
-      return fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
-        .then(function(r){ return r.ok?r.json():null; })
-        .then(function(saved){
-          applySavedPrices(saved);
-        })
-        .catch(function(){
-          var ok=fillRows(lastPriceRows);
-          if(!ok){
-            if(!item.match){
-              el('dirPrices').hidden=true;
-              renderFacts(null);
-              signalServiceReady();
-            } else {
-              fail('Цены по этой услуге назовёт администратор — оставьте заявку или позвоните.');
+  function loadPrices(){
+    fetch('/prices.html',{cache:'no-cache'})
+      .then(function(r){
+        if(!r.ok) throw new Error('prices '+r.status);
+        return r.text();
+      })
+      .then(function(html){
+        var doc=new DOMParser().parseFromString(html,'text/html');
+        lastPriceRows=doc.querySelectorAll('.price-list .prow');
+        return fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
+          .then(function(r){ return r.ok?r.json():null; })
+          .then(function(saved){
+            applySavedPrices(saved);
+          })
+          .catch(function(){
+            var ok=fillRows(lastPriceRows);
+            if(!ok){
+              if(!item.match){
+                el('dirPrices').hidden=true;
+                renderFacts(null);
+                signalServiceReady();
+              } else {
+                fail('Цены по этой услуге назовёт администратор — оставьте заявку или позвоните.');
+              }
             }
-          }
-        });
-    })
-    .catch(function(){
-      fail('Не удалось загрузить цены. Позвоните нам или оставьте заявку — подскажем стоимость.');
-    });
+          });
+      })
+      .catch(function(){
+        fail('Не удалось загрузить цены. Позвоните нам или оставьте заявку — подскажем стоимость.');
+      });
+  }
 
-  // На странице услуги добавляем её в список, но по умолчанию
-  // оставляем «Выберите направление», пока пользователь не выберет сам.
-  var form=document.getElementById('booking');
-  if(form&&form.service){
+  function wireBookingServiceOption(){
+    var form=document.getElementById('booking');
+    if(!form||!form.service||!item||!group) return;
     var opts=Array.prototype.slice.call(form.service.options), has=false;
     for(var i=0;i<opts.length;i++){
       if(opts[i].text===group.title||opts[i].text===item.title){ has=true; break; }
@@ -552,5 +584,60 @@
     form.service.value='';
     form.service.selectedIndex=0;
     if(window.AMIR_formSelects) AMIR_formSelects.refresh(form.service);
+  }
+
+  function bootServicePage(){
+    if(booted || !item || !group) return;
+    booted=true;
+    if(note) note.hidden=true;
+    paintServiceTexts();
+    renderDoctors();
+    renderOther();
+    wireBookingServiceOption();
+    loadPrices();
+    if(typeof window.AMIR_applyDocRatings==='function') window.AMIR_applyDocRatings();
+  }
+
+  function tryBootFromContent(saved){
+    if(!saved) return false;
+    if(Array.isArray(saved.serviceGroups)) applyGroupsFromSnap(saved.serviceGroups);
+    if(Array.isArray(saved.doctors) && data.doctors){
+      saved.doctors.forEach(function(d){
+        if(!d || !d.id) return;
+        var prev=data.doctors[d.id]||{};
+        data.doctors[d.id]=Object.assign({}, prev, {
+          name:d.name||prev.name||'Врач',
+          role:d.role||prev.role||'',
+          exp:d.exp||prev.exp||'',
+          photo:mediaUrl(d.src||d.photo||prev.photo||''),
+          spec:(d.spec!=null&&d.spec!=='')?d.spec:(prev.spec||d.role||''),
+          years:(d.years!=null&&d.years!=='')?d.years:(prev.years||''),
+          video:(d.video!=null)?d.video:(prev.video||''),
+          bio:Array.isArray(d.bio)?d.bio:(prev.bio||[]),
+          pdRating:d.pdRating!=null?d.pdRating:prev.pdRating,
+          pdReviews:d.pdReviews!=null?d.pdReviews:prev.pdReviews,
+          pdUrl:d.pdUrl||prev.pdUrl,
+          ratingSource:d.ratingSource||prev.ratingSource
+        });
+      });
+    }
+    return refreshItemFromData();
+  }
+
+  if(refreshItemFromData()){
+    bootServicePage();
+  } else {
+    fail('Загружаем услугу…');
+    fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(saved){
+        if(tryBootFromContent(saved)) bootServicePage();
+      })
+      .catch(function(){})
+      .then(function(){
+        setTimeout(function(){
+          if(!booted) fail('Такой услуги нет. Откройте прайс-лист, чтобы выбрать нужную.');
+        }, 2500);
+      });
   }
 })();

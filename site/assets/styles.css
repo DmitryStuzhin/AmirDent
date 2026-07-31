@@ -295,9 +295,10 @@ h1 .g,h2 .g{white-space:nowrap}
 .pf:hover{border-color:var(--gold)}
 .pf.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 .price-list{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
-.prow{display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;padding:16px 26px;border-top:1px solid var(--line);transition:background .2s,box-shadow .2s}
+.prow{display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;padding:16px 26px;border-top:1px solid var(--line);transition:background .2s,box-shadow .2s;cursor:pointer}
 .prow:first-child{border-top:none}
 .prow:hover{background:linear-gradient(90deg,rgba(179,154,107,.08),var(--cream));box-shadow:inset 3px 0 0 var(--gold)}
+body.cms-admin .prow{cursor:pointer}
 .prow .pn{font-size:15.5px;color:var(--text);font-weight:500}
 .prow .ptag{font-family:var(--head);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gold-deep);background:rgba(179,154,107,.12);padding:5px 12px;border-radius:100px;white-space:nowrap}
 .prow .pp{font-family:var(--head);font-weight:800;color:var(--ink);white-space:nowrap;font-size:17px;text-align:right;min-width:120px}
@@ -513,6 +514,15 @@ a.psub-title:hover{color:var(--gold-deep)}
 .dp-list-fade{position:absolute;left:0;right:0;bottom:0;height:74px;pointer-events:none;
   background:linear-gradient(to bottom,rgba(247,244,236,0),var(--cream-2))}
 .dp-list-fade[hidden]{display:none}
+.dp-add-price{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:18px;padding:14px 26px;border:1.5px dashed var(--gold-deep);
+  border-radius:100px;background:transparent;color:var(--gold-deep);
+  font-family:var(--head);font-weight:700;font-size:13px;letter-spacing:.04em;
+  cursor:pointer;transition:.25s var(--ease);
+}
+.dp-add-price:hover{background:rgba(179,154,107,.12);border-style:solid}
+.dp-add-price[hidden]{display:none !important}
 .dp-more{margin-top:18px;padding:14px 26px;border:1.5px solid var(--gold);border-radius:100px;background:transparent;
   font-family:var(--head);font-weight:700;font-size:14.5px;color:var(--gold-deep);cursor:pointer;transition:.2s var(--ease)}
 .dp-more:hover{background:var(--gold);color:#fff}
@@ -653,12 +663,17 @@ div.dm{align-items:center;justify-content:center}
 .doc-pd-stars{
   color:var(--gold);font-size:11px;letter-spacing:1px;line-height:1;
 }
-.doc-pd-label{font-size:12px;color:var(--muted);line-height:1.2}
+.doc-pd-label{font-size:12px;color:var(--muted);line-height:1.2;white-space:nowrap}
 .chief-body .doc-pd{margin-top:16px}
 .chief-body .doc-pd-score{color:var(--gold-bright)}
 .chief-body .doc-pd-stars{color:var(--gold-bright)}
 .chief-body .doc-pd-label{color:rgba(255,255,255,.62)}
-.dp-doc-text .doc-pd{margin-top:10px;margin-bottom:4px}
+/* На карточке услуги рейтинг и «Записаться» не должны стоять в одну строку. */
+.dp-doc-text .doc-pd{
+  display:flex;width:100%;box-sizing:border-box;
+  margin-top:10px;margin-bottom:12px;
+}
+.dp-doc-text .dp-doc-btn{display:inline-block;margin-top:0}
 .dm-pd-link{display:block;text-decoration:none;color:inherit}
 .dm-pd-link:hover .dm-stat b{color:var(--gold-deep)}
 

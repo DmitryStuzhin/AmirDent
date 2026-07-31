@@ -85,13 +85,43 @@
       var rect=btn.getBoundingClientRect();
       var spaceBelow=Math.max(120, window.innerHeight-rect.bottom-16);
       panel.style.maxHeight=Math.min(280, spaceBelow, window.innerHeight*0.46)+'px';
+      // В модалке CMS overflow:auto обрезает absolute-панель — фиксируем к viewport.
+      if(wrap.closest('.cms-modal-bg')){
+        panel.style.position='fixed';
+        panel.style.left=rect.left+'px';
+        panel.style.width=rect.width+'px';
+        panel.style.right='auto';
+        panel.style.top=(rect.bottom+8)+'px';
+        panel.style.zIndex='10050';
+      } else {
+        panel.style.position='';
+        panel.style.left='';
+        panel.style.width='';
+        panel.style.right='';
+        panel.style.top='';
+        panel.style.zIndex='';
+      }
     }
+    function onScrollClose(){ if(open) close(); }
     function setOpen(v){
       open=!!v;
       if(open) placePanel();
-      else panel.style.maxHeight='';
+      else {
+        panel.style.maxHeight='';
+        panel.style.position='';
+        panel.style.left='';
+        panel.style.width='';
+        panel.style.right='';
+        panel.style.top='';
+        panel.style.zIndex='';
+      }
       wrap.classList.toggle('is-open',open);
       btn.setAttribute('aria-expanded',open?'true':'false');
+      var modalScroll=wrap.closest('.cms-modal');
+      if(modalScroll){
+        if(open) modalScroll.addEventListener('scroll',onScrollClose,{passive:true});
+        else modalScroll.removeEventListener('scroll',onScrollClose);
+      }
       if(open){
         active=sel.selectedIndex>=0?sel.selectedIndex:0;
         paintSelected();
@@ -154,7 +184,7 @@
   }
 
   function enhanceAllFormSelects(){
-    document.querySelectorAll('.form select.form-select').forEach(enhanceFormSelect);
+    document.querySelectorAll('.form select.form-select, .cms-modal select.form-select').forEach(enhanceFormSelect);
   }
   window.AMIR_formSelects={
     refresh:function(sel){
@@ -733,6 +763,55 @@
   document.querySelectorAll('.reel').forEach(function(r){ r.addEventListener('click',function(){ openLb(r.getAttribute('data-video')); }); });
   if(lb){ lb.addEventListener('click',function(e){ if(e.target===lb||e.target.classList.contains('lb-close')) closeLb(); });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLb(); }); }
+
+  /* Клик по строке прайса → форма «Записаться онлайн» с этой услугой. */
+  function selectBookingService(serviceName){
+    var bookForm=document.getElementById('booking');
+    if(!bookForm||!bookForm.service) return false;
+    var name=String(serviceName||'').trim();
+    if(!name) return false;
+    var sel=bookForm.service;
+    var found=false;
+    for(var i=0;i<sel.options.length;i++){
+      if((sel.options[i].text||'')===name || (sel.options[i].value||'')===name){
+        sel.selectedIndex=i;
+        found=true;
+        break;
+      }
+    }
+    if(!found){
+      var opt=document.createElement('option');
+      opt.value=name;
+      opt.textContent=name;
+      sel.appendChild(opt);
+      sel.value=name;
+    }
+    if(window.AMIR_formSelects) AMIR_formSelects.refresh(sel);
+    var zapis=document.getElementById('zapis');
+    if(zapis){
+      if(location.hash!=='#zapis') location.hash='zapis';
+      zapis.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+    setTimeout(function(){
+      if(bookForm.name) bookForm.name.focus();
+    }, 350);
+    return true;
+  }
+  window.AMIR_selectBookingService=selectBookingService;
+
+  document.addEventListener('click', function(e){
+    // В режиме правки клик по цене открывает CMS, не запись
+    if(document.body.classList.contains('cms-admin')) return;
+    var row=e.target&&e.target.closest
+      ? e.target.closest('.price-list .prow, #dirList .prow, .dp-list .prow')
+      : null;
+    if(!row) return;
+    var pn=row.querySelector('.pn');
+    var name=pn?(pn.textContent||'').trim():'';
+    if(!name) return;
+    e.preventDefault();
+    selectBookingService(name);
+  });
 
   // booking -> Telegram (через api/lead.php)
   var form=document.getElementById('booking');

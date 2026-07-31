@@ -132,6 +132,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._cms_login()
         if path == "/api/cms/upload":
             return self._cms_upload()
+        if path == "/api/cms/doctor-rating":
+            return self._cms_doctor_rating()
         if path in ("/api/lead.php", "/api/lead"):
             return self._save_lead()
         self.send_error(404, "Not Found")
@@ -207,7 +209,57 @@ class Handler(SimpleHTTPRequestHandler):
         name = secrets.token_hex(8) + ext
         path = UPLOADS_DIR / name
         path.write_bytes(raw)
-        return self._json_response(200, {"ok": True, "url": "assets/uploads/" + name})
+        # Абсолютный путь от корня сайта — иначе на /uslugi/... относительный
+        # assets/uploads/... превращается в /uslugi/assets/uploads/... и ломается.
+        return self._json_response(200, {"ok": True, "url": "/assets/uploads/" + name})
+
+    def _cms_doctor_rating(self):
+        """Найти рейтинг врача на ПроДокторов / DocDoc / Зуб.ру и вернуть лучший."""
+        import sys
+
+        try:
+            data = self._read_json()
+        except Exception:
+            return self._json_response(400, {"ok": False, "error": "Некорректный JSON"})
+
+        token = (
+            self.headers.get("X-CMS-Token")
+            or (data.get("token") if isinstance(data, dict) else None)
+            or ""
+        ).strip().lower()
+        if token != PASS_HASH:
+            return self._json_response(401, {"ok": False, "error": "Нет доступа"})
+
+        name = str((data or {}).get("name") or "").strip()
+        photo = str((data or {}).get("photo") or "").strip()
+        photo_local = None
+        if photo:
+            # Локальные загрузки админки: assets/uploads/... или /assets/...
+            rel = photo.split("?", 1)[0].lstrip("/")
+            if rel.startswith("assets/"):
+                p = SITE / rel
+                if p.is_file():
+                    try:
+                        photo_local = p.read_bytes()
+                    except Exception:
+                        photo_local = None
+
+        if str(ROOT) not in sys.path:
+            sys.path.insert(0, str(ROOT))
+        try:
+            from api.doctor_rating import lookup_doctor_rating
+        except Exception as e:
+            return self._json_response(500, {"ok": False, "error": "Модуль поиска недоступен: " + str(e)})
+
+        try:
+            result = lookup_doctor_rating(
+                name,
+                photo=None if photo_local else photo,
+                photo_local=photo_local,
+            )
+        except Exception as e:
+            return self._json_response(500, {"ok": False, "error": "Ошибка поиска: " + str(e)})
+        return self._json_response(200, result)
 
     def _save_content(self):
         try:
