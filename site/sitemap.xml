@@ -1,176 +1,146 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://amirdent.ru/</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/prices.html</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/prices</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/brekety</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/privacy</loc>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://amirdent.netlify.app/legal</loc>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
+    <loc>https://amirdent.netlify.app/uslugi/brekety/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/ispravlenie-prikusa</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/ispravlenie-prikusa/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/kapy</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/kapy/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/plastinki</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/plastinki/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/elaynery</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/elaynery/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/metallicheskie-brekety</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/metallicheskie-brekety/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/keramicheskie-brekety</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/keramicheskie-brekety/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/detskaya-ortodontiya</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/detskaya-ortodontiya/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/chistka-zubov</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/chistka-zubov/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/otbelivanie</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/otbelivanie/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/detskaya-stomatologiya</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/detskaya-stomatologiya/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/restavraciya</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/restavraciya/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/lechenie-kariesa</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/lechenie-kariesa/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/lechenie-kanalov</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/lechenie-kanalov/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/lechenie-desen</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/lechenie-desen/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/udalenie-zubov</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/udalenie-zubov/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/implantaciya</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/implantaciya/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/implantaciya-all-on-4</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/implantaciya-all-on-4/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/implantaciya-all-on-6</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/implantaciya-all-on-6/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://amirdent.ru/uslugi/protezirovanie</loc>
-    <lastmod>2026-07-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://amirdent.ru/uslugi/biorevitalizaciya</loc>
-    <lastmod>2026-07-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://amirdent.ru/uslugi/konturnaya-plastika</loc>
-    <lastmod>2026-07-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://amirdent.ru/uslugi/lechenie-gipergidroza</loc>
-    <lastmod>2026-07-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://amirdent.ru/uslugi/piling</loc>
-    <lastmod>2026-07-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://amirdent.ru/uslugi/lazernaya-epilyaciya</loc>
-    <lastmod>2026-07-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://amirdent.ru/uslugi/udalenie-tatuirovok</loc>
-    <lastmod>2026-07-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://amirdent.ru/uslugi/pirsing</loc>
-    <lastmod>2026-07-27</lastmod>
+    <loc>https://amirdent.netlify.app/uslugi/protezirovanie/</loc>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

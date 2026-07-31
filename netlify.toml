@@ -7,8 +7,34 @@
 # (Site configuration → Environment variables), локально — в файле .env.
 
 [build]
+  command = "npm run build"
   publish = "site"
   functions = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    X-Frame-Options = "DENY"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://static.tildacdn.com https://avatars.mds.yandex.net https://yastatic.net; connect-src 'self'; frame-src https://yandex.ru https://yandex.com; upgrade-insecure-requests"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/smile-*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=86400"
+
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow, noarchive"
 
 # Адрес /api/lead объявляет сама функция (export const config = { path }).
 # Правила для него здесь не нужны и вредны: функция нового поколения доступна
@@ -34,10 +60,34 @@
   status = 200
   force = true
 
-# Страницы направлений: /uslugi/<направление> отдаёт service.html, а он сам
-# определяет направление по адресу. Так адреса читаемые и делятся ссылкой,
-# а страница остаётся одна — цены и описания не копируются по восьми файлам.
 [[redirects]]
-  from = "/uslugi/*"
-  to = "/service.html"
+  from = "/index.html"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/prices.html"
+  to = "/prices"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/prices"
+  to = "/prices.html"
+  status = 200
+
+[[redirects]]
+  from = "/service.html"
+  to = "/prices"
+  status = 301
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/legal"
+  to = "/legal.html"
   status = 200

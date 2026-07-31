@@ -32,27 +32,19 @@
     <h1>Вход для администратора</h1>
     <p class="hint">После входа откроется обычный сайт. Кликайте текст, фото и блоки — чтобы править. Внизу появится панель «Сохранить».</p>
     <div class="err" id="loginErr">Неверный логин или пароль</div>
-    <div class="field"><label>Логин</label><input type="text" name="login" required autocomplete="username" placeholder="admin"></div>
-    <div class="field"><label>Пароль</label><input type="password" name="password" required autocomplete="current-password"></div>
+    <div class="field"><label for="adminLoginField">Логин</label><input id="adminLoginField" type="text" name="login" required autocomplete="username"></div>
+    <div class="field"><label for="adminPasswordField">Пароль</label><input id="adminPasswordField" type="password" name="password" required autocomplete="current-password"></div>
     <button type="submit" class="btn btn-gold">Войти и править сайт</button>
     <a class="back" href="index.html">← На главную</a>
   </form>
-  <script src="assets/cms-auth.js?v=5"></script>
+  <script src="assets/cms-auth.js?v=8"></script>
   <script>
     (function(){
-      try{
-        var raw=sessionStorage.getItem('amirdent_admin_session');
-        if(raw){
-          var s=JSON.parse(raw);
-          if(!s.token) sessionStorage.removeItem('amirdent_admin_session');
-        }
-      }catch(e){}
-      if(window.AmirCMS && AmirCMS.isAuthed()){
-        location.replace('index.html');
-        return;
-      }
       var form=document.getElementById('adminLogin');
       var err=document.getElementById('loginErr');
+      AmirCMS.refreshSession().then(function(active){
+        if(active) location.replace('index.html');
+      });
       form.addEventListener('submit', async function(e){
         e.preventDefault();
         err.classList.remove('show');

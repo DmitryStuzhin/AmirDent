@@ -1,60 +1,60 @@
 {
-  "v": 4,
-  "savedAt": "2026-07-31T02:11:57.419Z",
+  "v": 5,
+  "savedAt": "2026-07-31T02:16:06.663Z",
   "images": [
     {
-      "src": "https://static.tildacdn.com/tild6238-3739-4737-b836-326430383731/1111_opti.png",
+      "src": "/assets/images/33082ad4d7.webp",
       "alt": "Кхатиб Массуд Зидан — главный врач АмирДент"
     },
     {
-      "src": "https://static.tildacdn.com/tild3635-6161-4630-b930-393861363366/ec3a29bb-eb28-4446-8.png",
+      "src": "/assets/images/a589838f6a.webp",
       "alt": "Оборудование"
     },
     {
-      "src": "https://static.tildacdn.com/tild3435-3835-4535-a232-393237666637/IMG_7462.jpg",
+      "src": "/assets/images/f29da927a0.webp",
       "alt": "Врачи"
     },
     {
-      "src": "https://static.tildacdn.com/tild3065-3061-4164-b532-383831393863/_3.png",
+      "src": "/assets/images/a52f895fb4.webp",
       "alt": "Лечение"
     },
     {
-      "src": "https://static.tildacdn.com/tild6663-6236-4032-b739-653333663564/_2.png",
+      "src": "/assets/images/c565dcb89a.webp",
       "alt": "Направления"
     },
     {
-      "src": "https://static.tildacdn.com/tild6238-3739-4737-b836-326430383731/1111_opti.png",
+      "src": "/assets/images/33082ad4d7.webp",
       "alt": "Кхатиб Массуд Зидан"
     },
     {
-      "src": "/assets/badges/ya-goodplace.png",
+      "src": "assets/badges/ya-goodplace.png",
       "alt": ""
     }
   ],
   "reels": [
     {
       "video": "",
-      "poster": "https://static.tildacdn.com/tild3435-3835-4535-a232-393237666637/IMG_7462.jpg",
+      "poster": "/assets/images/f29da927a0.webp",
       "captionHtml": "Отзыв о брекетах<small>Пациент · ортодонтия</small>"
     },
     {
       "video": "",
-      "poster": "smile-after.png",
+      "poster": "smile-after.webp",
       "captionHtml": "Результат отбеливания<small>До / после</small>"
     },
     {
       "video": "",
-      "poster": "https://static.tildacdn.com/tild3065-3061-4164-b532-383831393863/_3.png",
+      "poster": "/assets/images/a52f895fb4.webp",
       "captionHtml": "Как проходит приём<small>Наша клиника</small>"
     },
     {
       "video": "",
-      "poster": "https://static.tildacdn.com/tild6663-6236-4032-b739-653333663564/_2.png",
+      "poster": "/assets/images/c565dcb89a.webp",
       "captionHtml": "История лечения<small>Пациент · имплантация</small>"
     },
     {
       "video": "",
-      "poster": "https://static.tildacdn.com/tild3338-3239-4665-a338-326364343832/IMG_035123130.jpg",
+      "poster": "/assets/images/783d964dde.webp",
       "captionHtml": "Отзыв пациента<small>Ортодонтия</small>"
     }
   ],
@@ -64,7 +64,7 @@
       "name": "Краснощёкова Лилия",
       "role": "Терапия · дети",
       "exp": "Стоматолог-терапевт · 15 лет",
-      "src": "https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg",
+      "src": "/assets/images/9d237844af.webp",
       "spec": "Стоматолог-терапевт, детский стоматолог",
       "years": "15 лет",
       "bio": [
@@ -93,7 +93,7 @@
       "name": "Кхатиб Амир",
       "role": "Ортодонтия",
       "exp": "Стоматолог-ортодонт",
-      "src": "https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg",
+      "src": "/assets/images/1fe5f6032a.webp",
       "spec": "Стоматолог-ортодонт",
       "years": "2 года",
       "bio": [
@@ -130,7 +130,7 @@
       "name": "Али Ренас",
       "role": "Хирургия",
       "exp": "Хирург-имплантолог",
-      "src": "https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg",
+      "src": "/assets/images/dd21cb3afd.webp",
       "spec": "Хирург-имплантолог",
       "years": "6 лет",
       "bio": [],
@@ -146,7 +146,7 @@
       "name": "Жабин Алексей",
       "role": "Протезирование",
       "exp": "Стоматолог-ортопед · 26 лет",
-      "src": "https://static.tildacdn.com/tild6462-3839-4162-b234-643864626639/noroot.png",
+      "src": "/assets/images/fdb595d956.webp",
       "spec": "Стоматолог-ортопед",
       "years": "26 лет",
       "bio": [],
@@ -162,7 +162,7 @@
       "name": "Алхатиб Обай",
       "role": "Протезирование",
       "exp": "Врач-ортопед · 2 года",
-      "src": "https://static.tildacdn.com/tild3366-3037-4930-b836-393035633165/fa6e87be-8fe0-4656-8.jpg",
+      "src": "/assets/images/150e13edec.webp",
       "spec": "Врач-ортопед",
       "years": "2 года",
       "bio": [],
@@ -178,7 +178,7 @@
       "name": "Кхатиб Ольга Николаевна",
       "role": "Кардиология",
       "exp": "Врач-кардиолог · 26 лет",
-      "src": "https://static.tildacdn.com/tild6261-3561-4136-a265-396262393335/IMG_0968.jpg",
+      "src": "/assets/images/0a8cd45ac1.webp",
       "spec": "Врач-кардиолог",
       "years": "26 лет",
       "bio": [
@@ -2858,7 +2858,7 @@
     }
   ],
   "docsV": 6,
-  "docsHtml": "<article class=\"doc\" data-doc=\"liliya\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6537-3231-4365-b738-313035323966/photo_2024-12-19_14-.jpg\" alt=\"Краснощёкова Лилия\"></div><div class=\"doc-body\"><div class=\"role\">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class=\"exp\">Стоматолог-терапевт · 15 лет</div></div></article><article class=\"doc\" data-doc=\"amir\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6163-3731-4631-b338-663662623530/d1b8ffec-40af-4d1c-b.jpg\" alt=\"Кхатиб Амир\"></div><div class=\"doc-body\"><div class=\"role\">Ортодонтия</div><h3>Кхатиб Амир</h3><div class=\"exp\">Стоматолог-ортодонт</div></div></article><article class=\"doc\" data-doc=\"renas\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild3830-3131-4264-b437-313964626139/IMG_1022131231231231.jpg\" alt=\"Али Ренас\"></div><div class=\"doc-body\"><div class=\"role\">Хирургия</div><h3>Али Ренас</h3><div class=\"exp\">Хирург-имплантолог</div></div></article><article class=\"doc\" data-doc=\"zhabin\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6462-3839-4162-b234-643864626639/noroot.png\" alt=\"Жабин Алексей\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Жабин Алексей</h3><div class=\"exp\">Стоматолог-ортопед · 26 лет</div></div></article><article class=\"doc\" data-doc=\"obai\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild3366-3037-4930-b836-393035633165/fa6e87be-8fe0-4656-8.jpg\" alt=\"Алхатиб Обай\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Алхатиб Обай</h3><div class=\"exp\">Врач-ортопед · 2 года</div></div></article><article class=\"doc\" data-doc=\"olga\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"https://static.tildacdn.com/tild6261-3561-4136-a265-396262393335/IMG_0968.jpg\" alt=\"Кхатиб Ольга Николаевна\"></div><div class=\"doc-body\"><div class=\"role\">Кардиология</div><h3>Кхатиб Ольга Николаевна</h3><div class=\"exp\">Врач-кардиолог · 26 лет</div></div></article><article class=\"doc\" data-doc=\"borodina-inna\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/uploads/b90121892ea97320.jpg\" alt=\"Бородина Инна\"></div><div class=\"doc-body\"><div class=\"role\">Терапия</div><h3>Бородина Инна</h3><div class=\"exp\">Стоматолог-терапевт · 14</div></div></article>",
+  "docsHtml": "<article class=\"doc\" data-doc=\"liliya\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/images/9d237844af.webp\" alt=\"Краснощёкова Лилия\"></div><div class=\"doc-body\"><div class=\"role\">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class=\"exp\">Стоматолог-терапевт · 15 лет</div></div></article><article class=\"doc\" data-doc=\"amir\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/images/1fe5f6032a.webp\" alt=\"Кхатиб Амир\"></div><div class=\"doc-body\"><div class=\"role\">Ортодонтия</div><h3>Кхатиб Амир</h3><div class=\"exp\">Стоматолог-ортодонт</div></div></article><article class=\"doc\" data-doc=\"renas\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/images/dd21cb3afd.webp\" alt=\"Али Ренас\"></div><div class=\"doc-body\"><div class=\"role\">Хирургия</div><h3>Али Ренас</h3><div class=\"exp\">Хирург-имплантолог</div></div></article><article class=\"doc\" data-doc=\"zhabin\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/images/fdb595d956.webp\" alt=\"Жабин Алексей\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Жабин Алексей</h3><div class=\"exp\">Стоматолог-ортопед · 26 лет</div></div></article><article class=\"doc\" data-doc=\"obai\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/images/150e13edec.webp\" alt=\"Алхатиб Обай\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Алхатиб Обай</h3><div class=\"exp\">Врач-ортопед · 2 года</div></div></article><article class=\"doc\" data-doc=\"olga\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/images/0a8cd45ac1.webp\" alt=\"Кхатиб Ольга Николаевна\"></div><div class=\"doc-body\"><div class=\"role\">Кардиология</div><h3>Кхатиб Ольга Николаевна</h3><div class=\"exp\">Врач-кардиолог · 26 лет</div></div></article><article class=\"doc\" data-doc=\"borodina-inna\" tabindex=\"0\" role=\"button\" aria-haspopup=\"dialog\"><div class=\"doc-photo\"><img src=\"/assets/uploads/b90121892ea97320.jpg\" alt=\"Бородина Инна\"></div><div class=\"doc-body\"><div class=\"role\">Терапия</div><h3>Бородина Инна</h3><div class=\"exp\">Стоматолог-терапевт · 14</div></div></article>",
   "textItems": [
     {
       "sel": ".hero-copy h1",
