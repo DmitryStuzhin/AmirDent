@@ -17,8 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="assets/styles.css?v=merge1">
-<link rel="stylesheet" href="assets/cms.css?v=merge1">
+<link rel="stylesheet" href="assets/styles.css?v=wagold1">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
 <meta name="theme-color" content="#1b1813">
@@ -29,13 +28,13 @@
 <!-- HEADER -->
 <header class="hdr">
   <div class="container hdr-in">
-    <a href="index.html" class="logo"><span class="brand-mark" aria-hidden="true"></span><span>Амир<b>Дент</b></span></a>
+    <a href="/" class="logo"><span class="brand-mark" aria-hidden="true"></span><span>Амир<b>Дент</b></span></a>
     <nav class="nav" id="mainNav">
-      <a href="index.html" class="active">Главная</a>
+      <a href="/" class="active">Главная</a>
       <div class="nav-drop">
         <a href="#services" id="navServices">Услуги</a>
         <div class="nav-menu" role="menu">
-          <a href="/prices.html">Все услуги и цены</a>
+          <a href="/prices">Все услуги и цены</a>
         </div>
       </div>
       <a href="#doctors">Врачи</a>
@@ -57,7 +56,7 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-brand-mark" aria-hidden="true"></div>
-  <div class="hero-gridlines" aria-hidden="true"></div>
+  <div class="hero-pattern" aria-hidden="true"></div>
   <div class="container">
     <div class="hero-grid">
       <div class="hero-copy">
@@ -116,16 +115,16 @@
 <section class="pad why-section" id="about">
   <div class="container">
     <div class="sec-title reveal">
-      <h2>Почему выбирают АмирДент</h2>
+      <h2 data-cms-text="about-title">ПОЧЕМУ ВЫБИРАЮТ АМИРДЕНТ</h2>
       <div class="ul"></div>
-      <p>Передовые технологии, опытная команда и забота о каждом пациенте — под одной крышей.</p>
+      <p data-cms-text="about-sub">Передовые технологии, опытная команда и забота о каждом пациенте — под одной крышей.</p>
     </div>
     <div class="why-grid">
-      <div class="pcard why-tech reveal"><img src="/assets/images/a589838f6a.webp" alt="Оборудование" loading="lazy" decoding="async"><span class="why-scan" aria-hidden="true"></span><span class="lbl">Технологии</span><div class="cap"><div class="big">3D</div><p>Цифровая диагностика, лазер и современные брекет-системы для точного результата.</p></div></div>
-      <div class="pcard why-team reveal"><img src="/assets/images/f29da927a0.webp" alt="Команда врачей клиники" loading="lazy" decoding="async"><span class="why-team-ring" aria-hidden="true"></span><span class="lbl">Квалификация</span><div class="cap"><div class="big">Команда</div><p>Врачи разных направлений с подтверждённым образованием и клиническим опытом.</p></div></div>
+      <div class="pcard why-tech reveal"><img src="/assets/images/a589838f6a.webp" alt="Современное стоматологическое оборудование клиники" loading="lazy" decoding="async"><span class="why-scan" aria-hidden="true"></span><span class="lbl">Технологии</span><div class="cap"><div class="big">3D</div><p>Цифровая диагностика, лазер и современные брекет-системы для точного результата.</p></div></div>
+      <div class="pcard why-team reveal"><img src="/assets/images/f29da927a0.webp" srcset="/assets/images/f29da927a0-480.webp 480w, /assets/images/f29da927a0.webp 900w" sizes="(max-width:640px) 92vw, (max-width:1024px) 45vw, 400px" width="900" height="1200" alt="Команда врачей клиники" loading="lazy" decoding="async"><span class="why-team-ring" aria-hidden="true"></span><span class="lbl">Квалификация</span><div class="cap"><div class="big">Команда</div><p>Врачи разных направлений с подтверждённым образованием и клиническим опытом.</p></div></div>
       <div class="pcard solid why-partners reveal"><div class="lbl2">Партнёры</div><p style="color:rgba(255,255,255,.7);font-size:14px;margin-bottom:6px">Работаем на материалах мировых брендов</p><div class="plogos"><span>Straumann</span><span>Dentsply&nbsp;Sirona</span><span>Star&nbsp;Smile</span><span>Swiss&nbsp;Implant</span><span>IAL-System</span></div></div>
       <div class="pcard why-comfort reveal"><img src="/assets/images/a52f895fb4.webp" alt="Стоматологическое лечение" loading="lazy" decoding="async"><span class="lbl">Комфорт</span><div class="cap"><div class="big" style="font-size:26px">Бережно</div><p>Современные протоколы обезболивания подбираются врачом с учётом состояния пациента.</p></div></div>
-      <div class="pcard why-scope reveal"><img src="/assets/images/c565dcb89a.webp" alt="Направления" loading="lazy" decoding="async"><span class="scope-path" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">Многопрофильность</span><div class="cap"><div class="big">2300+</div><p>Процедур по всем направлениям — от ортодонтии до имплантации.</p></div></div>
+      <div class="pcard why-scope reveal"><img src="/assets/images/c565dcb89a.webp" alt="Направления лечения в клинике АмирДент" loading="lazy" decoding="async"><span class="scope-path" aria-hidden="true"><i></i><i></i><i></i></span><span class="lbl">Многопрофильность</span><div class="cap"><div class="big">2300+</div><p>Процедур по всем направлениям — от ортодонтии до имплантации.</p></div></div>
       <div class="pcard solid why-guarantee reveal"><span class="guarantee-seal" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28"/><path d="m20 32 8 8 17-19"/></svg></span><div class="lbl2">Ответственность</div><p style="color:rgba(255,255,255,.72);font-size:15px">Фиксируем план и смету до начала лечения, объясняем условия гарантии на конкретные работы и наблюдаем после приёма.</p><div style="margin-top:18px"><a href="#zapis" class="btn btn-gold">Записаться на консультацию</a></div></div>
     </div>
     <div class="why-swipe" aria-hidden="true"><span>Листайте преимущества</span><i>→</i></div>
@@ -150,9 +149,9 @@
 <section class="pad cream2" id="services">
   <div class="container">
     <div class="sec-title reveal">
-      <h2>Услуги клиники</h2>
+      <h2 data-cms-text="services-title">Услуги клиники</h2>
       <div class="ul"></div>
-      <p>Выберите направление — на его странице собраны услуги, цены и врач, который их ведёт.</p>
+      <p data-cms-text="services-sub">Ортодонтия, стоматология и косметология — направления, услуги и цены.</p>
     </div>
     <div class="sgroups reveal" id="servicesGroups">
       <div class="sgroup"><h4>Ортодонтия</h4>
@@ -179,9 +178,9 @@
 <section class="pad" id="treatment-steps">
   <div class="container">
     <div class="sec-title reveal">
-      <h2>Этапы лечения</h2>
+      <h2 data-cms-text="steps-title">Этапы лечения</h2>
       <div class="ul"></div>
-      <p>Пять спокойных шагов — от консультации до идеальной улыбки.</p>
+      <p data-cms-text="steps-sub">Пять спокойных шагов — от консультации до идеальной улыбки.</p>
     </div>
     <div class="steps">
       <div class="steps-line"></div>
@@ -201,9 +200,9 @@
 <section class="pad cream2" id="map">
   <div class="container">
     <div class="sec-title reveal">
-      <h2>Как нас найти</h2>
+      <h2 data-cms-text="map-title">Как нас найти</h2>
       <div class="ul"></div>
-      <p>Рядом с метро Яхромская — 400 метров пешком.</p>
+      <p data-cms-text="map-sub">Рядом с метро Яхромская — 400 метров пешком.</p>
     </div>
     <div class="map-wrap reveal">
       <div class="map-frame">
@@ -225,7 +224,7 @@
 <section class="pad" id="doctors">
   <div class="container">
     <div class="chief reveal" data-doc="massud">
-      <div class="chief-media"><img src="/assets/images/33082ad4d7.webp" alt="Кхатиб Массуд Зидан" loading="lazy" decoding="async"></div>
+      <div class="chief-media"><img src="/assets/images/33082ad4d7.webp" alt="Кхатиб Массуд Зидан — главный врач клиники" loading="lazy" decoding="async"></div>
       <div class="chief-body">
         <div class="role">Главный врач клиники</div>
         <h3>Кхатиб Массуд Зидан</h3>
@@ -238,13 +237,15 @@
         </div>
       </div>
     </div>
-    <div class="sec-title reveal" style="margin-bottom:36px"><h2 style="font-size:clamp(24px,3vw,36px)">Команда врачей</h2><div class="ul"></div></div>
-    <div class="doc-grid" data-docs-v="6">
+    <div class="sec-title reveal" style="margin-bottom:36px"><h2 data-cms-text="doctors-title" style="font-size:clamp(24px,3vw,36px)">Команда врачей</h2><div class="ul"></div></div>
+    <div class="doc-grid" data-docs-v="7">
       <article class="doc reveal" data-doc="liliya"><div class="doc-photo"><img src="/assets/images/9d237844af.webp" alt="Краснощёкова Лилия" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class="exp">Стоматолог-терапевт · 15 лет</div></div></article>
       <article class="doc reveal" data-doc="amir"><div class="doc-photo"><img src="/assets/images/1fe5f6032a.webp" alt="Кхатиб Амир" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Ортодонтия</div><h3>Кхатиб Амир</h3><div class="exp">Стоматолог-ортодонт</div></div></article>
       <article class="doc reveal" data-doc="renas"><div class="doc-photo"><img src="/assets/images/dd21cb3afd.webp" alt="Али Ренас" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Хирургия</div><h3>Али Ренас</h3><div class="exp">Хирург-имплантолог</div></div></article>
       <article class="doc reveal" data-doc="zhabin"><div class="doc-photo"><img src="/assets/images/fdb595d956.webp" alt="Жабин Алексей" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Протезирование</div><h3>Жабин Алексей</h3><div class="exp">Стоматолог-ортопед · 26 лет</div></div></article>
       <article class="doc reveal" data-doc="obai"><div class="doc-photo"><img src="/assets/images/150e13edec.webp" alt="Алхатиб Обай" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Протезирование</div><h3>Алхатиб Обай</h3><div class="exp">Врач-ортопед · 2 года</div></div></article>
+      <article class="doc reveal" data-doc="borodina-inna"><div class="doc-photo"><img src="/assets/images/borodina-inna.webp" alt="Бородина Инна Юрьевна" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Терапия · дети · ортодонтия</div><h3>Бородина Инна Юрьевна</h3><div class="exp">Детский стоматолог · 14 лет</div></div></article>
+      <article class="doc reveal" data-doc="guseynova-oksana"><div class="doc-photo"><img src="/assets/uploads/89e0187d0e5b4268.jpg" alt="Гусейнова Оксана Тельмановна" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Терапия</div><h3>Гусейнова Оксана Тельмановна</h3><div class="exp">Стоматолог-терапевт · 10 лет</div></div></article>
       <article class="doc reveal" data-doc="olga"><div class="doc-photo"><img src="/assets/images/0a8cd45ac1.webp" alt="Кхатиб Ольга Николаевна" loading="lazy" decoding="async"></div><div class="doc-body"><div class="role">Кардиология</div><h3>Кхатиб Ольга Николаевна</h3><div class="exp">Врач-кардиолог · 26 лет</div></div></article>
     </div>
   </div>
@@ -254,14 +255,14 @@
 <section class="pad cream2" id="reviews">
   <div class="container">
     <div class="sec-title reveal">
-      <h2>Отзывы пациентов</h2>
+      <h2 data-cms-text="reviews-title">Отзывы пациентов</h2>
       <div class="ul"></div>
-      <p>Реальные оценки на Яндекс Картах и ПроДокторов.</p>
+      <p data-cms-text="reviews-sub">Реальные оценки на Яндекс Картах и ПроДокторов.</p>
     </div>
     <div class="rev-top reveal">
       <a class="score score-ya" href="https://yandex.ru/maps/org/amirdent/1781090864/reviews/" target="_blank" rel="noopener">
         <span class="ya-goodplace" title="Хорошее место 2026" aria-label="Награда Яндекс Карт: Хорошее место 2026">
-          <img src="assets/badges/ya-goodplace.png" width="64" height="42" alt="" decoding="async">
+          <img src="assets/badges/ya-goodplace.webp" width="64" height="42" alt="" decoding="async">
         </span>
         <div class="v">5.0</div>
         <div>
@@ -289,37 +290,37 @@
   </div>
 </section>
 
-<!-- VIDEO REELS -->
-<section class="pad">
+<!-- VIDEO REELS: секция скрыта, пока у карточек нет data-video (B6) -->
+<section class="pad" id="reels" hidden>
   <div class="container">
     <div class="sec-title reveal">
-      <h2>Видеоотзывы пациентов</h2>
+      <h2 data-cms-text="reels-title">Видеоотзывы пациентов</h2>
       <div class="ul"></div>
-      <p>Живые истории и результаты лечения — от первого визита до идеальной улыбки.</p>
+      <p data-cms-text="reels-sub">Живые истории и результаты лечения — от первого визита до идеальной улыбки.</p>
     </div>
     <div class="reels reveal">
-      <button class="reel" data-video="" aria-label="Смотреть видео">
-        <div class="reel-poster" style="background-image:url('/assets/images/f29da927a0.webp')"></div>
+      <button class="reel" data-video="" hidden aria-label="Смотреть видео">
+        <div class="reel-poster" style="background-image:url('/assets/images/f29da927a0-480.webp')"></div>
         <span class="reel-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="reel-cap">Отзыв о брекетах<small>Пациент · ортодонтия</small></span>
       </button>
-      <button class="reel" data-video="" aria-label="Смотреть видео">
+      <button class="reel" data-video="" hidden aria-label="Смотреть видео">
         <div class="reel-poster" style="background-image:url('smile-after.webp')"></div>
         <span class="reel-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="reel-cap">Результат отбеливания<small>До / после</small></span>
       </button>
-      <button class="reel" data-video="" aria-label="Смотреть видео">
+      <button class="reel" data-video="" hidden aria-label="Смотреть видео">
         <div class="reel-poster" style="background-image:url('/assets/images/a52f895fb4.webp')"></div>
         <span class="reel-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="reel-cap">Как проходит приём<small>Наша клиника</small></span>
       </button>
-      <button class="reel" data-video="" aria-label="Смотреть видео">
+      <button class="reel" data-video="" hidden aria-label="Смотреть видео">
         <div class="reel-poster" style="background-image:url('/assets/images/c565dcb89a.webp')"></div>
         <span class="reel-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="reel-cap">История лечения<small>Пациент · имплантация</small></span>
       </button>
-      <button class="reel" data-video="" aria-label="Смотреть видео">
-        <div class="reel-poster" style="background-image:url('/assets/images/783d964dde.webp')"></div>
+      <button class="reel" data-video="" hidden aria-label="Смотреть видео">
+        <div class="reel-poster" style="background-image:url('/assets/images/783d964dde-360.webp')"></div>
         <span class="reel-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
         <span class="reel-cap">Отзыв пациента<small>Ортодонтия</small></span>
       </button>
@@ -349,7 +350,7 @@
           <p class="s">Свяжемся в течение 15 минут</p>
           <div class="field"><label for="bookingName">Ваше имя</label><input id="bookingName" type="text" name="name" autocomplete="name" placeholder="Как к вам обращаться" required></div>
           <div class="field"><label for="bookingPhone">Телефон</label><input id="bookingPhone" type="tel" name="phone" autocomplete="tel" value="+7 " inputmode="tel" maxlength="18" placeholder="+7 (___) ___-__-__" required></div>
-          <div class="field"><label for="bookingService">Услуга</label><div class="select-wrap"><select id="bookingService" class="form-select" name="service"><option value="">Выберите направление</option><option>Ортодонтия и брекеты</option><option>Лечение и терапия</option><option>Гигиена и профилактика</option><option>Пародонтология</option><option>Хирургия</option><option>Имплантация</option><option>Протезирование</option><option>Детская стоматология</option><option>Отбеливание</option><option>Другое</option></select></div></div>
+          <div class="field"><label for="bookingService">Услуга</label><div class="select-wrap"><select id="bookingService" class="form-select" name="service"><option value="">Выберите направление</option><option>Ортодонтия и брекеты</option><option>Лечение и терапия</option><option>Гигиена и профилактика</option><option>Пародонтология</option><option>Хирургия</option><option>Имплантация</option><option>Протезирование</option><option>Детская стоматология</option><option>Отбеливание</option><option>Медицина / кардиология</option><option>УЗИ-диагностика</option><option>Эндокринология</option><option>Другое</option></select></div></div>
           <div class="hp" aria-hidden="true"><input type="text" name="company" tabindex="-1" autocomplete="off"></div>
           <button type="submit" class="btn btn-gold">Записаться на приём</button>
           <p class="form-policy">Нажимая на кнопку, вы соглашаетесь с <a href="/privacy" target="_blank" rel="noopener">политикой конфиденциальности</a>.</p>
@@ -372,18 +373,19 @@
       <div><h4>Контакты</h4><a href="tel:+79262031828">+7 (926) 203-18-28</a><p>Ежедневно 09:00–21:00</p><a href="https://wa.me/79262031828" target="_blank" rel="noopener">WhatsApp</a></div>
       <div><h4>Адрес</h4><p>г. Москва (САО),<br>Дмитровское ш., 96, корп. 5</p><p>м. Яхромская</p></div>
     </div>
-    <div class="ftr-bot"><small>© 2026 Клиника АмирДент. Все права защищены.</small><small><a href="/privacy">Обработка персональных данных</a> · <a href="/legal">Правовая информация</a></small></div>
+    <p class="ftr-disclaimer"><small>Лицензия на медицинскую деятельность: <a href="/legal#license">ЛО-77-01-018074</a>. Имеются противопоказания. Необходима консультация специалиста.</small></p>
+    <div class="ftr-bot"><small>© 2026 Клиника АмирДент. Все права защищены.</small><small><a href="/privacy">Обработка персональных данных</a> · <a href="/legal">Правовая информация</a> · <a href="/legal#license">Лицензия</a></small></div>
   </div>
 </footer>
 
 <a class="wa-float" href="https://wa.me/79262031828" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.5-.3.3c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l.7-.9c.2-.3.4-.2.7-.1l2 .9c.3.2.5.2.5.4.1.1.1.7-.1 1.4Z"/></svg></a>
 
-<script src="assets/services-data.js?v=merge1"></script>
-<script src="assets/doctor-modal.js?v=merge1"></script>
-<script src="assets/menu.js?v=svcgroups1"></script>
+<script src="assets/services-data.js?v=med2"></script>
+<script src="assets/doctor-modal.js?v=sync1"></script>
+<script src="assets/menu.js?v=med1"></script>
 <script src="assets/steps.js?v=mobilemenu1"></script>
-<script src="assets/cms-auth.js?v=8"></script>
-<script src="assets/main.js?v=merge1"></script>
-<script src="assets/cms.js?v=merge1"></script>
+<script src="assets/main.js?v=nav2"></script>
+<script src="assets/cms-apply.js?v=fix1"></script>
+<script src="assets/cms-boot.js?v=b12auth2"></script>
 </body>
 </html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Мобильный просмотр — АмирДент</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="assets/mobile-lab.css?v=1">
+</head>
+<body class="mlab">
+  <header class="mlab-bar">
+    <a class="mlab-brand" href="/">
+      <span class="mlab-mark" aria-hidden="true"></span>
+      <span>Амир<b>Дент</b></span>
+      <em>Mobile Lab</em>
+    </a>
+
+    <div class="mlab-controls" role="toolbar" aria-label="Параметры превью">
+      <label class="mlab-field">
+        <span>Страница</span>
+        <select id="mlabPage"></select>
+      </label>
+      <label class="mlab-field">
+        <span>Устройство</span>
+        <select id="mlabDevice"></select>
+      </label>
+      <div class="mlab-actions">
+        <button type="button" class="mlab-btn" id="mlabRotate" title="Повернуть" aria-pressed="false">Повернуть</button>
+        <button type="button" class="mlab-btn" id="mlabReload" title="Обновить">Обновить</button>
+        <button type="button" class="mlab-btn" id="mlabFit" title="Вписать в экран" aria-pressed="true">Вписать</button>
+        <button type="button" class="mlab-btn" id="mlabCompare" title="Два устройства рядом" aria-pressed="false">Сравнить</button>
+      </div>
+    </div>
+
+    <a class="mlab-open" href="/" target="_blank" rel="noopener" id="mlabOpenTab">Открыть вкладкой</a>
+  </header>
+
+  <main class="mlab-stage" id="mlabStage">
+    <div class="mlab-glow" aria-hidden="true"></div>
+    <div class="mlab-floor" aria-hidden="true"></div>
+
+    <section class="mlab-slot" data-slot="primary">
+      <div class="mlab-meta">
+        <strong id="mlabNameA">iPhone 14</strong>
+        <span id="mlabSizeA">390 × 844</span>
+      </div>
+      <div class="mlab-scale" id="mlabScaleA">
+        <div class="mlab-phone" id="mlabPhoneA">
+          <div class="mlab-bezel">
+            <div class="mlab-notch" aria-hidden="true"></div>
+            <div class="mlab-screen">
+              <iframe id="mlabFrameA" title="Мобильный превью" src="/"></iframe>
+            </div>
+            <div class="mlab-home" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mlab-slot is-hidden" data-slot="secondary" id="mlabSlotB" hidden>
+      <div class="mlab-meta">
+        <label class="mlab-field mlab-field-inline">
+          <span>Второе</span>
+          <select id="mlabDeviceB"></select>
+        </label>
+        <span id="mlabSizeB">360 × 800</span>
+      </div>
+      <div class="mlab-scale" id="mlabScaleB">
+        <div class="mlab-phone" id="mlabPhoneB">
+          <div class="mlab-bezel">
+            <div class="mlab-notch" aria-hidden="true"></div>
+            <div class="mlab-screen">
+              <iframe id="mlabFrameB" title="Второе мобильное превью" src="/"></iframe>
+            </div>
+            <div class="mlab-home" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <p class="mlab-hint">Прокручивайте сайт внутри рамки. «Вписать» уменьшает телефон под окно; «Сравнить» ставит два устройства рядом.</p>
+
+  <script src="assets/mobile-lab.js?v=1"></script>
+</body>
+</html>

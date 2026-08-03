@@ -23,7 +23,12 @@ for (const file of htmlFiles) {
   const name = relative(root, file);
   if (/<a[^>]+href=["']#["']/.test(html)) errors.push(`${name}: empty # link`);
   if (/<form[\s\S]*?<label(?![^>]*\bfor=)/.test(html)) errors.push(`${name}: form label without for`);
-  if (!/admin\.html$/.test(file) && !/404\.html$/.test(file) && !/<meta name="description"/.test(html)) {
+  if (
+    !/admin\.html$/.test(file) &&
+    !/404\.html$/.test(file) &&
+    !/mobile\.html$/.test(file) &&
+    !/<meta name="description"/.test(html)
+  ) {
     errors.push(`${name}: missing description`);
   }
 }

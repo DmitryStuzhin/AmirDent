@@ -11,7 +11,9 @@
     ['implant', 'Имплантация'],
     ['prosth', 'Протезирование'],
     ['paro', 'Пародонтология'],
-    ['kids', 'Детская']
+    ['kids', 'Детская'],
+    ['cosmo', 'Космеология'],
+    ['med', 'Медицина']
   ];
 
   function $(id) { return document.getElementById(id); }
@@ -89,7 +91,7 @@
   async function loadData() {
     var file = {};
     try {
-      var res = await fetch('assets/content.json?ts=' + Date.now(), { cache: 'no-store' });
+      var res = await fetch('/api/cms/content?ts=' + Date.now(), { cache: 'no-store' });
       if (res.ok) file = await res.json();
     } catch (e) {}
 
@@ -141,7 +143,7 @@
     }
     try {
       await AmirCMS.publishContent(snap);
-      var check = await fetch('assets/content.json?ts=' + Date.now(), { cache: 'no-store' });
+      var check = await fetch('/api/cms/content?ts=' + Date.now(), { cache: 'no-store' });
       var remote = await check.json();
       if (!remote || remote.savedAt !== snap.savedAt) throw new Error('сервер вернул старые данные');
       toast('✓ Сохранено на сайт');
@@ -273,7 +275,7 @@
       location.href = 'admin.html';
     };
     $('btnSite').onclick = function () {
-      window.open('index.html?view=' + Date.now(), '_blank', 'noopener');
+      window.open('/?view=' + Date.now(), '_blank', 'noopener');
     };
   }
 

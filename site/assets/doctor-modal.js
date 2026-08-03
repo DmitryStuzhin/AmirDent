@@ -10,6 +10,7 @@
   if (!data || !data.doctors) return;
 
   var dlg = null, panel = null, lastFocus = null, native = false, fromKeyboard = false;
+  var currentDoctorId = '';
 
   function mediaUrl(url) {
     if (!url || typeof url !== 'string') return '';
@@ -90,16 +91,28 @@
     });
     if (d.pdRating != null) {
       var pdBox = document.createElement('div');
-      pdBox.className = 'dm-stat';
+      pdBox.className = 'dm-stat dm-stat-rating';
       var srcLabel = d.ratingSource === 'zub' ? 'Зуб.ру'
         : d.ratingSource === 'docdoc' ? 'DocDoc'
         : d.ratingSource === 'yandex' ? 'Яндекс Карты'
         : d.ratingSource === 'doctu' ? 'Doctu'
         : 'ПроДокторов';
-      var pdK = document.createElement('span'); pdK.textContent = srcLabel;
+      var pdK = document.createElement('span'); pdK.className = 'dm-rating-source'; pdK.textContent = srcLabel;
+      var pdMain = document.createElement('div'); pdMain.className = 'dm-rating-main';
       var pdV = document.createElement('b');
-      pdV.textContent = Number(d.pdRating).toFixed(1) + (d.pdReviews ? ' · ' + d.pdReviews : '');
-      pdBox.appendChild(pdK); pdBox.appendChild(pdV);
+      pdV.textContent = Number(d.pdRating).toFixed(1);
+      var pdStars = document.createElement('span');
+      pdStars.className = 'dm-rating-stars';
+      pdStars.setAttribute('aria-hidden', 'true');
+      pdStars.textContent = '★★★★★';
+      pdMain.appendChild(pdV); pdMain.appendChild(pdStars);
+      pdBox.appendChild(pdK); pdBox.appendChild(pdMain);
+      if (d.pdReviews) {
+        var pdReviews = document.createElement('span');
+        pdReviews.className = 'dm-rating-reviews';
+        pdReviews.textContent = d.pdReviews + ' ' + (d.pdReviews % 10 === 1 && d.pdReviews % 100 !== 11 ? 'отзыв' : (d.pdReviews % 10 >= 2 && d.pdReviews % 10 <= 4 && (d.pdReviews % 100 < 12 || d.pdReviews % 100 > 14) ? 'отзыва' : 'отзывов'));
+        pdBox.appendChild(pdReviews);
+      }
       if (d.pdUrl) {
         var pdA = document.createElement('a');
         pdA.className = 'dm-pd-link';
@@ -159,10 +172,49 @@
     bio.appendChild(ol);
   }
 
+  /* Одна запись врача может быть показана сразу в нескольких местах: в общей
+     сетке, на странице услуги и во всплывающей карточке. Обновляем их вместе,
+     чтобы сохранённая в CMS фотография нигде не оставалась старой. */
+  function syncDoctorCards(id, d) {
+    if (!id || !d) return;
+    var photo = mediaUrl(d.photo || d.src || '');
+    document.querySelectorAll('[data-doc]').forEach(function (card) {
+      if (card.getAttribute('data-doc') !== id) return;
+      var img = card.querySelector('.doc-photo img, .chief-media img, .dp-doc-photo img, .dp-team-photo img, img');
+      var name = card.querySelector('.doc-body h3, .chief-body h3, .dp-doc-name, .dp-team-card h3');
+      var role = card.querySelector('.doc-body .role, .chief-body .role, .dp-doc-role, .dp-team-role');
+      var exp = card.querySelector('.doc-body .exp, .chief-body .exp, .dp-doc-exp, .dp-team-card p');
+      if (img && photo) img.setAttribute('src', photo);
+      if (img && d.name) img.setAttribute('alt', d.name);
+      if (name && d.name) name.textContent = d.name;
+      if (role && d.role != null) role.textContent = d.role;
+      if (exp && d.exp != null) exp.textContent = d.exp;
+      var details = card.querySelector('.doc-details,.dp-doc-btn');
+      if (details && d.name) details.setAttribute('aria-label', 'Подробнее о враче ' + d.name);
+    });
+    if (dlg && currentDoctorId === id && (native ? dlg.open : !dlg.hidden)) fill(d);
+  }
+
+  function mergeDoctorSnapshot(snap) {
+    if (!snap || !Array.isArray(snap.doctors)) return;
+    snap.doctors.forEach(function (d) {
+      if (!d || !d.id) return;
+      var prev = data.doctors[d.id] || {};
+      var merged = Object.assign({}, prev, d, {
+        photo: mediaUrl(d.src || d.photo || prev.photo || ''),
+        bio: Array.isArray(d.bio) ? d.bio : (prev.bio || [])
+      });
+      data.doctors[d.id] = merged;
+      syncDoctorCards(d.id, merged);
+    });
+    applyDocRatings();
+  }
+
   function open(id) {
     var d = data.doctors[id];
     if (!d) return;
     build();
+    currentDoctorId = id;
     fill(d);
     lastFocus = document.activeElement;
     document.documentElement.classList.add('dm-lock');
@@ -183,6 +235,7 @@
     else if (lastFocus && lastFocus.blur) lastFocus.blur();
     lastFocus = null;
     fromKeyboard = false;
+    currentDoctorId = '';
   }
 
   // Запасной перехват фокуса там, где нет настоящего <dialog>.
@@ -290,7 +343,12 @@
     scheduleRatings();
   }
   document.addEventListener('amir:service-ready', scheduleRatings);
+  document.addEventListener('amir:cms-content-ready', function (e) {
+    mergeDoctorSnapshot(e && e.detail);
+  });
 
   window.AMIR_DOCTOR_MODAL = { open: open, close: close };
   window.AMIR_applyDocRatings = applyDocRatings;
+  window.AMIR_syncDoctorCards = syncDoctorCards;
+  window.AMIR_mergeDoctorSnapshot = mergeDoctorSnapshot;
 })();

@@ -16,20 +16,27 @@
     '.eyebrow',
     '.hero-trust .t b',
     '.hero-trust .t small',
-    '#about > .container > .sec-title > h2',
-    '#about > .container > .sec-title > p',
-    '#services > .container > .sec-title > h2',
-    '#services > .container > .sec-title > p',
+    // Заголовки секций — только стабильные якоря (не section.pad … idx)
+    '[data-cms-text="about-title"]',
+    '[data-cms-text="about-sub"]',
+    '[data-cms-text="services-title"]',
+    '[data-cms-text="services-sub"]',
+    '[data-cms-text="steps-title"]',
+    '[data-cms-text="steps-sub"]',
+    '[data-cms-text="map-title"]',
+    '[data-cms-text="map-sub"]',
+    '[data-cms-text="doctors-title"]',
+    '[data-cms-text="reviews-title"]',
+    '[data-cms-text="reviews-sub"]',
+    '[data-cms-text="reels-title"]',
+    '[data-cms-text="reels-sub"]',
     '#services .price-note',
-    'section.pad > .container > .sec-title > h2',
-    'section.pad > .container > .sec-title > p',
     '#doctors .chief-body .role',
     '#doctors .chief-body h3',
     '#doctors .chief-body .exp',
     '#doctors .chief-body > p',
     '#doctors .chief-facts .f b',
     '#doctors .chief-facts .f small',
-    '#doctors .sec-title h2',
     '.stats-grid .stat b',
     '.stats-grid .stat > span',
     '.why-grid .pcard .lbl',
@@ -187,6 +194,12 @@
             toast('Фото загружено');
             return normalizeMediaUrl(json.url);
           }
+          if(res.status===401){
+            if(window.AmirCMS && typeof AmirCMS.logout==='function'){
+              try{ AmirCMS.logout(); }catch(e){}
+            }
+            throw new Error('Сессия истекла — войдите в админку заново (/admin.html)');
+          }
           throw new Error((json&&json.error)||'Не удалось сохранить фото');
         });
       });
@@ -214,7 +227,7 @@
   }
 
   function openPublicSite(){
-    var url='index.html?preview=1&view='+Date.now();
+    var url='/?preview=1&view='+Date.now();
     var win=window.open(url, '_blank', 'noopener,noreferrer');
     if(!win){
       toast('✓ Сохранено. <a href="'+url+'" target="_blank" rel="noopener" style="color:#d3ba86;font-weight:700">Открыть сайт для пользователя →</a>', {html:true});
@@ -246,22 +259,34 @@
       return Promise.reject(new Error('no token'));
     }
     return AmirCMS.publishContent(content).then(function(res){
-      return fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(remote){
-        if(!remote || remote.savedAt!==content.savedAt){
-          throw new Error('сервер вернул старые данные');
-        }
-        clearDirty();
-        if(opts.openPreview!==false){
-          if(openPublicSite()){
-            toast('✓ Сохранено. Открыта новая вкладка с сайтом для пользователя');
+      if(res && res.savedAt) content.savedAt=res.savedAt;
+      // Проверка: сервер реально отдал свежий снимок (не HTML-страницу ошибки)
+      return fetch('/api/cms/content?ts='+Date.now(),{cache:'no-store',credentials:'same-origin'}).then(function(r){
+        return r.text().then(function(text){
+          var remote=null;
+          try{ remote=text?JSON.parse(text):null; }catch(parseErr){
+            throw new Error('API ответил не JSON (код '+r.status+'). Запущен ли server.py / деплой CMS?');
           }
-        } else {
-          toast('✓ Сохранено на сайт');
-        }
-        return res;
+          if(!r.ok) throw new Error('Не удалось проверить сохранение (код '+r.status+')');
+          if(!remote || remote.savedAt!==content.savedAt){
+            throw new Error('сервер вернул старые данные');
+          }
+          clearDirty();
+          if(opts.openPreview!==false){
+            if(openPublicSite()){
+              toast('✓ Сохранено. Открыта новая вкладка с сайтом для пользователя');
+            }
+          } else {
+            toast('✓ Сохранено на сайт');
+          }
+          return res;
+        });
       });
     }).catch(function(err){
       var msg=err&&err.message?err.message:String(err);
+      if(/did not match the expected pattern/i.test(msg)){
+        msg='Сервер вернул не JSON (часто HTML-ошибку). Проверьте, что API CMS доступен.';
+      }
       toast('Ошибка сохранения: '+msg);
       if(/нет доступа|нет сессии|401/i.test(msg)){
         setTimeout(function(){
@@ -353,6 +378,12 @@
     function push(n, sel, idx){
       if(!n || isCmsUi(n) || seen.has(n)) return;
       if(n.closest && n.closest('#booking')) return;
+      // Стабильный якорь важнее позиционного селектора
+      var anchor=n.getAttribute && n.getAttribute('data-cms-text');
+      if(anchor){
+        sel='[data-cms-text="'+anchor+'"]';
+        idx=0;
+      }
       seen.add(n);
       items.push({
         sel: sel,
@@ -592,7 +623,8 @@
 
   function applyServiceGroups(groups){
     if(!Array.isArray(groups) || !window.AMIR_SERVICES) return;
-    window.AMIR_SERVICES.groups=groups.map(function(g){
+    var prev=window.AMIR_SERVICES.groups||[];
+    var mapped=groups.map(function(g){
       return {
         title:g.title,
         items:(g.items||[]).map(function(it){
@@ -602,6 +634,12 @@
         })
       };
     });
+    var seen={};
+    mapped.forEach(function(g){ seen[g.title]=1; });
+    prev.forEach(function(g){
+      if(g && g.title && !seen[g.title]) mapped.push(g);
+    });
+    window.AMIR_SERVICES.groups=mapped;
     if(typeof window.AMIR_rebuildServiceMenus==='function') window.AMIR_rebuildServiceMenus();
   }
 
@@ -641,6 +679,30 @@
     if(!window.AMIR_SERVICES.doctors) window.AMIR_SERVICES.doctors={};
     var prev=window.AMIR_SERVICES.doctors[id]||{};
     window.AMIR_SERVICES.doctors[id]=Object.assign({}, prev, patch||{});
+  }
+
+  function syncDoctorIntoContent(id, profile){
+    if(!id || !profile || !content) return;
+    if(!Array.isArray(content.doctors)) content.doctors=[];
+    var idx=content.doctors.findIndex(function(d){ return d && d.id===id; });
+    var prev=idx>=0?content.doctors[idx]:{id:id};
+    var next=Object.assign({}, prev, {
+      id:id,
+      name:profile.name||prev.name||'Врач',
+      role:profile.role!=null?profile.role:(prev.role||''),
+      exp:profile.exp!=null?profile.exp:(prev.exp||''),
+      src:normalizeMediaUrl(profile.photo||profile.src||prev.src||''),
+      spec:profile.spec!=null?profile.spec:(prev.spec||''),
+      years:profile.years!=null?profile.years:(prev.years||''),
+      video:profile.video!=null?profile.video:(prev.video||''),
+      bio:Array.isArray(profile.bio)?profile.bio.slice():(prev.bio||[]),
+      pdRating:profile.pdRating!=null?profile.pdRating:prev.pdRating,
+      pdReviews:profile.pdReviews!=null?profile.pdReviews:prev.pdReviews,
+      pdUrl:profile.pdUrl!=null?profile.pdUrl:(prev.pdUrl||''),
+      ratingSource:profile.ratingSource!=null?profile.ratingSource:(prev.ratingSource||'')
+    });
+    if(idx>=0) content.doctors[idx]=next;
+    else content.doctors.push(next);
   }
 
   function collectBioFromForm(){
@@ -924,6 +986,7 @@
           var cap=r.querySelector('.reel-cap');
           if(cap && typeof item.captionHtml==='string') cap.innerHTML=item.captionHtml;
         });
+        if(typeof window.AMIR_syncReels==='function') window.AMIR_syncReels();
       }
     }
 
@@ -1038,6 +1101,7 @@
   function enableAdminUi(){
     if(document.body.classList.contains('cms-admin')){
       wireTargets();
+      if(typeof window.AMIR_syncReels==='function') window.AMIR_syncReels();
       return;
     }
     document.body.classList.add('cms-admin');
@@ -1045,6 +1109,8 @@
     buildModal();
     wireTargets();
     document.addEventListener('click', onAdminClick, true);
+    // Пустая секция видеоотзывов снова видна — чтобы вставить ссылки
+    if(typeof window.AMIR_syncReels==='function') window.AMIR_syncReels();
   }
 
   function addPriceRow(list, data){
@@ -1259,7 +1325,8 @@
 
   function catKeyFromGroupTitle(title){
     if(title==='Ортодонтия') return 'ortho';
-    if(title==='Косметология') return 'cosmo';
+    if(title==='Космеология') return 'cosmo';
+    if(title==='Медицина') return 'med';
     return 'stoma';
   }
 
@@ -1299,7 +1366,7 @@
     return [
       ['ortho','Ортодонтия'],['therapy','Терапия'],['hygiene','Гигиена'],
       ['surgery','Хирургия'],['implant','Имплантация'],['prosth','Протезирование'],
-      ['paro','Пародонтология'],['kids','Детская'],['cosmo','Космеология']
+      ['paro','Пародонтология'],['kids','Детская'],['cosmo','Космеология'],['med','Медицина']
     ].map(function(p){ return opt(p[0],p[1],selected); }).join('');
   }
 
@@ -1343,15 +1410,17 @@
     return title||years||'Опыт работы';
   }
 
-  /* Три главных направления сайта — ими выбирают категорию при добавлении услуги. */
+  /* Главные направления сайта — ими выбирают категорию при добавлении услуги. */
   function groupCatKey(cat){
     if(cat==='ortho') return 'ortho';
     if(cat==='cosmo') return 'cosmo';
+    if(cat==='med') return 'med';
     return 'stoma';
   }
   function groupCatLabel(cat){
     if(cat==='ortho') return 'Ортодонтия';
-    if(cat==='cosmo') return 'Косметология';
+    if(cat==='cosmo') return 'Космеология';
+    if(cat==='med') return 'Медицина';
     return 'Стоматология';
   }
   function groupCatOptions(selectedCat){
@@ -1359,13 +1428,25 @@
     return [
       ['ortho','Ортодонтия'],
       ['stoma','Стоматология'],
-      ['cosmo','Косметология']
+      ['cosmo','Космеология'],
+      ['med','Медицина']
     ].map(function(p){ return opt(p[0],p[1],cur); }).join('');
   }
   function groupCatToPriceCat(cat){
-    if(cat==='ortho') return 'ortho';
-    if(cat==='cosmo') return 'cosmo';
-    return 'stoma';
+    // Уже детальная категория прайса (kids, therapy, med…) — не трогаем.
+    var c=String(cat||'').trim();
+    if(c==='ortho' || c==='cosmo' || c==='med') return c;
+    if(c==='therapy' || c==='hygiene' || c==='surgery' || c==='implant' ||
+       c==='prosth' || c==='paro' || c==='kids' || c==='stoma') return c;
+    return 'therapy';
+  }
+
+  function priceCatForServiceSlug(slug){
+    var found=findServiceFlatBySlug(slug);
+    if(found && found.item && found.item.match && found.item.match.cat){
+      return found.item.match.cat;
+    }
+    return groupCatToPriceCat(catKeyFromGroupTitle(found && found.groupTitle));
   }
   function subcatsForGroup(cat){
     var group=findServiceGroupByCat(cat);
@@ -1524,24 +1605,12 @@
       return;
     }
     Promise.all([
-      fetch('/prices.html?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.text():''; }).catch(function(){ return ''; }),
-      fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
+      fetch('/assets/prices.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }),
+      fetch('/api/cms/content?ts='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; })
     ]).then(function(pair){
-      var html=pair[0], saved=pair[1];
+      var pricesFile=pair[0], saved=pair[1];
       var base=[];
-      if(html){
-        var doc=new DOMParser().parseFromString(html,'text/html');
-        base=Array.prototype.map.call(doc.querySelectorAll('.price-list .prow'), function(el){
-          return {
-            name:(el.querySelector('.pn')&&el.querySelector('.pn').textContent.trim())||'',
-            tag:(el.querySelector('.ptag')&&el.querySelector('.ptag').textContent.trim())||'',
-            price:(el.querySelector('.pp')&&el.querySelector('.pp').textContent.trim())||'',
-            cat:el.getAttribute('data-cat')||'therapy',
-            subcat:el.getAttribute('data-subcat')||'',
-            doctor:el.getAttribute('data-doctor')||''
-          };
-        });
-      }
+      if(pricesFile && Array.isArray(pricesFile.services)) base=pricesFile.services.slice();
       var edited=local;
       if(saved){
         var fromSaved=[];
@@ -1905,71 +1974,6 @@
   function openDoctorsPanel(){ openDocsServicesPanel('doctors'); }
   function openServicesPanel(){ openDocsServicesPanel('services'); }
 
-  async function openHistoryPanel(){
-    panelMode='history';
-    currentEl=null;
-    var modal=document.getElementById('cmsModal');
-    var box=modal.querySelector('.cms-modal');
-    box.classList.add('cms-modal-wide');
-    document.getElementById('cmsModalTitle').textContent='История изменений';
-    document.getElementById('cmsModalSub').textContent='Можно вернуться к одной из предыдущих сохранённых версий';
-    document.getElementById('cmsDelete').style.display='none';
-    document.getElementById('cmsApply').style.display='none';
-    document.getElementById('cmsCancel').textContent='Закрыть';
-    var fields=document.getElementById('cmsModalFields');
-    fields.innerHTML='<p class="sub">Загружаем историю…</p>';
-    modal.classList.add('open');
-
-    try{
-      var versions=await AmirCMS.listVersions();
-      if(!versions.length){
-        fields.innerHTML='<p class="sub">История появится после первого сохранения.</p>';
-        return;
-      }
-      fields.innerHTML=
-        '<div class="cms-item-list">'+versions.slice(0,20).map(function(v,i){
-          var date=v.archivedAt?new Date(v.archivedAt).toLocaleString('ru-RU'):'Дата не указана';
-          var author=v.archivedBy?' · '+escHtml(v.archivedBy):'';
-          return '<div class="cms-item">'+
-            '<div class="cms-item-main"><b>Версия от '+escHtml(date)+'</b><small>'+author+'</small></div>'+
-            '<div class="cms-item-actions"><button type="button" class="btn btn-ghost cms-restore-version" data-idx="'+i+'" data-state="idle">Восстановить</button></div>'+
-          '</div>';
-        }).join('')+'</div>'+
-        '<p class="sub" style="margin-top:14px">Перед восстановлением текущая версия автоматически сохранится в истории.</p>';
-
-      fields.addEventListener('click',async function(e){
-        var btn=e.target.closest('.cms-restore-version');
-        if(!btn || !fields.contains(btn))return;
-        var state=btn.getAttribute('data-state')||'idle';
-        if(state!=='confirm'){
-          fields.querySelectorAll('.cms-restore-version[data-state="confirm"]').forEach(function(other){
-            other.setAttribute('data-state','idle');
-            other.textContent='Восстановить';
-          });
-          btn.setAttribute('data-state','confirm');
-          btn.textContent='Подтвердить восстановление';
-          return;
-        }
-        var index=parseInt(btn.getAttribute('data-idx'),10);
-        if(index<0 || index>=versions.length)return;
-        fields.querySelectorAll('button').forEach(function(other){other.disabled=true;});
-        btn.textContent='Восстанавливаем…';
-        try{
-          await AmirCMS.restoreVersion(versions[index].key);
-          location.reload();
-        }catch(err){
-          fields.querySelectorAll('button').forEach(function(other){other.disabled=false;});
-          btn.setAttribute('data-state','idle');
-          btn.textContent='Повторить восстановление';
-          toast('Не удалось восстановить версию: '+(err&&err.message?err.message:err));
-        }
-      });
-    }catch(err){
-      fields.innerHTML='<p class="sub">Не удалось загрузить историю. Закройте окно и попробуйте ещё раз.</p>';
-      toast('Ошибка истории: '+(err&&err.message?err.message:err));
-    }
-  }
-
   function buildBar(){
     var bar=document.createElement('div');
     bar.className='cms-bar';
@@ -1978,7 +1982,7 @@
       '<div class="right">'+
         '<button type="button" id="cmsManageDoctors">Врачи</button>'+
         '<button type="button" id="cmsManageServices">Услуги</button>'+
-        '<button type="button" id="cmsHistory">История</button>'+
+        '<button type="button" id="cmsLeads">Заявки</button>'+
         '<button type="button" class="primary" id="cmsSaveNow">Сохранить</button>'+
         '<button type="button" id="cmsPreview">Как видит клиент</button>'+
         '<button type="button" id="cmsLogout">Выйти</button>'+
@@ -2007,7 +2011,7 @@
     document.getElementById('cmsManageServices').onclick=function(e){
       e.preventDefault(); e.stopPropagation();
       if(isServicePage()){
-        location.href='/prices.html';
+        location.href='/prices';
         return;
       }
       openServicesPanel();
@@ -2022,11 +2026,66 @@
       hint.textContent='На карточке услуги: нажмите поле в золотой рамке — откроется форма правки';
     }
     document.getElementById('cmsSaveNow').onclick=function(){ persist({openPreview:false}).catch(function(){}); };
-    document.getElementById('cmsHistory').onclick=function(){ openHistoryPanel(); };
+    document.getElementById('cmsLeads').onclick=function(){ openLeadsPanel(); };
     document.getElementById('cmsPreview').onclick=function(){
-      window.open('index.html?preview=1&view='+Date.now(), '_blank', 'noopener,noreferrer');
+      window.open('/?preview=1&view='+Date.now(), '_blank', 'noopener,noreferrer');
     };
-    document.getElementById('cmsLogout').onclick=async function(){ await AmirCMS.logout(); location.href='index.html'; };
+    document.getElementById('cmsLogout').onclick=async function(){ await AmirCMS.logout(); location.href='/'; };
+  }
+
+  async function openLeadsPanel(){
+    panelMode='leads';
+    currentEl=null;
+    var modal=document.getElementById('cmsModal');
+    var box=modal.querySelector('.cms-modal');
+    box.classList.add('cms-modal-wide');
+    document.getElementById('cmsModalTitle').textContent='Заявки с сайта';
+    document.getElementById('cmsModalSub').textContent='В том числе сохранённые, если Telegram не ответил';
+    document.getElementById('cmsDelete').style.display='none';
+    document.getElementById('cmsApply').style.display='none';
+    document.getElementById('cmsCancel').textContent='Закрыть';
+    var fields=document.getElementById('cmsModalFields');
+    fields.innerHTML='<p class="sub">Загружаем заявки…</p>';
+    modal.classList.add('open');
+
+    function notifyLabel(n){
+      var status=n && n.status ? String(n.status) : '';
+      if(status==='sent') return 'уведомление отправлено';
+      if(status==='failed') return 'Telegram не отправил — заявка в хранилище';
+      if(status==='pending') return 'ожидает уведомления';
+      return 'статус неизвестен';
+    }
+
+    try{
+      var leads=await AmirCMS.listLeads();
+      if(!leads.length){
+        fields.innerHTML='<p class="sub">Заявок пока нет.</p>';
+        return;
+      }
+      fields.innerHTML=
+        '<div class="cms-item-list">'+leads.map(function(lead){
+          var date=lead.createdAt?new Date(lead.createdAt).toLocaleString('ru-RU'):'Дата не указана';
+          var phone=lead.phone||'';
+          var tel=phone.replace(/[^\d+]/g,'');
+          var svc=lead.service?' · '+escHtml(lead.service):'';
+          var note=notifyLabel(lead.notification);
+          var warn=(lead.notification&&lead.notification.status&&lead.notification.status!=='sent')?' style="color:#9a3412"':'';
+          return '<div class="cms-item">'+
+            '<div class="cms-item-main">'+
+              '<b>'+escHtml(lead.name||'Без имени')+svc+'</b>'+
+              '<small>'+escHtml(date)+' · <span'+warn+'>'+escHtml(note)+'</span></small>'+
+              (lead.page?'<small style="display:block;opacity:.75;word-break:break-all">'+escHtml(lead.page)+'</small>':'')+
+            '</div>'+
+            '<div class="cms-item-actions">'+
+              (tel?'<a class="btn btn-ghost" href="tel:'+escAttr(tel)+'">'+escHtml(phone)+'</a>':'')+
+            '</div>'+
+          '</div>';
+        }).join('')+'</div>'+
+        '<p class="sub" style="margin-top:14px">Показаны последние заявки. Если статус не «уведомление отправлено» — перезвоните по телефону из списка.</p>';
+    }catch(err){
+      fields.innerHTML='<p class="sub">Не удалось загрузить заявки. Закройте окно и попробуйте ещё раз.</p>';
+      toast('Ошибка заявок: '+(err&&err.message?err.message:err));
+    }
   }
 
   function buildModal(){
@@ -2272,9 +2331,14 @@
     } else if(type==='price'){
       title.textContent='Редактировать услугу';
       var pn=el.querySelector('.pn'); var pp=el.querySelector('.pp'); var pt=el.querySelector('.ptag');
+      // Детальные категории (kids/therapy/…), иначе kids схлопывался в «Стоматология»
+      var priceCat=el.dataset.cat||'therapy';
+      if(priceCat==='stoma' && isServicePage()){
+        priceCat=defaultCatForServicePage()||'therapy';
+      }
       fields.innerHTML=
         '<div class="field"><label>Название</label><input id="cmsName" type="text"></div>'+
-        selectField('Направления','cmsCat',groupCatOptions(el.dataset.cat))+
+        selectField('Категория','cmsCat',catOptions(priceCat))+
         '<div class="field"><label>Цена</label><input id="cmsPrice" type="text"></div>'+
         '<div class="field"><label><input id="cmsAddAfter" type="checkbox"> Добавить ещё услугу ниже</label></div>';
       document.getElementById('cmsName').value=pn?pn.textContent:'';
@@ -2509,14 +2573,8 @@
 
   function defaultCatForServicePage(){
     var slug=servicePageSlug();
-    var groups=window.AMIR_SERVICES&&window.AMIR_SERVICES.groups||[];
-    for(var g=0;g<groups.length;g++){
-      var items=groups[g].items||[];
-      for(var i=0;i<items.length;i++){
-        if(items[i].slug===slug) return catKeyFromGroupTitle(groups[g].title);
-      }
-    }
-    return 'stoma';
+    if(!slug) return 'therapy';
+    return priceCatForServiceSlug(slug) || 'therapy';
   }
 
   function formatPriceValue(v){
@@ -2542,11 +2600,17 @@
   function addPriceServiceForCurrentPage(name, cat, price){
     var slug=servicePageSlug();
     if(!slug) return null;
+    var priceCat=priceCatForServiceSlug(slug) || groupCatToPriceCat(cat);
+    var tagLabels={
+      ortho:'Ортодонтия', therapy:'Терапия', hygiene:'Гигиена', surgery:'Хирургия',
+      implant:'Имплантация', prosth:'Протезирование', paro:'Пародонтология',
+      kids:'Детская', cosmo:'Космеология', med:'Медицина', stoma:'Стоматология'
+    };
     var entry={
       name:name,
-      tag:groupCatLabel(cat),
+      tag:tagLabels[priceCat]||groupCatLabel(cat),
       price:formatPriceValue(price),
-      cat:groupCatToPriceCat(cat),
+      cat:priceCat,
       subcat:slug,
       doctor:''
     };
@@ -2578,7 +2642,7 @@
   }
 
   function openAddPriceOnServicePage(){
-    if(!AmirCMS.isAuthed() || !isServicePage()) return;
+    if(!(AmirCMS.canEdit && AmirCMS.canEdit()) || !isServicePage()) return;
     var slug=servicePageSlug();
     if(!slug){
       alert('Не удалось определить страницу услуги');
@@ -2625,7 +2689,7 @@
   function wireServicePageAddPrice(){
     var btn=document.getElementById('dirAddPrice');
     if(!btn) return;
-    if(!AmirCMS.isAuthed() || onServicePageReady._previewOnly){
+    if(!(AmirCMS.canEdit && AmirCMS.canEdit()) || onServicePageReady._previewOnly){
       btn.hidden=true;
       return;
     }
@@ -2662,21 +2726,34 @@
       var cap=el.querySelector('.reel-cap');
       var parts=document.getElementById('cmsCap').value.split('\n');
       if(cap) cap.innerHTML=parts[0].replace(/</g,'&lt;')+(parts[1]?'<small>'+parts.slice(1).join(' ').replace(/</g,'&lt;')+'</small>':'');
+      if(typeof window.AMIR_syncReels==='function') window.AMIR_syncReels();
     } else if(type==='price'){
       var name=document.getElementById('cmsName').value.trim();
-      var cat=document.getElementById('cmsCat').value||'stoma';
-      var tag=groupCatLabel(cat);
+      var cat=groupCatToPriceCat(document.getElementById('cmsCat').value||'therapy');
+      var tagLabels={
+        ortho:'Ортодонтия', therapy:'Терапия', hygiene:'Гигиена', surgery:'Хирургия',
+        implant:'Имплантация', prosth:'Протезирование', paro:'Пародонтология',
+        kids:'Детская', cosmo:'Космеология', med:'Медицина', stoma:'Стоматология'
+      };
+      var tag=tagLabels[cat]||'Стоматология';
       var price=formatPriceValue(document.getElementById('cmsPrice').value.trim());
       var pn=el.querySelector('.pn'); var pp=el.querySelector('.pp'); var pt=el.querySelector('.ptag');
       if(pn) pn.textContent=name;
       if(pt) pt.textContent=tag;
       if(pp) pp.textContent=price;
-      el.dataset.cat=groupCatToPriceCat(cat);
+      el.dataset.cat=cat;
       el.dataset.name=name.toLowerCase();
-      // На карточке услуги держим привязку к slug страницы
-      if(isServicePage() && !el.getAttribute('data-subcat')){
+      // На карточке услуги держим привязку к slug страницы и верный data-cat
+      if(isServicePage()){
         var pageSlug=servicePageSlug();
-        if(pageSlug) el.setAttribute('data-subcat', pageSlug);
+        if(pageSlug){
+          el.setAttribute('data-subcat', pageSlug);
+          var pageCat=priceCatForServiceSlug(pageSlug);
+          if(pageCat){
+            el.dataset.cat=pageCat;
+            if(pt) pt.textContent=tagLabels[pageCat]||tag;
+          }
+        }
       }
       if(document.getElementById('cmsAddAfter') && document.getElementById('cmsAddAfter').checked){
         var neu=addPriceRow(el.closest('.price-list'), {
@@ -2731,6 +2808,10 @@
         if(rating.pdUrl) patch.pdUrl=rating.pdUrl;
         if(rating.ratingSource) patch.ratingSource=rating.ratingSource;
         writeDoctorProfile(docId, patch);
+        syncDoctorIntoContent(docId, window.AMIR_SERVICES.doctors[docId]);
+        if(typeof window.AMIR_syncDoctorCards==='function'){
+          window.AMIR_syncDoctorCards(docId, window.AMIR_SERVICES.doctors[docId]);
+        }
         if(typeof window.AMIR_applyDocRatings==='function') window.AMIR_applyDocRatings();
       }
     } else if(type==='text'){
@@ -2813,7 +2894,13 @@
 
   // Для отладки и запасного скрипта на service.html
   window.AmirCMSService = {
-    rewire: function(){ try{ enableAdminUi(); wireTargets(); }catch(e){} },
+    rewire: function(){
+      try{
+        if(!AmirCMS.canEdit || !AmirCMS.canEdit()) return;
+        enableAdminUi();
+        wireTargets();
+      }catch(e){}
+    },
     open: function(el){ try{ openModal(el); }catch(e){} },
     isServicePage: isServicePage
   };
@@ -2821,7 +2908,7 @@
   function onServicePageReady(){
     if(onServicePageReady._previewOnly) return;
     applyTextItemsOnly(content);
-    if(AmirCMS.isAuthed()){
+    if(AmirCMS.canEdit && AmirCMS.canEdit()){
       enableAdminUi();
       wireTargets();
       wireServicePageAddPrice();
@@ -2845,20 +2932,33 @@
 
     var fileContent=null;
     try{
-      var res=await fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'});
+      // Живой снимок только для админки (blobs / локальный файл через API).
+      // Посетители получают статику из HTML + /assets/content.json без cms.js.
+      var res=await fetch('/api/cms/content?ts='+Date.now(),{cache:'no-store'});
       if(res.ok) fileContent=await res.json();
     }catch(e){}
 
-    if(fileContent && (fileContent.v===2 || fileContent.v===3 || fileContent.v===4 || fileContent.priceHtml || fileContent.docsHtml || fileContent.doctors || fileContent.services || fileContent.textItems || fileContent.texts)){
+    if(fileContent && ((Number(fileContent.v)||0) >= 2 || fileContent.priceHtml || fileContent.docsHtml || fileContent.doctors || fileContent.services || fileContent.textItems || fileContent.texts)){
       content=fileContent;
       AmirCMS.setRevision(fileContent.revision||fileContent.savedAt||'');
       AmirCMS.saveContent(fileContent);
       applySnapshot(fileContent);
     }
 
-    // Режим пользователя после сохранения из админки — без панели редактора
-    if(previewOnly) return;
-    if(!await AmirCMS.refreshSession()) return;
+    // Этот файл подключается только через cms-boot после /admin.html + login.
+    if(previewOnly){
+      if(AmirCMS.exitEditMode) AmirCMS.exitEditMode();
+      return;
+    }
+
+    if(!await AmirCMS.refreshSession()){
+      if(AmirCMS.exitEditMode) AmirCMS.exitEditMode();
+      return;
+    }
+    if(!AmirCMS.canEdit || !AmirCMS.canEdit()){
+      if(AmirCMS.exitEditMode) AmirCMS.exitEditMode();
+      return;
+    }
 
     enableAdminUi();
     if(window.__amirServiceReady || isServicePage()){
@@ -2866,6 +2966,11 @@
       // На случай поздней подгрузки прайса — ещё раз пометить через короткий интервал
       setTimeout(onServicePageReady, 400);
       setTimeout(onServicePageReady, 1200);
+    }
+    // /prices: список приезжает из prices.json асинхронно — переподключить клики
+    if(mainPriceList() && !isServicePage()){
+      setTimeout(wireTargets, 400);
+      setTimeout(wireTargets, 1200);
     }
   }
 

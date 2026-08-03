@@ -1,11 +1,51 @@
 import { getStore } from '@netlify/blobs';
+import { timingSafeEqual } from 'node:crypto';
+
+const json = (body, status = 200, extra = {}) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+      ...extra,
+    },
+  });
+
+function sameSecret(a, b) {
+  const aa = Buffer.from(String(a || ''), 'utf8');
+  const bb = Buffer.from(String(b || ''), 'utf8');
+  return aa.length === bb.length && aa.length > 0 && timingSafeEqual(aa, bb);
+}
+
+function requestToken(request) {
+  const url = new URL(request.url);
+  const fromQuery = url.searchParams.get('token');
+  if (fromQuery) return fromQuery;
+  const auth = request.headers.get('authorization') || '';
+  const bearer = auth.match(/^Bearer\s+(\S+)/i);
+  if (bearer) return bearer[1];
+  return request.headers.get('x-health-token') || '';
+}
 
 export default async (request) => {
   if (request.method !== 'GET') {
-    return new Response(JSON.stringify({ error: 'method_not_allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json', Allow: 'GET' },
-    });
+    return json({ error: 'method_not_allowed' }, 405, { Allow: 'GET' });
+  }
+
+  const expected = String(process.env.HEALTH_TOKEN || '').trim();
+  if (!expected || expected.length < 16) {
+    return json(
+      {
+        error: 'not_configured',
+        message: 'Задайте HEALTH_TOKEN (не короче 16 символов) в переменных окружения',
+      },
+      503
+    );
+  }
+
+  if (!sameSecret(requestToken(request), expected)) {
+    return json({ error: 'unauthorized' }, 401);
   }
 
   let contentAvailable = false;
@@ -18,20 +58,13 @@ export default async (request) => {
   const cmsConfigured = !!(process.env.CMS_LOGIN && process.env.CMS_PASSWORD_HASH);
   const healthy = contentAvailable && notificationsConfigured && cmsConfigured;
 
-  return new Response(
-    JSON.stringify({
+  return json(
+    {
       status: healthy ? 'ok' : 'degraded',
       checks: { contentAvailable, notificationsConfigured, cmsConfigured },
       at: new Date().toISOString(),
-    }),
-    {
-      status: healthy ? 200 : 503,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Cache-Control': 'no-store',
-        'X-Content-Type-Options': 'nosniff',
-      },
-    }
+    },
+    healthy ? 200 : 503
   );
 };
 

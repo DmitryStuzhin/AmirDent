@@ -289,6 +289,30 @@ export default async (request) => {
       return json({ ok: true, versions });
     }
 
+    if (path.endsWith('/leads')) {
+      if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405, { Allow: 'GET' });
+      const leadsStore = getStore('leads');
+      const listed = await leadsStore.list({ prefix: 'leads/' });
+      const keys = listed.blobs.map((blob) => blob.key).sort().reverse().slice(0, 80);
+      const leads = [];
+      for (const key of keys) {
+        const row = await leadsStore.get(key, { type: 'json', consistency: 'strong' });
+        if (!row || typeof row !== 'object') continue;
+        leads.push({
+          id: row.id || key.split('/').pop(),
+          key,
+          createdAt: row.createdAt || null,
+          name: row.name || '',
+          phone: row.phone || '',
+          service: row.service || '',
+          page: row.page || '',
+          notification: row.notification || null,
+        });
+      }
+      leads.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      return json({ ok: true, leads: leads.slice(0, 50) });
+    }
+
     if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405, { Allow: 'POST' });
     const payload = await readJson(request);
 
@@ -346,6 +370,7 @@ export const config = {
     '/api/cms/logout',
     '/api/cms/session',
     '/api/cms/versions',
+    '/api/cms/leads',
     '/api/cms/restore',
     '/api/cms/save',
     '/api/cms/content',

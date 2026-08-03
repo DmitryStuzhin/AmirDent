@@ -4,15 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Правовая информация — АмирДент</title>
-<meta name="description" content="Реквизиты и правовая информация клиники АмирДент в Москве.">
+<meta name="description" content="Реквизиты, лицензия и правовая информация клиники АмирДент в Москве.">
 <link rel="canonical" href="https://amirdent.netlify.app/legal">
-<link rel="stylesheet" href="/assets/styles.css?v=legal1">
+<link rel="stylesheet" href="/assets/styles.css?v=clamp2">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <style>
   .legal-page{max-width:880px;margin:0 auto;padding:130px 20px 80px}.legal-page h1{font-size:clamp(32px,6vw,52px);margin-bottom:14px}
   .legal-page h2{font-size:24px;margin:34px 0 12px}.legal-page p,.legal-page li{color:var(--text);line-height:1.75}
   .legal-page ul{padding-left:22px}.legal-meta{color:var(--muted);margin-bottom:34px}.legal-back{display:inline-flex;margin-bottom:28px;color:var(--gold-deep)}
   .legal-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:24px;margin:20px 0}
+  .license-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0 8px}
+  @media (max-width:640px){.license-grid{grid-template-columns:1fr}}
+  .license-card{display:block;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--paper);transition:border-color .2s,box-shadow .2s}
+  .license-card:hover{border-color:var(--gold);box-shadow:0 10px 28px rgba(27,24,19,.08)}
+  .license-card img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;object-position:top;background:#f3f0ea}
+  .license-card span{display:block;padding:12px 14px;font-size:14px;color:var(--muted)}
+  .license-note{color:var(--muted);font-size:14px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -26,8 +33,30 @@
     <p><strong>Адрес:</strong> 127247, г. Москва, Дмитровское шоссе, д. 96, корп. 5, этаж 1, помещение V</p>
     <p><strong>Телефон:</strong> <a href="tel:+79262031828">+7 (926) 203-18-28</a></p>
     <p><strong>Режим работы:</strong> ежедневно с 09:00 до 21:00</p>
-    <p><strong>Лицензия на медицинскую деятельность:</strong> ЛО-77-01-018074</p>
+    <p><strong>Лицензия на медицинскую деятельность:</strong> <a href="#license">ЛО-77-01-018074</a> — <a href="#license">скан документа</a></p>
   </div>
+
+  <h2 id="license">Лицензия и сертификаты</h2>
+  <p>Скан лицензии на медицинскую деятельность клиники (как на сайте <a href="https://amirdent.ru/" target="_blank" rel="noopener">amirdent.ru</a>). Нажмите на страницу, чтобы открыть в полном размере.</p>
+  <div class="license-grid">
+    <a class="license-card" href="/assets/docs/licence-1-2019-min.jpg" target="_blank" rel="noopener">
+      <img src="/assets/docs/licence-1.webp" alt="Лицензия на медицинскую деятельность — страница 1" width="702" height="994" loading="lazy" decoding="async">
+      <span>Страница 1</span>
+    </a>
+    <a class="license-card" href="/assets/docs/licence-2-2019-min.jpg" target="_blank" rel="noopener">
+      <img src="/assets/docs/licence-2.webp" alt="Лицензия на медицинскую деятельность — страница 2" width="1200" height="1687" loading="lazy" decoding="async">
+      <span>Страница 2</span>
+    </a>
+    <a class="license-card" href="/assets/docs/licence-3-2019-min.jpg" target="_blank" rel="noopener">
+      <img src="/assets/docs/licence-3.webp" alt="Лицензия на медицинскую деятельность — страница 3" width="1200" height="1696" loading="lazy" decoding="async">
+      <span>Страница 3</span>
+    </a>
+    <a class="license-card" href="/assets/docs/licence-4-2019-min.jpg" target="_blank" rel="noopener">
+      <img src="/assets/docs/licence-4.webp" alt="Лицензия на медицинскую деятельность — страница 4" width="1200" height="1676" loading="lazy" decoding="async">
+      <span>Страница 4</span>
+    </a>
+  </div>
+  <p class="license-note">Номер лицензии: ЛО-77-01-018074. Оригиналы сканов: <a href="/assets/docs/licence-1-2019-min.jpg" target="_blank" rel="noopener">1</a>, <a href="/assets/docs/licence-2-2019-min.jpg" target="_blank" rel="noopener">2</a>, <a href="/assets/docs/licence-3-2019-min.jpg" target="_blank" rel="noopener">3</a>, <a href="/assets/docs/licence-4-2019-min.jpg" target="_blank" rel="noopener">4</a>.</p>
 
   <h2>Информация для пациентов</h2>
   <p>Информация на сайте носит справочный характер и не заменяет очную консультацию врача. Диагноз, план лечения, противопоказания, продолжительность и окончательная стоимость определяются врачом после осмотра и необходимой диагностики.</p>

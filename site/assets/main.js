@@ -1,4 +1,21 @@
 (function(){
+  // При обновлении открываем страницу с начала, не восстанавливая старую
+  // позицию прокрутки или якорь (#doctors, #reviews и т. п.). Обычные клики
+  // по якорным ссылкам продолжают работать как раньше.
+  var isPageReload=false;
+  try{
+    if('scrollRestoration' in history) history.scrollRestoration='manual';
+    var navEntry=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];
+    isPageReload=navEntry ? navEntry.type==='reload' : !!(performance.navigation&&performance.navigation.type===1);
+    if(isPageReload){
+      if(location.hash) history.replaceState(null,'',location.pathname+location.search);
+      var resetReloadScroll=function(){ window.scrollTo(0,0); };
+      resetReloadScroll();
+      window.addEventListener('load',resetReloadScroll,{once:true});
+      window.addEventListener('pageshow',resetReloadScroll,{once:true});
+    }
+  }catch(e){}
+
   // адрес, по которому принимаются заявки (см. netlify/functions/lead.mjs)
   var LEAD_ENDPOINT='/api/lead';
 
@@ -213,6 +230,61 @@
   window.addEventListener('scroll',function(){
     if(hdr) hdr.classList.toggle('scrolled', window.scrollY>20);
   },{passive:true});
+
+  // Активный пункт меню на главной меняется вместе с текущим разделом.
+  // На внутренних страницах активны «Услуги», а не «Главная».
+  var mainNav=document.getElementById('mainNav');
+  if(mainNav){
+    var navHome=mainNav.querySelector('a[href="/"]');
+    var navSections={
+      services:mainNav.querySelector('.nav-drop>a'),
+      doctors:mainNav.querySelector('a[href="#doctors"]'),
+      about:mainNav.querySelector('a[href="#about"]'),
+      reviews:mainNav.querySelector('a[href="#reviews"]'),
+      contacts:mainNav.querySelector('a[href="#contacts"]')
+    };
+    var navLinks=[navHome,navSections.services,navSections.doctors,navSections.about,navSections.reviews,navSections.contacts].filter(Boolean);
+
+    function setActiveNav(link){
+      navLinks.forEach(function(a){
+        var active=a===link;
+        a.classList.toggle('active',active);
+        if(active) a.setAttribute('aria-current','page');
+        else a.removeAttribute('aria-current');
+      });
+    }
+
+    var isHome=location.pathname==='/' || location.pathname==='/index.html';
+    if(!isHome){
+      setActiveNav(navSections.services||null);
+    }else{
+      var tracked=['about','services','doctors','reviews','contacts'].map(function(id){
+        return { id:id, el:document.getElementById(id), link:navSections[id] };
+      }).filter(function(item){ return item.el&&item.link; });
+      var navSpyQueued=false;
+      function updateActiveNav(){
+        navSpyQueued=false;
+        var marker=window.scrollY+(hdr?hdr.offsetHeight:0)+48;
+        var current=navHome;
+        tracked.forEach(function(item){
+          if(item.el.offsetTop<=marker) current=item.link;
+        });
+        if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-24 && navSections.contacts){
+          current=navSections.contacts;
+        }
+        setActiveNav(current);
+      }
+      function queueActiveNav(){
+        if(navSpyQueued) return;
+        navSpyQueued=true;
+        requestAnimationFrame(updateActiveNav);
+      }
+      window.addEventListener('scroll',queueActiveNav,{passive:true});
+      window.addEventListener('resize',queueActiveNav);
+      window.addEventListener('load',queueActiveNav);
+      updateActiveNav();
+    }
+  }
 
   // Тонкая линия сверху показывает прогресс по длинной странице.
   var scrollProgress=document.getElementById('scrollProgress');
@@ -476,6 +548,7 @@
   function priceCatToGroupTitle(cat){
     if(cat==='ortho') return 'Ортодонтия';
     if(cat==='cosmo') return 'Космеология';
+    if(cat==='med') return 'Медицина';
     return 'Стоматология';
   }
 
@@ -507,7 +580,8 @@
         { slug:'paro', title:'Пародонтология', match:{ cat:'paro' } },
         { slug:'kids', title:'Детская стоматология', match:{ cat:'kids' } }
       ]},
-      { title:'Космеология', items:[{ slug:'cosmo-other', title:'Космеология', match:{ cat:'cosmo' } }] }
+      { title:'Космеология', items:[{ slug:'cosmo-other', title:'Космеология', match:{ cat:'cosmo' } }] },
+      { title:'Медицина', items:[{ slug:'med-other', title:'Медицина', match:{ cat:'med' } }] }
     ];
   }
 
@@ -577,6 +651,48 @@
   // AMIR_SERVICES + data-cat/data-subcat при каждой загрузке и после правок CMS.
   var priceList=document.querySelector('#services .price-list, .price-page .price-list, main .price-list');
   var priceObserver=null;
+
+  function escAttr(t){
+    return String(t==null?'':t)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/"/g,'&quot;');
+  }
+  function servicesToPriceRows(list){
+    if(!Array.isArray(list)) return '';
+    return list.filter(function(s){ return s && typeof s==='object'; }).map(function(s){
+      var name=String(s.name||'Услуга');
+      var tag=String(s.tag||'');
+      var price=String(s.price||'');
+      var cat=String(s.cat||'therapy');
+      var subcat=String(s.subcat||'');
+      var doctor=String(s.doctor||'');
+      var attrs=' data-cat="'+escAttr(cat)+'" data-name="'+escAttr(name.toLowerCase())+'"';
+      if(subcat) attrs+=' data-subcat="'+escAttr(subcat)+'"';
+      if(doctor) attrs+=' data-doctor="'+escAttr(doctor)+'"';
+      return '<div class="prow"'+attrs+'><span class="pn">'+escAttr(name)+'</span><span class="ptag">'+escAttr(tag)+'</span><span class="pp">'+escAttr(price)+'</span></div>';
+    }).join('\n');
+  }
+  function loadPricesFromJson(){
+    if(!priceList) return Promise.resolve();
+    var src=priceList.getAttribute('data-prices-src');
+    if(!src) return Promise.resolve();
+    if(priceList.querySelector('.prow')) return Promise.resolve();
+    return fetch(src,{credentials:'same-origin'}).then(function(r){
+      if(!r.ok) throw new Error('prices '+r.status);
+      return r.json();
+    }).then(function(data){
+      var html=servicesToPriceRows(data && data.services);
+      if(!html) return;
+      // Вставляем перед .price-empty
+      var empty=priceList.querySelector('.price-empty');
+      if(empty) empty.insertAdjacentHTML('beforebegin', html);
+      else priceList.insertAdjacentHTML('afterbegin', html);
+    }).catch(function(err){
+      try{ console.warn('[prices]', err && err.message ? err.message : err); }catch(e){}
+    });
+  }
+
   function buildGroups(){
     if(!priceList) return;
     if(priceObserver) priceObserver.disconnect();
@@ -667,17 +783,25 @@
       priceObserver.takeRecords();
       priceObserver.observe(priceList, {childList:true});
     }
+    // Страница услуги: после вставки .pgroup-h/.psub-h снова спрятать «хвост» прайса
+    if(priceList.id==='dirList' && typeof window.AMIR_refreshDirCollapse==='function'){
+      try{ window.AMIR_refreshDirCollapse(); }catch(e){}
+    }
   }
 
   // Админка перерисовывает список услуг целиком — тогда группы собираем заново
   if(priceList && window.MutationObserver){
     priceObserver=new MutationObserver(function(){
+      if(window.AMIR_dirCollapseLock) return;
       buildGroups();
       applyPrice();
     });
     priceObserver.observe(priceList, {childList:true});
   }
-  buildGroups();
+  loadPricesFromJson().then(function(){
+    buildGroups();
+    applyPrice();
+  });
   // CMS подставляет прайс после boot — пересоберём иерархию
   document.addEventListener('amir:cms-content-ready', function(){
     buildGroups();
@@ -688,8 +812,9 @@
     if(filter==='all') return true;
     if(filter==='ortho') return rowCat==='ortho';
     if(filter==='cosmo') return rowCat==='cosmo';
+    if(filter==='med') return rowCat==='med';
     if(filter==='stoma'){
-      return rowCat!=='ortho' && rowCat!=='cosmo';
+      return rowCat!=='ortho' && rowCat!=='cosmo' && rowCat!=='med';
     }
     return rowCat===filter;
   }
@@ -793,20 +918,48 @@
   });});
   applyPrice();
 
-  // video reels lightbox
+  // video reels lightbox — секция видна только если есть хотя бы одно видео
   var lb=document.getElementById('lb'), lbInner=document.getElementById('lbInner');
   function embed(url){
-    if(!url) return '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;text-align:center;padding:26px;font-family:sans-serif;font-size:15px;line-height:1.5">Здесь будет видео.<br><span style="opacity:.7;font-size:13px">Добавьте ссылку в атрибут data-video (VK Видео, Rutube, YouTube) или файл .mp4</span></div>';
     var y=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]+)/);
     if(y) return '<iframe src="https://www.youtube.com/embed/'+y[1]+'?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>';
     if(/\.mp4($|\?)/i.test(url)) return '<video src="'+url+'" controls autoplay playsinline></video>';
     return '<iframe src="'+url+'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
   }
-  function openLb(url){ if(!lb)return; lbInner.innerHTML=embed(url); lb.classList.add('open'); document.body.style.overflow='hidden'; }
+  function openLb(url){
+    url=String(url||'').trim();
+    if(!lb || !url) return;
+    lbInner.innerHTML=embed(url);
+    lb.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
   function closeLb(){ if(!lb)return; lb.classList.remove('open'); lbInner.innerHTML=''; document.body.style.overflow=''; }
-  document.querySelectorAll('.reel').forEach(function(r){ r.addEventListener('click',function(){ openLb(r.getAttribute('data-video')); }); });
+  function syncReelsVisibility(){
+    var section=document.getElementById('reels');
+    if(!section) return;
+    var editing=document.body.classList.contains('cms-admin');
+    var has=false;
+    section.querySelectorAll('.reel').forEach(function(r){
+      var url=(r.getAttribute('data-video')||'').trim();
+      if(url) has=true;
+      // В режиме правки показываем пустые слоты, чтобы можно было вставить ссылку
+      r.hidden=editing ? false : !url;
+    });
+    section.hidden=editing ? false : !has;
+  }
+  window.AMIR_syncReels=syncReelsVisibility;
+  document.querySelectorAll('.reel').forEach(function(r){
+    r.addEventListener('click', function(e){
+      if(document.body.classList.contains('cms-admin')) return;
+      var url=(r.getAttribute('data-video')||'').trim();
+      if(!url) return;
+      openLb(url);
+    });
+  });
   if(lb){ lb.addEventListener('click',function(e){ if(e.target===lb||e.target.classList.contains('lb-close')) closeLb(); });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLb(); }); }
+  syncReelsVisibility();
+  document.addEventListener('amir:cms-content-ready', syncReelsVisibility);
 
   /* Клик по строке прайса → форма «Записаться онлайн» с этой услугой. */
   function selectBookingService(serviceName){
@@ -931,18 +1084,23 @@
       if(btn){btn.disabled=true;btn.textContent='Отправляем…';}
       say('Отправляем заявку…',false);
       fetch(LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:name,phone:phone,service:service,company:form.company?form.company.value:'',page:location.href,consent:true,consentVersion:'2026-07-31-v1'})})
-        // «Заявка принята» только если lead.php подтвердил отправку своим {"ok":true}.
-        // Сервер без PHP отдаёт lead.php как текстовый файл с кодом 200, и по одному
-        // коду ответа заявку можно было счесть отправленной, хотя её никто не получил.
+        body:JSON.stringify({name:name,phone:phone,service:service,company:form.company?form.company.value:'',page:location.href,consent:true,consentVersion:'2026-08-01-amirdent-ru'})})
         .then(function(r){return r.text().then(function(body){
           var data=null;
           try{data=JSON.parse(body);}catch(e){}
-          if(!r.ok||!data||data.ok!==true)throw new Error('lead_failed '+r.status);
+          // 200 = уведомление ушло; 202 = заявка сохранена, но Telegram молчит
+          if(!(r.status===200||r.status===202)||!data||data.ok!==true)throw new Error('lead_failed '+r.status);
+          return { status:r.status, data:data };
         });})
-        .then(function(){
-          say('Заявка принята — администратор перезвонит в течение 15 минут.',false);
-          if(btn)btn.textContent='Заявка отправлена ✓';
+        .then(function(res){
+          var notified=res.data.notification==='sent' || res.data.telegram===true;
+          if(notified){
+            say('Заявка принята — администратор перезвонит в течение 15 минут.',false);
+            if(btn)btn.textContent='Заявка отправлена ✓';
+          }else{
+            say('Заявка сохранена. Если не перезвоним в течение часа — напишите в WhatsApp или позвоните +7 (926) 203-18-28.',false);
+            if(btn)btn.textContent='Заявка сохранена ✓';
+          }
           form.reset();
           if(phoneField)phoneField.value='+7 ';
           if(window.AMIR_formSelects) AMIR_formSelects.sync(form.service);

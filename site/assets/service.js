@@ -262,6 +262,47 @@
     if(el('dirDesc')) el('dirDesc').textContent=item.desc||'';
     if(el('dirCrumb')) el('dirCrumb').textContent=item.title;
     if(el('dirGroup')) el('dirGroup').innerHTML='<span class="dot"></span>'+group.title;
+
+    var perks=el('dirPerks');
+    if(perks && Array.isArray(item.perks) && item.perks.length){
+      perks.innerHTML='';
+      item.perks.forEach(function(text){
+        var li=document.createElement('li');
+        li.textContent=text;
+        perks.appendChild(li);
+      });
+    }
+
+    var steps=el('dirSteps');
+    if(steps && Array.isArray(item.steps) && item.steps.length){
+      steps.innerHTML='';
+      item.steps.forEach(function(step,i){
+        var card=document.createElement('div');
+        card.className='dp-step';
+        var num=document.createElement('span');
+        num.className='dp-step-num';
+        num.textContent=String(i+1);
+        var h=document.createElement('h3');
+        h.textContent=step.title||'';
+        var p=document.createElement('p');
+        p.textContent=step.text||'';
+        card.appendChild(num); card.appendChild(h); card.appendChild(p);
+        steps.appendChild(card);
+      });
+    }
+
+    if(el('dirCtaTitle') && item.ctaTitle) el('dirCtaTitle').textContent=item.ctaTitle;
+    if(el('dirCtaText') && item.ctaText) el('dirCtaText').textContent=item.ctaText;
+    var ctaPerks=el('dirCtaPerks');
+    if(ctaPerks && Array.isArray(item.ctaPerks) && item.ctaPerks.length){
+      ctaPerks.innerHTML='';
+      item.ctaPerks.forEach(function(text){
+        var row=document.createElement('div');
+        row.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>';
+        row.appendChild(document.createTextNode(' '+text));
+        ctaPerks.appendChild(row);
+      });
+    }
   }
 
   function refreshItemFromData(){
@@ -276,16 +317,26 @@
      Подставляем группы оттуда, иначе страница /uslugi/<slug> их не видит. */
   function applyGroupsFromSnap(groups){
     if(!Array.isArray(groups) || !data) return;
-    data.groups=groups.map(function(g){
+    var mapped=groups.map(function(g){
       return {
         title:g.title,
         items:(g.items||[]).map(function(it){
           var row={ slug:it.slug, title:it.title, desc:it.desc||'', doctors:it.doctors?it.doctors.slice():[] };
           if(it.match) row.match=it.match;
+          ['perks','facts','steps','ctaTitle','ctaText','ctaPerks'].forEach(function(key){
+            if(it[key]!=null) row[key]=it[key];
+          });
           return row;
         })
       };
     });
+    // Снимок CMS может быть без новых групп (Медицина) — не затираем встроенные
+    var seen={};
+    mapped.forEach(function(g){ seen[g.title]=1; });
+    (data.groups||[]).forEach(function(g){
+      if(g && g.title && !seen[g.title]) mapped.push(g);
+    });
+    data.groups=mapped;
     if(typeof window.AMIR_rebuildServiceMenus==='function') window.AMIR_rebuildServiceMenus();
   }
 
@@ -363,9 +414,12 @@
       if(prices.length) facts.push({ id:'price', v:'от '+money(Math.min.apply(null,prices)), k:'стоимость' });
       facts.push({ id:'count', v:String(rows.length), k:'услуг в направлении' });
     }
+    if(Array.isArray(item.facts) && item.facts.length){
+      facts=item.facts.map(function(f,i){ return { id:'custom-'+i, v:f.v, k:f.k }; });
+    }
     if(docs.length>1) facts.push({ id:'doctors', v:String(docs.length), k:'врача по услуге' });
-    else facts.push({ id:'hours', v:'09:00–21:00', k:'приём ежедневно' });
-    facts.push({ id:'consult', v:'0 ₽', k:'первичный осмотр' });
+    else if(!Array.isArray(item.facts) || !item.facts.length) facts.push({ id:'hours', v:'09:00–21:00', k:'приём ежедневно' });
+    if(!Array.isArray(item.facts) || !item.facts.length) facts.push({ id:'consult', v:'0 ₽', k:'первичный осмотр' });
 
     box.innerHTML='';
     facts.slice(0,4).forEach(function(f){
@@ -383,11 +437,22 @@
     var subcat=row.getAttribute('data-subcat')||'';
     if(subcat) return subcat===item.slug;
     if(!item.match) return false;
-    var name=(row.getAttribute('data-name')||row.textContent||'').toLowerCase();
     if(item.match.cat && (row.getAttribute('data-cat')||'')!==item.match.cat) return false;
+    var name=(row.getAttribute('data-name')||row.textContent||'').toLowerCase();
+    var tag='';
+    try{
+      var t=row.querySelector&&row.querySelector('.ptag');
+      if(t) tag=(t.textContent||'').trim().toLowerCase();
+    }catch(e){}
+    // Явный тег направления (напр. «Кардиология») — надёжнее списка слов
+    if(item.match.tag){
+      return tag.indexOf(String(item.match.tag).toLowerCase())>-1;
+    }
+    if(item.title && tag && tag.indexOf(String(item.title).toLowerCase())>-1) return true;
     if(!item.match.words) return true;
     for(var i=0;i<item.match.words.length;i++){
-      if(name.indexOf(item.match.words[i])>-1) return true;
+      var w=item.match.words[i];
+      if(name.indexOf(w)>-1 || tag.indexOf(w)>-1) return true;
     }
     return false;
   }
@@ -441,30 +506,64 @@
     return fillRows(keys.map(function(k){ return map[k]; }));
   }
 
-  // Список из сорока строк листать бессмысленно: показываем четыре, остальное по кнопке
+  // Список из сорока строк листать бессмысленно: показываем четыре, остальное по кнопке.
+  // Считаем только .prow — заголовки .pgroup-h/.psub-h из main.js не должны сбивать clamp.
   var VISIBLE=4;
-  function setupCollapse(total){
+  var collapseState={ total:0, open:false, wired:false };
+
+  function applyCollapseUI(){
     var list=el('dirList'), btn=el('dirMore'), fade=el('dirFade');
     if(!list||!btn) return;
+    window.AMIR_dirCollapseLock=true;
+    var prows=list.querySelectorAll('.prow');
+    var total=collapseState.total || prows.length;
     if(total<=VISIBLE){
       list.classList.remove('is-clamped');
+      Array.prototype.forEach.call(prows, function(r){
+        r.classList.remove('is-extra');
+        r.style.removeProperty('display');
+      });
       btn.hidden=true;
       if(fade) fade.hidden=true;
+      window.AMIR_dirCollapseLock=false;
       return;
     }
-    var open=false;
-    function apply(){
-      list.classList.toggle('is-clamped', !open);
-      if(fade) fade.hidden=open;
-      btn.textContent=open
-        ? 'Свернуть список'
-        : 'Показать все '+total+' '+plural(total);
-      btn.setAttribute('aria-expanded', open?'true':'false');
-    }
+    var open=!!collapseState.open;
+    list.classList.toggle('is-clamped', !open);
+    Array.prototype.forEach.call(prows, function(r, i){
+      var hide=!open && i>=VISIBLE;
+      r.classList.toggle('is-extra', hide);
+      if(hide) r.style.setProperty('display', 'none', 'important');
+      else r.style.removeProperty('display');
+    });
+    if(fade) fade.hidden=open;
     btn.hidden=false;
-    btn.onclick=function(){ open=!open; apply(); };
-    apply();
+    btn.textContent=open
+      ? 'Свернуть список'
+      : 'Показать все '+total+' '+plural(total);
+    btn.setAttribute('aria-expanded', open?'true':'false');
+    // lock на кадр — чтобы MutationObserver не пересобрал список в момент клика
+    requestAnimationFrame(function(){ window.AMIR_dirCollapseLock=false; });
   }
+
+  function setupCollapse(total){
+    var keepOpen=collapseState.open && collapseState.total===total;
+    collapseState.total=total;
+    collapseState.open=keepOpen ? true : false;
+    if(!collapseState.wired){
+      collapseState.wired=true;
+      document.addEventListener('click', function(e){
+        var t=e.target;
+        if(!t || !t.closest) return;
+        if(!t.closest('#dirMore')) return;
+        e.preventDefault();
+        collapseState.open=!collapseState.open;
+        applyCollapseUI();
+      });
+    }
+    applyCollapseUI();
+  }
+  window.AMIR_refreshDirCollapse=applyCollapseUI;
 
   function servicesHtmlFromList(list){
     return (list||[]).map(function(s){
@@ -499,8 +598,9 @@
         if(savedRows.length) savedIsMaster=true;
       }
     }
-    // content.json важнее prices.html: иначе удалённые услуги возвращаются из статики
-    var ok=savedIsMaster ? fillRows(savedRows) : false;
+    // Пустой content.json (services:[]) не должен затирать цены из prices.json
+    if(!savedIsMaster) return false;
+    var ok=fillRows(savedRows);
     if(!ok){
       if(!item.match){
         el('dirPrices').hidden=true;
@@ -526,15 +626,31 @@
       renderDoctors();
       renderOther();
     }
-    if(ev && ev.detail) applySavedPrices(ev.detail);
+    // Прайс только если в снимке он реально есть — иначе оставляем prices.json
+    var snap=ev && ev.detail;
+    if(snap && ((Array.isArray(snap.services) && snap.services.length) || snap.priceHtml)){
+      applySavedPrices(snap);
+    }
     if(typeof window.AMIR_applyDocRatings==='function') window.AMIR_applyDocRatings();
   }
   document.addEventListener('amir:cms-content-ready', onCmsContentReady);
 
   function loadPrices(){
-    fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
-      .then(function(r){ if(!r.ok) throw new Error('content '+r.status); return r.json(); })
-      .then(function(saved){ applySavedPrices(saved); })
+    // Прайс — отдельный prices.json (не дублируем ~120 КБ в prices.html + content.json)
+    fetch('/assets/prices.json', { credentials: 'same-origin' })
+      .then(function(r){ if(!r.ok) throw new Error('prices '+r.status); return r.json(); })
+      .then(function(saved){
+        if(saved && Array.isArray(saved.services) && saved.services.length){
+          applySavedPrices(saved);
+          return;
+        }
+        throw new Error('prices empty');
+      })
+      .catch(function(){
+        return fetch('/assets/content.json', { credentials: 'same-origin' })
+          .then(function(r){ if(!r.ok) throw new Error('content '+r.status); return r.json(); })
+          .then(function(saved){ applySavedPrices(saved); });
+      })
       .catch(function(){
         fail('Не удалось загрузить цены. Позвоните нам или оставьте заявку — подскажем стоимость.');
       });
@@ -599,7 +715,7 @@
     bootServicePage();
   } else {
     fail('Загружаем услугу…');
-    fetch('/assets/content.json?ts='+Date.now(),{cache:'no-store'})
+    fetch('/assets/content.json', { credentials: 'same-origin' })
       .then(function(r){ return r.ok?r.json():null; })
       .then(function(saved){
         if(tryBootFromContent(saved)) bootServicePage();

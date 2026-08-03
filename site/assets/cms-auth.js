@@ -3,6 +3,8 @@
   'use strict';
 
   var CONTENT_KEY = 'amirdent_cms_content';
+  // Только sessionStorage вкладки: cookie-сессия ≠ режим правки на публичных страницах.
+  var EDIT_KEY = 'amirdent_cms_edit';
   var state = { checked: false, authenticated: false, user: null, revision: '' };
 
   async function request(url, options) {
@@ -32,6 +34,9 @@
       if (result.response.status === 429) {
         throw new Error('Слишком много попыток. Подождите 15 минут.');
       }
+      if (result.response.status === 500 && result.data && result.data.error === 'not_configured') {
+        throw new Error(result.data.message || 'Админка не настроена: задайте CMS_LOGIN и CMS_PASSWORD_HASH в .env');
+      }
       if (!result.response.ok || !result.data || result.data.ok !== true) {
         throw new Error('Сервер не смог выполнить вход (код ' + result.response.status + ')');
       }
@@ -56,11 +61,28 @@
         state.checked = true;
         state.authenticated = false;
         state.user = null;
+        this.exitEditMode();
       }
+    },
+
+    enterEditMode() {
+      try { sessionStorage.setItem(EDIT_KEY, '1'); } catch (e) {}
+    },
+
+    exitEditMode() {
+      try { sessionStorage.removeItem(EDIT_KEY); } catch (e) {}
+    },
+
+    isEditMode() {
+      try { return sessionStorage.getItem(EDIT_KEY) === '1'; } catch (e) { return false; }
     },
 
     isAuthed() {
       return state.checked && state.authenticated;
+    },
+
+    canEdit() {
+      return this.isAuthed() && this.isEditMode();
     },
 
     getSession() {
@@ -115,22 +137,10 @@
       return result.data;
     },
 
-    async listVersions() {
-      var result = await request('/api/cms/versions', { cache: 'no-store' });
-      if (!result.response.ok) throw new Error((result.data && result.data.error) || 'Не удалось загрузить историю');
-      return result.data.versions || [];
-    },
-
-    async restoreVersion(key) {
-      var result = await request('/api/cms/restore', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: key }),
-      });
-      if (!result.response.ok || !result.data || !result.data.ok) {
-        throw new Error((result.data && result.data.error) || 'Не удалось восстановить версию');
-      }
-      return result.data;
+    async listLeads() {
+      var result = await request('/api/cms/leads', { cache: 'no-store' });
+      if (!result.response.ok) throw new Error((result.data && result.data.error) || 'Не удалось загрузить заявки');
+      return result.data.leads || [];
     },
   };
 

@@ -50,15 +50,14 @@
   status = 200
   force = true
 
-# Контент админки хранится не в файле, а в хранилище Netlify: файл в папке site
-# сервер перезаписать не может. Прежний адрес сохранён, чтобы код админки и
-# страницы читал контент как раньше; force = true нужен, иначе статический файл
-# site/assets/content.json перекрыл бы функцию.
-[[redirects]]
-  from = "/assets/content.json"
-  to = "/api/cms/content"
-  status = 200
-  force = true
+# Посетители читают статический /assets/content.json (кэш CDN).
+# Админка берёт живой снимок с /api/cms/content; при npm run build контент
+# из API/blobs снова публикуется в статику.
+
+[[headers]]
+  for = "/assets/content.json"
+  [headers.values]
+    Cache-Control = "public, max-age=300, stale-while-revalidate=86400"
 
 [[redirects]]
   from = "/index.html"

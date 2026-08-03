@@ -7,6 +7,10 @@ api/config.php
 api/config.local.json
 api/leads-failed.log
 api/leads-local.log
+api/cms-sessions.local.json
+api/cms-sessions.local.json.tmp
+__pycache__/
+*.py[cod]
 
 # Uploaded CMS photos
 site/assets/uploads/*
