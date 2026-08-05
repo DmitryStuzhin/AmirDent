@@ -211,28 +211,25 @@ async function bakeIndexDoctors(content) {
   console.log(`Baked ${list.length} doctors into index.html`);
 }
 
-/** Показать/скрыть #reels и проставить data-video из content.json. */
+/** Оставить #reels видимым и сохранить архивные data-video из content.json. */
 async function bakeIndexReels(content) {
   let html = await readFile(indexPath, 'utf8');
   const reels = Array.isArray(content && content.reels) ? content.reels : [];
-  const hasVideo = reels.some((r) => r && String(r.video || '').trim());
 
   html = html.replace(
     /<section class="pad" id="reels"[^>]*>/,
-    hasVideo ? '<section class="pad" id="reels">' : '<section class="pad" id="reels" hidden>'
+    '<section class="pad" id="reels">'
   );
 
   let i = 0;
-  html = html.replace(/<button class="reel" data-video="[^"]*"(?:\s+hidden)?/g, () => {
+  html = html.replace(/<a class="reel" data-video="[^"]*"(?:\s+hidden)?/g, () => {
     const item = reels[i++] || {};
     const video = escapeHtml(String(item.video || '').trim());
-    return video
-      ? `<button class="reel" data-video="${video}"`
-      : `<button class="reel" data-video="" hidden`;
+    return `<a class="reel" data-video="${video}"`;
   });
 
   await writeFile(indexPath, html, 'utf8');
-  console.log(hasVideo ? 'Baked reels with videos into index.html' : 'Reels section kept hidden (no videos)');
+  console.log('Baked Telegram reel cards into index.html');
 }
 
 /** Вшить textItems с data-cms-text в index.html — без cms.js у посетителя. */

@@ -71,18 +71,12 @@
     if (!Array.isArray(snap.reels)) return;
     var section = document.getElementById('reels');
     var buttons = document.querySelectorAll('#reels .reel, .reels .reel');
-    var hasVideo = false;
     snap.reels.forEach(function (r, i) {
       var btn = buttons[i];
       if (!btn || !r) return;
       var video = String(r.video || '').trim();
       btn.setAttribute('data-video', video);
-      if (video) {
-        btn.hidden = false;
-        hasVideo = true;
-      } else {
-        btn.hidden = true;
-      }
+      btn.hidden = false;
       var poster = btn.querySelector('.reel-poster');
       if (poster && r.poster) {
         poster.style.backgroundImage = 'url(' + JSON.stringify(String(r.poster)) + ')';
@@ -90,7 +84,7 @@
       var cap = btn.querySelector('.reel-cap');
       if (cap && typeof r.captionHtml === 'string') cap.innerHTML = r.captionHtml;
     });
-    if (section) section.hidden = !hasVideo;
+    if (section) section.hidden = false;
   }
 
   function run(snap) {

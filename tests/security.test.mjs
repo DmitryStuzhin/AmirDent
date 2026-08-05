@@ -70,6 +70,16 @@ test('Public nav uses canonical / and /prices (no redirect hops)', async () => {
   assert.doesNotMatch(service, /href="\/prices\.html"/);
 });
 
+test('Every video review card opens the clinic Telegram channel', async () => {
+  const index = await readFile(new URL('site/index.html', root), 'utf8');
+  const cards = index.match(
+    /<a class="reel"[^>]*href="https:\/\/t\.me\/kmcorthoway"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/g
+  );
+  assert.equal(cards?.length, 5);
+  assert.match(index, /<section class="pad" id="reels">/);
+  assert.doesNotMatch(index, /<button class="reel"/);
+});
+
 test('Maintenance purges expired CMS sessions from blobs', async () => {
   const maintenance = await readFile(new URL('netlify/functions/maintenance.mjs', root), 'utf8');
   assert.match(maintenance, /prefix:\s*['"]sessions\//);

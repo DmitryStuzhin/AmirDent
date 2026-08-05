@@ -759,8 +759,9 @@ div.dm{align-items:center;justify-content:center}
 
 /* ---------- Video reels ---------- */
 .reels{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
-.reel{position:relative;border:none;padding:0;cursor:pointer;border-radius:20px;overflow:hidden;aspect-ratio:9/16;background:#000;box-shadow:var(--shadow-sm);transition:transform .4s var(--ease),box-shadow .4s}
+.reel{position:relative;display:block;border:none;padding:0;cursor:pointer;border-radius:20px;overflow:hidden;aspect-ratio:9/16;background:#000;box-shadow:var(--shadow-sm);transition:transform .4s var(--ease),box-shadow .4s}
 .reel:hover{transform:translateY(-6px);box-shadow:var(--shadow-md)}
+.reel:focus-visible{outline:3px solid var(--gold-deep);outline-offset:4px}
 .reel-poster{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .7s var(--ease)}
 .reel:hover .reel-poster{transform:scale(1.07)}
 .reel::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(27,24,19,.15),rgba(27,24,19,.72))}
@@ -772,14 +773,6 @@ div.dm{align-items:center;justify-content:center}
 .reels-badge{display:inline-flex;align-items:center;gap:8px;margin:0 auto 8px;color:var(--muted);font-size:13px}
 @media(max-width:1024px){.reels{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:640px){.reels{grid-auto-flow:column;grid-auto-columns:64%;grid-template-columns:none;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px}.reel{scroll-snap-align:center}}
-
-/* lightbox */
-.lb{position:fixed;inset:0;z-index:200;background:rgba(10,8,6,.9);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .3s}
-.lb.open{opacity:1;pointer-events:auto}
-.lb-inner{position:relative;width:min(420px,92vw);aspect-ratio:9/16;background:#000;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg)}
-.lb-inner iframe,.lb-inner video{width:100%;height:100%;border:0;display:block;object-fit:cover}
-.lb-close{position:absolute;top:22px;right:24px;z-index:2;width:48px;height:48px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:26px;cursor:pointer;transition:background .25s}
-.lb-close:hover{background:rgba(255,255,255,.28)}
 
 /* ---------- CTA / form ---------- */
 .cta{background:linear-gradient(145deg,#2a241c 0%,var(--ink) 42%,#12100c 100%);color:#fff;border-radius:var(--r-lg);overflow:visible;position:relative;box-shadow:var(--shadow-lg);isolation:isolate}

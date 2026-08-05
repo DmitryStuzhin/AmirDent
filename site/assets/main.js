@@ -918,46 +918,17 @@
   });});
   applyPrice();
 
-  // video reels lightbox — секция видна только если есть хотя бы одно видео
-  var lb=document.getElementById('lb'), lbInner=document.getElementById('lbInner');
-  function embed(url){
-    var y=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]+)/);
-    if(y) return '<iframe src="https://www.youtube.com/embed/'+y[1]+'?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>';
-    if(/\.mp4($|\?)/i.test(url)) return '<video src="'+url+'" controls autoplay playsinline></video>';
-    return '<iframe src="'+url+'" allow="autoplay; fullscreen" allowfullscreen></iframe>';
-  }
-  function openLb(url){
-    url=String(url||'').trim();
-    if(!lb || !url) return;
-    lbInner.innerHTML=embed(url);
-    lb.classList.add('open');
-    document.body.style.overflow='hidden';
-  }
-  function closeLb(){ if(!lb)return; lb.classList.remove('open'); lbInner.innerHTML=''; document.body.style.overflow=''; }
+  // Карточки видеоотзывов всегда ведут в Telegram-канал клиники.
+  // Данные обложек и подписей по-прежнему можно менять через CMS.
   function syncReelsVisibility(){
     var section=document.getElementById('reels');
     if(!section) return;
-    var editing=document.body.classList.contains('cms-admin');
-    var has=false;
     section.querySelectorAll('.reel').forEach(function(r){
-      var url=(r.getAttribute('data-video')||'').trim();
-      if(url) has=true;
-      // В режиме правки показываем пустые слоты, чтобы можно было вставить ссылку
-      r.hidden=editing ? false : !url;
+      r.hidden=false;
     });
-    section.hidden=editing ? false : !has;
+    section.hidden=false;
   }
   window.AMIR_syncReels=syncReelsVisibility;
-  document.querySelectorAll('.reel').forEach(function(r){
-    r.addEventListener('click', function(e){
-      if(document.body.classList.contains('cms-admin')) return;
-      var url=(r.getAttribute('data-video')||'').trim();
-      if(!url) return;
-      openLb(url);
-    });
-  });
-  if(lb){ lb.addEventListener('click',function(e){ if(e.target===lb||e.target.classList.contains('lb-close')) closeLb(); });
-    document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeLb(); }); }
   syncReelsVisibility();
   document.addEventListener('amir:cms-content-ready', syncReelsVisibility);
 
