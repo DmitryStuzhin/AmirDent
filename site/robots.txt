@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin.html
 Disallow: /api/cms/
 
-Sitemap: https://amirdent.netlify.app/sitemap.xml
+Sitemap: https://amirdent.ru/sitemap.xml

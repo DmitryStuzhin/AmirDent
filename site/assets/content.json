@@ -1,6 +1,6 @@
 {
   "v": 4,
-  "savedAt": "2026-08-03T19:49:23.256555+00:00",
+  "savedAt": "2026-08-04T00:52:35.475Z",
   "images": [
     {
       "src": "/assets/images/33082ad4d7.webp",
@@ -727,7 +727,7 @@
       ]
     }
   ],
-  "docsV": 7,
+  "docsV": 9,
   "docsHtml": "<article class=\"doc\" data-doc=\"liliya\"><div class=\"doc-photo\"><img src=\"/assets/images/9d237844af.webp\" alt=\"Краснощёкова Лилия\"></div><div class=\"doc-body\"><div class=\"role\">Терапия · дети</div><h3>Краснощёкова Лилия</h3><div class=\"exp\">Стоматолог-терапевт · 15 лет</div><button type=\"button\" class=\"doc-details\">Подробнее о враче</button></div></article><article class=\"doc\" data-doc=\"amir\"><div class=\"doc-photo\"><img src=\"/assets/images/1fe5f6032a.webp\" alt=\"Кхатиб Амир\"></div><div class=\"doc-body\"><div class=\"role\">Ортодонтия</div><h3>Кхатиб Амир</h3><div class=\"exp\">Стоматолог-ортодонт</div><button type=\"button\" class=\"doc-details\">Подробнее о враче</button></div></article><article class=\"doc\" data-doc=\"renas\"><div class=\"doc-photo\"><img src=\"/assets/images/dd21cb3afd.webp\" alt=\"Али Ренас\"></div><div class=\"doc-body\"><div class=\"role\">Хирургия</div><h3>Али Ренас</h3><div class=\"exp\">Хирург-имплантолог</div><button type=\"button\" class=\"doc-details\">Подробнее о враче</button></div></article><article class=\"doc\" data-doc=\"zhabin\"><div class=\"doc-photo\"><img src=\"/assets/images/fdb595d956.webp\" alt=\"Жабин Алексей\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Жабин Алексей</h3><div class=\"exp\">Стоматолог-ортопед · 26 лет</div><button type=\"button\" class=\"doc-details\">Подробнее о враче</button></div></article><article class=\"doc\" data-doc=\"obai\"><div class=\"doc-photo\"><img src=\"/assets/images/150e13edec.webp\" alt=\"Алхатиб Обай\"></div><div class=\"doc-body\"><div class=\"role\">Протезирование</div><h3>Алхатиб Обай</h3><div class=\"exp\">Врач-ортопед · 2 года</div><button type=\"button\" class=\"doc-details\">Подробнее о враче</button></div></article><article class=\"doc\" data-doc=\"borodina-inna\"><div class=\"doc-photo\"><img src=\"/assets/images/borodina-inna.webp\" alt=\"Бородина Инна Юрьевна\"></div><div class=\"doc-body\"><div class=\"role\">Терапия · дети · ортодонтия</div><h3>Бородина Инна Юрьевна</h3><div class=\"exp\">Детский стоматолог · 14 лет</div><button type=\"button\" class=\"doc-details\">Подробнее о враче</button></div></article><article class=\"doc\" data-doc=\"guseynova-oksana\"><div class=\"doc-photo\"><img src=\"/assets/uploads/89e0187d0e5b4268.jpg\" alt=\"Гусейнова Оксана Тельмановна\"></div><div class=\"doc-body\"><div class=\"role\">Терапия</div><h3>Гусейнова Оксана Тельмановна</h3><div class=\"exp\">Стоматолог-терапевт · 10 лет</div><button type=\"button\" class=\"doc-details\">Подробнее о враче</button></div></article><article class=\"doc\" data-doc=\"olga\"><div class=\"doc-photo\"><img src=\"/assets/images/0a8cd45ac1.webp\" alt=\"Кхатиб Ольга Николаевна\"></div><div class=\"doc-body\"><div class=\"role\">Кардиология</div><h3>Кхатиб Ольга Николаевна</h3><div class=\"exp\">Врач-кардиолог · 26 лет</div><button type=\"button\" class=\"doc-details\">Подробнее о враче</button></div></article>",
   "textItems": [
     {
@@ -1404,5 +1404,5 @@
     }
   ],
   "hiddenBlocks": [],
-  "revision": "6203b2776d2d25d9"
+  "revision": "msdy1k4r-d9931ab3"
 }

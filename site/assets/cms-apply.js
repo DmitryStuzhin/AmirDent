@@ -87,11 +87,20 @@
     if (section) section.hidden = false;
   }
 
+  function applyDoctors(snap) {
+    if (typeof snap.docsHtml !== 'string' || !snap.docsHtml.trim()) return;
+    var grid = document.querySelector('.doc-grid');
+    if (!grid) return;
+    grid.innerHTML = snap.docsHtml;
+    if (snap.docsV != null) grid.setAttribute('data-docs-v', String(snap.docsV));
+  }
+
   function run(snap) {
     if (!snap || typeof snap !== 'object') return;
     applyTextItems(snap);
     applyImages(snap);
     applyReels(snap);
+    applyDoctors(snap);
     try {
       document.dispatchEvent(new CustomEvent('amir:cms-content-ready', { detail: snap }));
     } catch (e) {}

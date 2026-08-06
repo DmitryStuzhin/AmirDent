@@ -2173,6 +2173,14 @@
     }
     if(meta&&meta.loading){ st.textContent='Ищем на ПроДокторов, DocDoc/Яндекс, Зуб.ру и Doctu…'; return; }
     if(meta&&meta.error){ st.textContent=meta.error; return; }
+    if(meta&&meta.profile){
+      var p=meta.profile;
+      var source=ratingSourceLabel(p.source||'');
+      st.innerHTML='Профиль найден: <b>'+escHtml(p.name||'врач')+'</b> · '+escHtml(source)+
+        '. На странице пока нет числового рейтинга'+
+        (p.url?' · <a href="'+escAttr(p.url)+'" target="_blank" rel="noopener">профиль</a>':'');
+      return;
+    }
     st.textContent='Профиль с рейтингом не найден — на сайте рейтинг не покажем.';
   }
   function applyDoctorRatingBest(prefix, best){
@@ -2186,6 +2194,12 @@
     if(url) url.value=best.pdUrl||'';
     if(src) src.value=best.ratingSource||'';
     paintDoctorRatingStatus(prefix, best);
+  }
+  function clearDoctorRatingFields(prefix){
+    ['Rating','Reviews','Url','Source'].forEach(function(suffix){
+      var el=document.getElementById(prefix+suffix);
+      if(el) el.value='';
+    });
   }
   function fetchDoctorRating(name, photo){
     var token=(window.AmirCMS&&AmirCMS.getToken)?AmirCMS.getToken():'';
@@ -2231,7 +2245,13 @@
           return;
         }
         if(j.best) applyDoctorRatingBest(prefix, j.best);
-        else paintDoctorRatingStatus(prefix, null, {});
+        else {
+          clearDoctorRatingFields(prefix);
+          var profiles=(Array.isArray(j.candidates)?j.candidates:[]).filter(function(c){
+            return c&&c.url&&Number(c.nameMatch||0)>=0.75&&Number(c.confidence||0)>=0.75;
+          }).sort(function(a,b){ return Number(b.confidence||0)-Number(a.confidence||0); });
+          paintDoctorRatingStatus(prefix, null, profiles.length?{profile:profiles[0]}:{});
+        }
       }).catch(function(){
         if(my!==seq) return;
         if(findBtn){ findBtn.disabled=false; findBtn.textContent='Найти'; }

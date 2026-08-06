@@ -5,7 +5,7 @@
 
   var EDIT_KEY = 'amirdent_cms_edit';
   var AUTH_SRC = '/assets/cms-auth.js?v=b14kids1';
-  var CMS_SRC = '/assets/cms.js?v=nohistory1';
+  var CMS_SRC = '/assets/cms.js?v=doctor-rating3';
   var CSS_HREF = '/assets/cms.css?v=b4boot1';
 
   function qsHas(name, value) {
