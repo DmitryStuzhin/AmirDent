@@ -1,0 +1,8 @@
+# Замените LOGIN и DOMAIN на логин Beget и каталог сайта.
+PassengerNodejs /home/u/LOGIN/.local/bin/node
+PassengerAppRoot /home/u/LOGIN/DOMAIN/amirdent
+PassengerAppType node
+PassengerStartupFile server.mjs
+PassengerFriendlyErrorPages off
+
+# После изменения приложения: touch /home/u/LOGIN/DOMAIN/amirdent/tmp/restart.txt

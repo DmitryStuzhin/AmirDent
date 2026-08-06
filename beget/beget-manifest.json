@@ -1,0 +1,7 @@
+{
+  "generatedAt": "2026-08-03T20:11:50.603Z",
+  "node": ">=20.12.2",
+  "publicDirectory": "site",
+  "startupFile": "server.mjs",
+  "storageDirectory": "storage"
+}
