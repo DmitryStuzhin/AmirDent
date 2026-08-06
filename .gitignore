@@ -12,6 +12,10 @@ api/cms-sessions.local.json.tmp
 __pycache__/
 *.py[cod]
 
+# Локальные настройки Claude Code: содержат секреты, в репозиторий не попадают.
+# Дублирует глобальное правило, чтобы защита работала и на других машинах.
+.claude/settings.local.json
+
 # Uploaded CMS photos
 site/assets/uploads/*
 !site/assets/uploads/.gitkeep
